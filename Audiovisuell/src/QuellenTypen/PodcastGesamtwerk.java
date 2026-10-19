@@ -1,20 +1,20 @@
 package QuellenTypen;
 
-public class PodcastGesamtwerk extends Audiovisuell{
-	
-    private String herausgebendeOrganisation;
+public class PodcastGesamtwerk extends Audiovisuell {
 
-    @Override 
-    public String erstelleQuellenangabe()
-    {
-        return getProduzent() + ". " + getErscheinungsDatum() + ". [" + getTitel() + "]. " + getHerausgebendeOrganisation() + ". " + getUrl() + " " + getAbruffDatum();
-    }
+	private String herausgebendeOrganisation;
 
-    public String getHerausgebendeOrganisation() {
-        return herausgebendeOrganisation;
-    }
+	@Override
+	public String erstelleQuellenangabe() {
+		return getProduzent() + ". " + getErscheinungsDatum() + ". [" + getTitel() + "]. "
+				+ getHerausgebendeOrganisation() + ". " + getUrl() + " " + getAbruffDatum();
+	}
 
-    public void setProduzent(String herausgebendeOrganisation) {
-        this.herausgebendeOrganisation = herausgebendeOrganisation;
-    }
+	public String getHerausgebendeOrganisation() {
+		return herausgebendeOrganisation;
+	}
+
+	public void setHerausgebendeOrganisation(String herausgebendeOrganisation) {
+		this.herausgebendeOrganisation = herausgebendeOrganisation;
+	}
 }

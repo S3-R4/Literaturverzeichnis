@@ -1,5 +1,5 @@
 package QuellenTypen;
 
-public class Podcastfolgen {
-
+public class Podcastfolgen extends Audiovisuell {
+	
 }

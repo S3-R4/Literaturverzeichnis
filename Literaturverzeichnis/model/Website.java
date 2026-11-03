@@ -1,14 +1,16 @@
 package model;
 
-public class Website {
-	String autor, websitename, titel, url, aufrufdatum, veroeffentlichungsdatum, textart;
+import java.util.List;
+
+public class Website extends Literatur {
+	String websitename, url, textart;
 	
-	public Website(String autor, String websitename, String titel, String url, String aufrufdatum, String veroeffentlichungsdatum, String textart) {
+	public Website(List<String> autor, String websitename, String titel, String url, java.time.LocalDate abrufdatum, java.time.LocalDate veroeffentlichungsdatum, String textart) {
 		this.autor = autor;
 		this.websitename = websitename;
 		this.titel = titel;
 		this.url = url;
-		this.aufrufdatum = aufrufdatum;
+		this.abrufdatum = abrufdatum;
 		this.veroeffentlichungsdatum = veroeffentlichungsdatum;
 		this.textart = textart;
 	}
@@ -16,13 +18,13 @@ public class Website {
 	public String generiereLangbeleg() {
 		String textBaustein;
 		//Autor
-		if (this.autor.equals("")) {
+		if (this.autor.toString().equals("")) {
 			textBaustein = "u. Autor ";
 		} else {
-			textBaustein = this.autor + " ";
+			textBaustein = this.autor.toString() + " ";
 		}
 		//Veroeffentlichung
-		textBaustein += "("+this.veroeffentlichungsdatum+"). ";
+		textBaustein += "("+this.veroeffentlichungsdatum.toString()+"). ";
 		//Textart
 		
 		if (!textart.equals("")) {
@@ -35,21 +37,23 @@ public class Website {
 		//URL
 		textBaustein += this.url+" ";
 		//Aufrufdatum
-		textBaustein += "("+this.aufrufdatum+").";
+		textBaustein += "("+this.abrufdatum.toString()+").";
 		
 		return textBaustein;
 	}
 	
-	public String generiereKurzerBeleg() {
+
+	@Override
+	String generiereKurzbeleg() {
 		//Autor
-		String textbaustein;
-		if (this.autor.equals("")) {
-			textbaustein = this.websitename + " ";
-		} else {
-			textbaustein = this.autor + " ";
-		}
-		//Veroeffentlichung
-		textbaustein += "("+this.veroeffentlichungsdatum+")";
-		return textbaustein;
+				String textbaustein;
+				if (this.autor.toString().equals("")) {
+					textbaustein = this.websitename + " ";
+				} else {
+					textbaustein = this.autor.toString() + " ";
+				}
+				//Veroeffentlichung
+				textbaustein += "("+this.veroeffentlichungsdatum.toString()+")";
+				return textbaustein;
 	}
 }

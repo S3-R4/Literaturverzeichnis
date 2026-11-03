@@ -7,7 +7,7 @@ public abstract class Literatur {
 	public List<String> autor;
 	public String titel;
 	public LocalDate veroeffentlichungsdatum;
-	public LocalDate LocalDate;
+	public LocalDate abrufdatum;
 	
 	abstract String generiereKurzbeleg();
 	

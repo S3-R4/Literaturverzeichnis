@@ -37,6 +37,9 @@ public Bildbelegclass(String urheber1, String urheber2, String urheber3, String 
 
 
 public String getUrheber1() {
+	if (Urheber1.equals("")) {
+	return "Unbekannter Autor";	
+	}
 	return Urheber1;
 }
 public void setUrheber1(String urheber1) {
@@ -68,7 +71,7 @@ public void setUrheber4(String urheber4) {
 	Urheber4 = urheber4;
 }
 public String getMehrUrheber(boolean mehrurheber) {
-	if (MehrUrheber) {
+	if (mehrurheber) {
 	return " et al.";
 	}
 	return "";
@@ -125,7 +128,7 @@ public void setAbrufdatum(String abrufdatum) {
 	Abrufdatum = abrufdatum;
 }
 
-public String getbeleg(Bildbelegclass bildbelegclass) {
+public String getbeleg() {
 	return getUrheber1() + getUrheber2() + getUrheber3() + getUrheber4() + getMehrUrheber(MehrUrheber) + getErscheinungsjahr() + getTitel() + getMedienart() + getHerausgeber() + getAnbieter() + getAbrufdatum();
 	
 }

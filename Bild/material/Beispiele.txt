@@ -1,0 +1,14 @@
+Müller T. (2022). Psychologische Grundlagen der Motivation[Diagram]. Springer. https://...[21.2.2026]. Full example
+
+eigene Darstellung //Empty (Other than the Author)
+
+Müller T., Schmidt A., Weber K., Fischer L. (2024). Motivation im Alltag[Foto]. Springer. https://example.com[10.10.2026]. More Authors
+
+Müller T., Schmidt A., Weber K., Fischer L. et al. (2024). Motivation im Alltag[Foto]. Springer. https://example.com[10.10.2026].
+
+Müller T., Schmidt A., Weber K., Fischer L. et al. (2024). Motivation im Alltag[Foto]. Springer. https://example.com[10.10.2026]. More than 4 Authors
+
+Unbekannter Autor (2024). test[Foto]. Springer. https://example.com[10.10.2026]. Empty Author
+
+
+

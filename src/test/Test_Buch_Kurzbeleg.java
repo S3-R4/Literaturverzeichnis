@@ -1,12 +1,16 @@
+package test;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.*;
+
+import model.Buchbeleg;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TestKurzbeleg {
+public class Test_Buch_Kurzbeleg {
     @Test
     public void testT01NormalesKurzzitat() {
         Buchbeleg beleg = new Buchbeleg(List.of("Müller"), Optional.of(2022),

@@ -1,13 +1,17 @@
+package test;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.*;
+
+import model.Buchbeleg;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TestLangbeleg {
+public class Test_Buch_Langbeleg {
     @Test
     public void testT13NormalerLangbeleg() {
         Buchbeleg beleg = new Buchbeleg(List.of("Müller, Anna"), Optional.of(2022),

@@ -1,12 +1,15 @@
 
-package sammelband;
+package test;
 
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+
+import model.Sammelbandbeleg;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestSammelbandLangbeleg {
+public class Test_Sammelband_Langbeleg {
 
 	@Test
 	public void testNormalerLangbeleg() {

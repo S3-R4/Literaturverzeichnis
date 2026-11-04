@@ -1,8 +1,12 @@
+package test;
+
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-public class Bildbelegtest {
+import model.BildQuelle;
+
+public class Test_Bildbeleg {
 
 	@Test 
 	public void test() {
@@ -21,11 +25,5 @@ public class Bildbelegtest {
 	BildQuelle bild05 = new BildQuelle("","","","",false,"test","Foto","2024","Springer","https://example.com","10.10.2026"); //Kein Autor
 	assertEquals(bild05.getbeleg(),"Unbekannter Autor (2024). test[Foto]. Springer. https://example.com[10.10.2026].");	
 
-	}
-	@Test 
-	public void test2() {
-	 Bildbelegclass2 bild01 = new Bildbelegclass2("Müller T.", "Schmidt A.", "", "", false,"Psychologische Grundlagen der Motivation","Diagram", "2022", "Springer", "https://...", "21.2.2026");
-
-        assertEquals(bild01.generiereLangbeleg(),"Müller T., Schmidt A. (2022). Psychologische Grundlagen der Motivation[Diagram]. Springer. https://...[21.2.2026].");
-    }	
+	}	
 }

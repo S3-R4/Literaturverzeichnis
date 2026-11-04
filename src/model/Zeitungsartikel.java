@@ -1,5 +1,6 @@
 package model;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class Zeitungsartikel extends Literatur {
@@ -17,7 +18,7 @@ public class Zeitungsartikel extends Literatur {
 	 * @param seitenzahl
 	 * @param url
 	 */
-	public Zeitungsartikel(java.time.LocalDate veroeffentlichungsdatum, String titel, String zeitung, String seitenzahl, String url,List<String>  autor) {
+	public Zeitungsartikel(LocalDate veroeffentlichungsdatum, String titel, String zeitung, String seitenzahl, String url,List<String>  autor) {
 		setAutor(autor);
 		setDatum(veroeffentlichungsdatum);
 		setTitel(titel);

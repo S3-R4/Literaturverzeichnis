@@ -1,12 +1,13 @@
-package junit;
+package test;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
- 
-import work.Website;
-public class Test_0 {
+
+import model.Website;
+
+public class Test_Website {
 
 	@Test
 	public void guteQuelleLang() {

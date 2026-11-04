@@ -1,13 +1,16 @@
 
-package sammelband;
+package test;
 
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+
+import model.Sammelbandbeleg;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestSammelbandKurzbeleg {
+public class Test_Sammelband_Kurzbeleg {
 
 	@Test
 	public void testNormalerKurzbeleg() {

@@ -1,4 +1,4 @@
-package QuellenTypen;
+package model.Audiovisuell;
 
 public abstract class Audiovisuell {
 	private String titel;

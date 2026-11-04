@@ -1,4 +1,4 @@
-package QuellenTypen;
+package model.Audiovisuell;
 
 public class SocialMediaBeitraege extends Audiovisuell {
 	private String text;

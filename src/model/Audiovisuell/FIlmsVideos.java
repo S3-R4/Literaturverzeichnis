@@ -1,4 +1,4 @@
-package QuellenTypen;
+package model.Audiovisuell;
 
 public class FIlmsVideos extends Audiovisuell {
 	private String produktionsfirma;

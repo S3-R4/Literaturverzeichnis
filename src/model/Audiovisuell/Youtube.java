@@ -1,4 +1,4 @@
-package QuellenTypen;
+package model.Audiovisuell;
 
 public class Youtube extends Audiovisuell {
 	@Override

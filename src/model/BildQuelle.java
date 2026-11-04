@@ -1,20 +1,20 @@
 package model;
 import java.util.ArrayList;
 
-public class Bildbelegclass extends Literatur {
+public class BildQuelle extends Literatur {
 
 private String Medienart = "";
 private String Herausgeber = "";
 private String Anbieter = "";
 private boolean MehrUrheber;
 
-public Bildbelegclass() {
+public BildQuelle() {
 autor = new ArrayList<>();
 for (int i = 0; i < 4; i++) {
 autor.add("");}
 }
 
-public Bildbelegclass(String urheber1, String urheber2,String urheber3, String urheber4, boolean mehrurheber,String titel, String medienart, String erscheinungsjahr,String herausgeber, String anbieter, String abrufdatum) {
+public BildQuelle(String urheber1, String urheber2,String urheber3, String urheber4, boolean mehrurheber,String titel, String medienart, String erscheinungsjahr,String herausgeber, String anbieter, String abrufdatum) {
 this();
 
 setUrheber1(urheber1);

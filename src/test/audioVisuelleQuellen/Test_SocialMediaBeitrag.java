@@ -1,10 +1,12 @@
-package QuellenTypen;
+package test.audioVisuelleQuellen;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-class SocialMediaBeitraegeTest {
+import model.Audiovisuell.SocialMediaBeitraege;
+
+class Test_SocialMediaBeitrag {
 	@Test
 	void createsCitationAndStoresTextAndDescription() {
 		SocialMediaBeitraege beitrag = new SocialMediaBeitraege();

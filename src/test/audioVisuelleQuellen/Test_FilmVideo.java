@@ -1,10 +1,12 @@
-package QuellenTypen;
+package test.audioVisuelleQuellen;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-class FIlmsVideosTest {
+import model.Audiovisuell.FIlmsVideos;
+
+class Test_FilmVideo {
 	@Test
 	void createsCitationWithUrl() {
 		FIlmsVideos film = new FIlmsVideos();

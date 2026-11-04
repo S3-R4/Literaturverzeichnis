@@ -1,10 +1,12 @@
-package QuellenTypen;
+package test.audioVisuelleQuellen;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import model.Audiovisuell.Audiovisuell;
+
 import org.junit.jupiter.api.Test;
 
-class AudiovisuellTest {
+class Test_Audiovisuell {
 	private static class TestAudiovisuell extends Audiovisuell {
 		@Override
 		public String erstelleQuellenangabe() {

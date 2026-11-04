@@ -1,10 +1,12 @@
-package QuellenTypen;
+package test.audioVisuelleQuellen;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-class YoutubeTest {
+import model.Audiovisuell.Youtube;
+
+class Test_Youtube {
 	@Test
 	void createsCitation() {
 		Youtube video = new Youtube();

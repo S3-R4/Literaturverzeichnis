@@ -1,10 +1,12 @@
-package QuellenTypen;
+package test.audioVisuelleQuellen;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-class PodcastGesamtwerkTest {
+import model.Audiovisuell.PodcastGesamtwerk;
+
+class Test_PodcastGesamtwerk {
 	@Test
 	void createsCitationAndStoresPublishingOrganization() {
 		PodcastGesamtwerk podcast = new PodcastGesamtwerk();

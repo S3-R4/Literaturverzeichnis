@@ -1,11 +1,13 @@
-package QuellenTypen;
+package test.audioVisuelleQuellen;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 import org.junit.jupiter.api.Test;
 
-class PodcastfolgenTest {
+import model.Audiovisuell.Podcastfolgen;
+
+class Test_Podcastfolgen {
 	@Test
 	void inheritsAudiovisualMetadata() {
 		Podcastfolgen folge = new Podcastfolgen() {

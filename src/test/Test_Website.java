@@ -3,6 +3,10 @@ package test;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import model.Website;
@@ -11,12 +15,12 @@ public class Test_Website {
 
 	@Test
 	public void guteQuelleLang() {
-		String autor = "Mole, B.";
+		ArrayList<String> autor = new ArrayList<String>(List.of("Mole, B."));
 		String websitename = "Ars Technica";
 		String titel = "mRNA vaccines are in RFK Jr’s crosshairs; funding in question";
 		String url = "https://arstechnica.com/health/2025/03/federal-funding-formrna-vaccine-research-in-jeopardy-under-rfk-jr/";
-		String aufrufdatum = "19.03.2025";
-		String veroeffentlichungsdatum = "2025, 17. März";
+		LocalDate aufrufdatum = LocalDate.of(2025, 3, 19);
+		LocalDate veroeffentlichungsdatum = LocalDate.of(2025, 3, 17);
 		String textart = "Report";
 		Website w = new Website(autor, websitename, titel, url, aufrufdatum, veroeffentlichungsdatum, textart);
 		
@@ -25,12 +29,12 @@ public class Test_Website {
 	
 	@Test
 	public void schlechteQuelleLang() {
-		String autor = "";
+		ArrayList<String> autor = new ArrayList<String>();
 		String websitename = "Bundeswettbewerb Informatik";
 		String titel = "Die Aufgaben des Bundeswettbewerbs Informatik";
 		String url = "https://bwinf.de/bundeswettbewerb/aufgaben/";
-		String aufrufdatum = "13.10.2026";
-		String veroeffentlichungsdatum = "2025, 1. September";
+		LocalDate aufrufdatum = LocalDate.of(2026, 10, 13);
+		LocalDate veroeffentlichungsdatum = LocalDate.of(2025, 9, 1);
 		String textart = "";
 		Website w = new Website(autor, websitename, titel, url, aufrufdatum, veroeffentlichungsdatum, textart);
 		assertEquals("u. Autor (2025, 1. September). Die Aufgaben des Bundeswettbewerbs Informatik. Bundeswettbewerb Informatik. https://bwinf.de/bundeswettbewerb/aufgaben/ (13.10.2026).", w.generiereLangbeleg());
@@ -38,30 +42,30 @@ public class Test_Website {
 
 	@Test
 	public void guteQuelleKurz() {
-		String autor = "Mole, B.";
+		ArrayList<String> autor = new ArrayList<String>(List.of("Mole, B."));
 		String websitename = "Ars Technica";
 		String titel = "mRNA vaccines are in RFK Jr’s crosshairs; funding in question";
 		String url = "https://arstechnica.com/health/2025/03/federal-funding-formrna-vaccine-research-in-jeopardy-under-rfk-jr/";
-		String aufrufdatum = "19.03.2025";
-		String veroeffentlichungsdatum = "2025, 17. März";
+		LocalDate aufrufdatum = LocalDate.of(2025, 3, 19);
+		LocalDate veroeffentlichungsdatum = LocalDate.of(2025, 3, 17);
 		String textart = "Report";
 		Website w = new Website(autor, websitename, titel, url, aufrufdatum, veroeffentlichungsdatum, textart);
 		
-		assertEquals("Mole, B. (2025, 17. März)", w.generiereKurzerBeleg());
+		assertEquals("Mole, B. (2025, 17. März)", w.generiereKurzbeleg());
 	}
 	
 	@Test
 	public void schlechteQuelleKurz() {
-		String autor = "";
+		ArrayList<String> autor = new ArrayList<String>();
 		String websitename = "Bundeswettbewerb Informatik";
 		String titel = "Die Aufgaben des Bundeswettbewerbs Informatik	";
 		String url = "https://bwinf.de/bundeswettbewerb/aufgaben/";
-		String aufrufdatum = "13.10.2026";
-		String veroeffentlichungsdatum = "2025, 1. September";
+		LocalDate aufrufdatum = LocalDate.of(2026, 10, 13);
+		LocalDate veroeffentlichungsdatum = LocalDate.of(2025, 9, 1);
 		String textart = "";
 		Website w = new Website(autor, websitename, titel, url, aufrufdatum, veroeffentlichungsdatum, textart);
 		
-		assertEquals("Bundeswettbewerb Informatik (2025, 1. September)", w.generiereKurzerBeleg());
+		assertEquals("Bundeswettbewerb Informatik (2025, 1. September)", w.generiereKurzbeleg());
 	}
 	
 }

@@ -15,6 +15,7 @@ public class Website extends Literatur {
 		this.textart = textart;
 	}
 	
+	@Override
 	public String generiereLangbeleg() {
 		String textBaustein;
 		//Autor
@@ -44,7 +45,7 @@ public class Website extends Literatur {
 	
 
 	@Override
-	String generiereKurzbeleg() {
+	public String generiereKurzbeleg() {
 		//Autor
 				String textbaustein;
 				if (this.autor.toString().equals("")) {

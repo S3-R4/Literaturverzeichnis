@@ -1,8 +1,8 @@
-package sammelbandGui;
+package view;
 
 import javax.swing.*;
 
-import sammelband.Sammelbandbeleg;
+import model.Sammelbandbeleg;
 
 import java.awt.*;
 import java.util.Arrays;

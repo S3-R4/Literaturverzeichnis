@@ -1,0 +1,37 @@
+<diagram program="umletino" version="15.1"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>300</x><y>190</y><w>370</w><h>150</h></coordinates><panel_attributes>_ Youtube1: AudioVisuell_
+--
+accountName = "Cleo Abram"
+erscheinungsDatum = "(2025, 27. Jan) "
+titel = "NVIDIA CEO Jensen Huang's Vision for the Future"
+beitragsArt = "Video"
+Medium = "Youtube"
+url = " https://youtu.be/7ARBJQn6QkM"
+zugriffsDatum = "(19.10.2026)"</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>690</x><y>190</y><w>730</w><h>150</h></coordinates><panel_attributes>_X1: AudioVisuell_
+--
+AutorReferenz = "Trump, D"
+username = [@realDonaldTrump]
+erscheinungsDatum = "(2014, 08. Mai)"
+inhalt = "The global warming we should be worried about is the global warming caused by NUCLEAR WEAPONS in the hands of"
+inhaltBeschreibung = "Post"
+Medium = "X"
+url = "https://x.com/realDonaldTrump/status/464251796354269184"
+zugriffsDatum = "(19.10.2026)"</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>300</x><y>360</y><w>210</w><h>140</h></coordinates><panel_attributes>_AudioVisuell_
+--
+titel : String
+produzent : String
+erscheinungsDatum : Datum
+medium : String
+url : String
+zugriffsDatum : Datum</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>560</x><y>370</y><w>250</w><h>210</h></coordinates><panel_attributes>_gesamtwerkPodcast: AudioVisuell_
+--
+ausführenderProduzent 
+erscheinungsDatum
+titel
+beitragsArt 
+herausgebendeOrganisation 
+url 
+abruffDatum 
+--
+update ()
+delete()
+add()</panel_attributes><additional_attributes></additional_attributes></element></diagram>

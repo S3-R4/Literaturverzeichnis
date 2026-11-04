@@ -132,7 +132,7 @@ public class Zeitungsartikel extends Literatur {
 	}
 
 	@Override
-	String generiereLangbeleg() {
+	public String generiereLangbeleg() {
 		String b = "";
 		
 		b += getAutorAsStringLang();

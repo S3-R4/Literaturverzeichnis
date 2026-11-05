@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 import org.junit.jupiter.api.Test;
 
+import model.Audiovisuell.Audiovisuell;
 import model.Audiovisuell.Podcastfolgen;
 
 class Test_Podcastfolgen {

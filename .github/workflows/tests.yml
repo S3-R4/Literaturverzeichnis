@@ -1,0 +1,101 @@
+name: Java tests
+
+on:
+  push:
+    branches: ['**']
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Select affected tests
+        id: selection
+        env:
+          BEFORE: ${{ github.event.before }}
+        shell: python
+        run: |
+          import os
+          import subprocess
+          from pathlib import PurePosixPath
+
+          models = {
+              'src/model/Buchbeleg.java': 'buch',
+              'src/model/Sammelbandbeleg.java': 'sammelband',
+              'src/model/BildQuelle.java': 'bild',
+              'src/model/Website.java': 'website',
+              'src/model/Zeitungsartikel.java': 'zeitungsartikel',
+          }
+          groups = {*models.values(), 'audioVisuelleQuellen'}
+
+          def select(paths):
+              selected = set()
+              for path in paths:
+                  parts = PurePosixPath(path).parts
+                  if (path == 'pom.xml' or path.startswith('.github/workflows/')
+                          or (len(parts) == 2 and parts[0] == 'src')):
+                      return {'all'}
+                  if not path.endswith('.java'):
+                      continue
+                  if path in models:
+                      selected.add(models[path])
+                  elif path.startswith('src/model/Audiovisuell/'):
+                      selected.add('audioVisuelleQuellen')
+                  elif len(parts) >= 4 and parts[:2] == ('src', 'test') and parts[2] in groups:
+                      selected.add(parts[2])
+                  else:
+                      return {'all'}
+              return selected
+
+          assert select(['src/model/Buchbeleg.java']) == {'buch'}
+          assert select(['src/model/Website.java', 'src/test/buch/Test_Buch_Kurzbeleg.java']) == {'website', 'buch'}
+          assert select(['src/model/Seitenangabe.java']) == {'all'}
+          assert select(['src/model/Literatur.java']) == {'all'}
+          assert select(['src/Main.java']) == {'all'}
+          assert select(['src/view/GUI.java']) == {'all'}
+          assert select(['src/model/Audiovisuell/Youtube.java']) == {'audioVisuelleQuellen'}
+          assert select(['src/test/buch/Kurzbeleg.md', 'Artefakte/Buchbeleg_UML.png']) == set()
+          assert select(['pom.xml']) == {'all'}
+
+          before = os.environ['BEFORE']
+          if not before or set(before) == {'0'}:
+              selected = {'all'}
+          else:
+              diff = subprocess.run(
+                  ['git', 'diff', '--name-only', '--no-renames', '-z', before, 'HEAD'],
+                  capture_output=True, check=False,
+              )
+              # Missing history must never silently skip tests.
+              selected = select(os.fsdecode(diff.stdout).split('\0')[:-1]) if diff.returncode == 0 else {'all'}
+
+          patterns = ','.join(f'test/{group}/**/Test*' for group in sorted(selected)) if selected != {'all'} else ''
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f"run={'true' if selected else 'false'}\n")
+              output.write(f'patterns={patterns}\n')
+          print('Tests: ' + (', '.join(sorted(selected)) or 'none (documentation/images only)'))
+
+      - name: Set up Java
+        if: steps.selection.outputs.run == 'true'
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Compile and run tests
+        if: steps.selection.outputs.run == 'true'
+        env:
+          TEST_PATTERNS: ${{ steps.selection.outputs.patterns }}
+        run: |
+          if [[ -n "$TEST_PATTERNS" ]]; then
+            mvn --batch-mode --no-transfer-progress "-Dtest=$TEST_PATTERNS" test
+          else
+            mvn --batch-mode --no-transfer-progress test
+          fi

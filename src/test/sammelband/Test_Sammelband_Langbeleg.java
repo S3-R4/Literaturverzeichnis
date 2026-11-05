@@ -1,5 +1,5 @@
 
-package test;
+package test.sammelband;
 
 import java.util.List;
 import java.util.Optional;

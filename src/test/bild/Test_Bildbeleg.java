@@ -1,4 +1,4 @@
-package test;
+package test.bild;
 
 import static org.junit.Assert.assertEquals;
 

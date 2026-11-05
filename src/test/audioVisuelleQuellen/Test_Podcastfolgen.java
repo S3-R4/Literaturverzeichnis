@@ -11,18 +11,19 @@ import model.Audiovisuell.Podcastfolgen;
 class Test_Podcastfolgen {
 	@Test
 	void inheritsAudiovisualMetadata() {
-		Podcastfolgen folge = new Podcastfolgen() {
-			@Override
-			public String erstelleQuellenangabe() {
-				return getTitel();
-			}
-		};
-		folge.setTitel("Folge 1");
-		folge.setProduzent("Podcast-Team");
-
+		Podcastfolgen folge = new Podcastfolgen();
+		folge.setTitel("TestPodcast");
+		folge.setPodcastFolgenName("Test Folge - Die test folge!");
+		folge.setPodcastFolge(40);
+		folge.setProduzent("Person, M.");
+		folge.addProduzent("AnderePerson");
+		folge.setHerausgebendeOrganisation("Podcast-Team");
+		folge.setErscheinungsDatum("01.01.2029");
+		folge.setUrl("https://www.real-link-not-suspicious.com/fole#40 - testfolge");
+		folge.setAbruffDatum("07.10.2329");
 		assertInstanceOf(Audiovisuell.class, folge);
-		assertEquals("Folge 1", folge.getTitel());
-		assertEquals("Podcast-Team", folge.getProduzent());
-		assertEquals("Folge 1", folge.erstelleQuellenangabe());
+		assertEquals("TestPodcast", folge.getTitel());
+		assertEquals("Person, M.", folge.getProduzent());
+		assertEquals("Person, M., AnderePerson. (01.01.2029) Folge #40 - Test Folge - Die test folge!. [Podcast-Folge] In: TestPodcast Podcast-Team. https://www.real-link-not-suspicious.com/fole#40 - testfolge (07.10.2329).", folge.erstelleQuellenangabe());
 	}
 }

@@ -8,10 +8,8 @@ public abstract class Literatur {
 	public String titel;
 	public LocalDate veroeffentlichungsdatum;
 	public LocalDate abrufdatum;
-	
+
 	abstract String generiereKurzbeleg();
-	
+
 	abstract String generiereLangbeleg();
-	
-	
 }

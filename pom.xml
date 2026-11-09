@@ -32,6 +32,11 @@
             <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
+		<dependency>
+			    <groupId>tools.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+    			<version>3.3.0</version>
+		</dependency>
     </dependencies>
 
     <build>

@@ -1,0 +1,29 @@
+{
+  "Website" : [ {
+    "abrufdatum" : "2026-11-09",
+    "autor" : [ "Ada Lovelace" ],
+    "textart" : "Artigo",
+    "titel" : "Um artigo de exemplo",
+    "url" : "https://example.com/artigo",
+    "veroeffentlichungsdatum" : "2026-11-01",
+    "websitename" : "Site de exemplo"
+  }, {
+    "abrufdatum" : "2026-11-09",
+    "autor" : [ "Rafa testing again" ],
+    "textart" : "Articlehehe",
+    "titel" : "barbod is a cutie patootie",
+    "url" : "https://nonutnovemberisalie/true/day/20",
+    "veroeffentlichungsdatum" : "2026-11-01",
+    "websitename" : "CoolWebsite that I created"
+  } ],
+  "Zeitungsartikel" : [ {
+    "abrufdatum" : null,
+    "autor" : [ "Denis" ],
+    "datum" : "2026-11-08",
+    "seitenzahl" : "p. 5",
+    "titel" : "Notícia de exemplo",
+    "url" : "https://example.com/noticia",
+    "veroeffentlichungsdatum" : "2026-11-08",
+    "zeitung" : "Jornal de exemplo"
+  } ]
+}

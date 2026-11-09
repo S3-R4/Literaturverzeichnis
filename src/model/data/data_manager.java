@@ -57,7 +57,7 @@ public class data_manager {
 	}
 
 	// reads the entry of the given ID
-	public String read_data_by_id(String type, String id) throws IOException {
+	public String read_data_by_id(String id) throws IOException {
 		Objects.requireNonNull(id, "id");
 
 		ObjectNode root = loadData();
@@ -95,7 +95,7 @@ public class data_manager {
 	// This function checks if the file already exists and creates it if not
 	// returns the data as ObjectNode
 	private ObjectNode loadData() throws IOException {
-		if (Files.notExists(quellenFile))
+		if (Files.notExists(quellenFile) || Files.size(quellenFile) == 0)
 			return mapper.createObjectNode();
 
 		JsonNode data = mapper.readTree(quellenFile.toFile());

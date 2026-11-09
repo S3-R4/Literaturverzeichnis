@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
 import java.util.Objects;
 import java.util.UUID;
+import java.util.NoSuchElementException;
 
 import model.Literatur;
 import tools.jackson.databind.JsonNode;
@@ -23,6 +25,8 @@ public class data_manager {
 			.changeDefaultVisibility(visibility -> visibility.withFieldVisibility(JsonAutoDetect.Visibility.ANY))
 			.build();
 
+	// -------------------------------------------------------------------------------------
+	// adds the entry to the json file
 	public String add_data(Literatur entry) throws IOException {
 		Objects.requireNonNull(entry, "entry");
 
@@ -39,24 +43,58 @@ public class data_manager {
 		mapper.writerWithDefaultPrettyPrinter().writeValue(quellenFile.toFile(), root);
 		return id;
 	}
-
-	public String read_data() {
-		Object Jsonobject = mapper.readValue(quellenFile, Object.class);
-		String prettyJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(Jsonobject);
-		return prettyJson;
+	// ------------------------------------------------------------------------------------
+	// reading
+	//this func reads all entries
+	public String read_data() throws IOException {
+		return prettyJson(loadData());
 	}
 
-	// This function checks if the file already exists and if it doesnt, creates a
-	// new one
+	//reads all entries of a given type
+	public String read_data(String datatype) throws IOException {
+		return prettyJson(entriesOfType(loadData(), datatype));
+	}
+
+	//reads the entry of the given ID
+	public String read_data(String type, String id) throws IOException {
+		ArrayNode entries = entriesOfType(loadData(), type);
+		JsonNode idTarget = mapper.valueToTree(id);
+
+		for (JsonNode entry : entries) {
+			if (idTarget.equals(entry.path("id")))
+				return prettyJson(entry);
+		}
+
+		throw new NoSuchElementException(
+				"No entries with ID" + id);
+	}
+
+	private ArrayNode entriesOfType(ObjectNode root, String type) throws IOException {
+		JsonNode entries = root.get(type);
+
+		if (entries == null)
+			return mapper.createArrayNode();
+
+		if (entries instanceof ArrayNode list)
+			return list;
+
+		throw new IOException("The cathegory " + type + " must have a list");
+	}
+
+	private String prettyJson(JsonNode data) {
+		return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
+	}
+	//--------------------------------------------------------------------------------------
+	// This function checks if the file already exists and creates it if not
+	// returns the data as ObjectNode
 	private ObjectNode loadData() throws IOException {
-		if (Files.notExists(quellenFile)) {
+		if (Files.notExists(quellenFile))
 			return mapper.createObjectNode();
-		}
+
 		JsonNode data = mapper.readTree(quellenFile.toFile());
-		if (data instanceof ObjectNode root) {
+
+		if (data instanceof ObjectNode root)
 			return root;
-		}
 		throw new IOException("the JSON file has to contain a root object" + quellenFile);
 	}
-
 }

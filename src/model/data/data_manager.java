@@ -66,10 +66,8 @@ public class data_manager {
 		for (JsonNode category : root.values()) {
 			if (!(category instanceof ArrayNode entries))
 				continue;
-			for (JsonNode entry : entries) {
-				if (idTarget.equals(entry.path("id")))
-					return prettyJson(entry);
-			}
+			int index = findIndex(entries, idTarget);
+			return prettyJson(entries.get(index));
 		}
 		throw new NoSuchElementException(
 				"No entries with ID" + id);
@@ -92,6 +90,31 @@ public class data_manager {
 	}
 
 	// --------------------------------------------------------------------------------------
+	// deletations based on id
+	public boolean delete_data_by_id(String id) throws IOException {
+		Objects.requireNonNull(id, "id");
+
+		ObjectNode root = loadData();
+		JsonNode idTarget = mapper.valueToTree(id);
+
+		for (JsonNode category : root.values()) {
+			if (!(category instanceof ArrayNode entries)) {
+				continue;
+			}
+
+			int index = findIndex(entries, idTarget);
+			if (index >= 0) {
+				entries.remove(index);
+				mapper.writerWithDefaultPrettyPrinter()
+						.writeValue(quellenFile.toFile(), root);
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// --------------------------------------------------------------------------------------
 	// This function checks if the file already exists and creates it if not
 	// returns the data as ObjectNode
 	private ObjectNode loadData() throws IOException {
@@ -103,5 +126,15 @@ public class data_manager {
 		if (data instanceof ObjectNode root)
 			return root;
 		throw new IOException("the JSON file has to contain a root object" + quellenFile);
+	}
+
+	private int findIndex(ArrayNode entries, JsonNode idTarget) {
+		for (int i = 0; i < entries.size(); i++) {
+			if (idTarget.equals(entries.get(i).path("id"))) {
+				return i;
+			}
+		}
+
+		return -1;
 	}
 }

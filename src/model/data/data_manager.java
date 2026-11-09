@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.UUID;
+
 import model.Literatur;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -21,18 +23,21 @@ public class data_manager {
 			.changeDefaultVisibility(visibility -> visibility.withFieldVisibility(JsonAutoDetect.Visibility.ANY))
 			.build();
 
-	public void add_data(Literatur entry) throws IOException {
-
+	public String add_data(Literatur entry) throws IOException {
 		Objects.requireNonNull(entry, "entry");
+
 		String quellenTyp = entry.getClass().getSimpleName();
 		ObjectNode root = loadData();
 
-		ArrayNode entries = root.withArrayProperty(quellenTyp);
-		JsonNode newEntry = mapper.valueToTree(entry);
-		entries.add(newEntry);
+		String id = UUID.randomUUID().toString();
+		ObjectNode newEntry = mapper.valueToTree(entry);
+		newEntry.put("id", id);
+
+		root.withArrayProperty(quellenTyp).add(newEntry);
 
 		Files.createDirectories(quellenFile.getParent());
 		mapper.writerWithDefaultPrettyPrinter().writeValue(quellenFile.toFile(), root);
+		return id;
 	}
 
 	public String read_data() {
@@ -41,9 +46,8 @@ public class data_manager {
 		return prettyJson;
 	}
 
-	
-
-	// This function checks if the file already exists and if it doesnt, creates a new one
+	// This function checks if the file already exists and if it doesnt, creates a
+	// new one
 	private ObjectNode loadData() throws IOException {
 		if (Files.notExists(quellenFile)) {
 			return mapper.createObjectNode();

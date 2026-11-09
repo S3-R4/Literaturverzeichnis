@@ -43,28 +43,34 @@ public class data_manager {
 		mapper.writerWithDefaultPrettyPrinter().writeValue(quellenFile.toFile(), root);
 		return id;
 	}
+
 	// ------------------------------------------------------------------------------------
 	// reading
-	//this func reads all entries
+	// this func reads all entries
 	public String read_data() throws IOException {
 		return prettyJson(loadData());
 	}
 
-	//reads all entries of a given type
+	// reads all entries of a given type
 	public String read_data(String datatype) throws IOException {
 		return prettyJson(entriesOfType(loadData(), datatype));
 	}
 
-	//reads the entry of the given ID
-	public String read_data(String type, String id) throws IOException {
-		ArrayNode entries = entriesOfType(loadData(), type);
+	// reads the entry of the given ID
+	public String read_data_by_id(String type, String id) throws IOException {
+		Objects.requireNonNull(id, "id");
+
+		ObjectNode root = loadData();
 		JsonNode idTarget = mapper.valueToTree(id);
 
-		for (JsonNode entry : entries) {
-			if (idTarget.equals(entry.path("id")))
-				return prettyJson(entry);
+		for (JsonNode category : root.values()) {
+			if (!(category instanceof ArrayNode entries))
+				continue;
+			for (JsonNode entry : entries) {
+				if (idTarget.equals(entry.path("id")))
+					return prettyJson(entry);
+			}
 		}
-
 		throw new NoSuchElementException(
 				"No entries with ID" + id);
 	}
@@ -84,7 +90,8 @@ public class data_manager {
 	private String prettyJson(JsonNode data) {
 		return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
 	}
-	//--------------------------------------------------------------------------------------
+
+	// --------------------------------------------------------------------------------------
 	// This function checks if the file already exists and creates it if not
 	// returns the data as ObjectNode
 	private ObjectNode loadData() throws IOException {

@@ -1,10 +1,10 @@
-package test.audioVisuelleQuellen;
+package testfolder.audioVisuelleQuellen;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import model.Audiovisuell.Audiovisuell;
-
 import org.junit.jupiter.api.Test;
+
+import model.Audiovisuell.Audiovisuell;
 
 class Test_Audiovisuell {
 	private static class TestAudiovisuell extends Audiovisuell {

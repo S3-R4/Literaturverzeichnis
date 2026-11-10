@@ -1,4 +1,4 @@
-package test.audioVisuelleQuellen;
+package testfolder.audioVisuelleQuellen;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

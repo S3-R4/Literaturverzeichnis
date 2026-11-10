@@ -1,4 +1,4 @@
-package test.zeitungsartikel;
+package testfolder.zeitungsartikel;
 
 import org.junit.jupiter.api.Test;
 

@@ -15,7 +15,6 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
-import model.Literatur;
 
 public class data_manager {
 
@@ -67,7 +66,8 @@ public class data_manager {
 			if (!(category instanceof ArrayNode entries))
 				continue;
 			int index = findIndex(entries, idTarget);
-			return prettyJson(entries.get(index));
+			if (index >= 0)
+				return prettyJson(entries.get(index));
 		}
 		throw new NoSuchElementException(
 				"No entries with ID" + id);
@@ -115,6 +115,55 @@ public class data_manager {
 	}
 
 	// --------------------------------------------------------------------------------------
+	//edit
+	public boolean edit_entry(String id, Literatur updatedEntry) throws IOException {
+    Objects.requireNonNull(id, "id");
+    Objects.requireNonNull(updatedEntry, "updatedEntry");
+
+    ObjectNode root = loadData();
+    JsonNode idTarget = mapper.valueToTree(id);
+
+    ArrayNode originalEntries = null;
+    int originalIndex = -1;
+
+    //looks for the entry
+    for (JsonNode category : root.values()) {
+        if (!(category instanceof ArrayNode entries)) {
+            continue;
+        }
+
+        int index = findIndex(entries, idTarget);
+        if (index >= 0) {
+            originalEntries = entries;
+            originalIndex = index;
+            break;
+        }
+    }
+
+    if (originalEntries == null) {
+        return false;
+    }
+
+    // Converts the new data into the entry, but preserves the id
+    ObjectNode replacement = mapper.valueToTree(updatedEntry);
+    replacement.put("id", id);
+
+    String type = updatedEntry.getClass().getSimpleName();
+    ArrayNode targetEntries = root.withArrayProperty(type);
+
+    if (originalEntries == targetEntries) {
+        originalEntries.set(originalIndex, replacement);
+    } else {
+        originalEntries.remove(originalIndex);
+        targetEntries.add(replacement);
+    }
+
+    mapper.writerWithDefaultPrettyPrinter()
+            .writeValue(quellenFile.toFile(), root);
+
+    return true;
+}
+	//---------------------------------------------------------------------------------------
 	// This function checks if the file already exists and creates it if not
 	// returns the data as ObjectNode
 	private ObjectNode loadData() throws IOException {

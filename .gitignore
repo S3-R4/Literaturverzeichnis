@@ -35,7 +35,6 @@ tmp/
 RemoteSystemsTempFiles/
 
 # Eclipse project files
-.project
 .classpath
 
 # ==============================

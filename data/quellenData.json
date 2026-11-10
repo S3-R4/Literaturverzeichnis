@@ -1,20 +1,13 @@
 {
   "Website" : [ {
     "abrufdatum" : "2026-11-09",
-    "autor" : [ "Ada Lovelace" ],
-    "textart" : "Artigo",
-    "titel" : "Um artigo de exemplo",
-    "url" : "https://example.com/artigo",
-    "veroeffentlichungsdatum" : "2026-11-01",
-    "websitename" : "Site de exemplo"
-  }, {
-    "abrufdatum" : "2026-11-09",
-    "autor" : [ "Rafa testing again" ],
+    "autor" : [ "Rafa" ],
     "textart" : "Articlehehe",
-    "titel" : "barbod is a cutie patootie",
+    "titel" : "barbod is a REAL cutie patootie",
     "url" : "https://nonutnovemberisalie/true/day/20",
     "veroeffentlichungsdatum" : "2026-11-01",
-    "websitename" : "CoolWebsite that I created"
+    "websitename" : "Edited damn website muhehehe",
+    "id" : "19266f79-589f-434f-9e57-0b686336e2f6"
   } ],
   "Zeitungsartikel" : [ {
     "abrufdatum" : null,
@@ -24,6 +17,7 @@
     "titel" : "Notícia de exemplo",
     "url" : "https://example.com/noticia",
     "veroeffentlichungsdatum" : "2026-11-08",
-    "zeitung" : "Jornal de exemplo"
+    "zeitung" : "Jornal de exemplo",
+    "id" : "7e72b2ff-4d10-4aea-8b1d-2881ef3d14ef"
   } ]
 }

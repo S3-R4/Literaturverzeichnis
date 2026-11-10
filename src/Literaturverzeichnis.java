@@ -1,4 +1,6 @@
 import view.GUI;
+import view.GUI_Neues_Verzeichnis;
+
 import javax.swing.SwingUtilities;
 
 public class Literaturverzeichnis {

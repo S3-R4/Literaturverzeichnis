@@ -8,12 +8,16 @@ import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+
+import model.data.data_manager;
 
 public class GUI_Verzeichnis_Importieren extends JFrame {
 	final String titel = "Verzeichnis importieren"; 
@@ -58,7 +62,15 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
 	}
 	
 	private void openFileChooser() { //TODO: implement Action later
+		JFileChooser filechooser = new JFileChooser();
 		
+		int result = filechooser.showOpenDialog(null);
+		
+		if(result == JFileChooser.APPROVE_OPTION) {
+			//TODO: filechooser.getAbsolutePath(); to data_manager
+		} else {
+			new JOptionPane("Unexpected Error");
+		}
 	}
 	
 	private void returnToStart() {

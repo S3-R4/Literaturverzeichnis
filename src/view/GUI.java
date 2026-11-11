@@ -25,14 +25,26 @@ public class GUI extends JFrame {
 
         JButton btnVerzeichnisAnlegen = new JButton("Neues Verzeichnis anlegen"); //TODO: implement Action later
         btnVerzeichnisAnlegen.setPreferredSize(new Dimension(245, 48));
+        btnVerzeichnisAnlegen.addActionListener(e -> openVerzeichnisAnlegen());
         pnlButtons.add(btnVerzeichnisAnlegen);
 
         JButton btnVerzeichnisImportieren = new JButton("Verzeichnis importieren"); //TODO: implement Action later
         btnVerzeichnisImportieren.setPreferredSize(new Dimension(245, 48));
+        btnVerzeichnisImportieren.addActionListener(e -> openVerzeichnisImportieren());
         pnlButtons.add(btnVerzeichnisImportieren);
 
         add(pnlButtons, BorderLayout.SOUTH);
 
         setVisible(true);
+    }
+    
+    private void openVerzeichnisAnlegen() {
+    	new GUI_Neues_Verzeichnis();
+    	dispose();
+    }
+    
+    private void openVerzeichnisImportieren() {
+    	new GUI_Verzeichnis_Importieren();
+    	dispose();
     }
 }

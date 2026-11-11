@@ -1,7 +1,9 @@
 package model;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 public class Zeitungsartikel extends Literatur {
 	
@@ -35,8 +37,13 @@ public class Zeitungsartikel extends Literatur {
 		this.autor = autor;
 	}
 
-	public java.time.LocalDate getDatum() {
-		return veroeffentlichungsdatum;
+	public String getDatum() {
+		// Definition des gewünschten Formats und der deutschen Sprache
+        DateTimeFormatter datumstransformator = DateTimeFormatter.ofPattern("yyyy, d.MMMM", Locale.GERMAN);
+        
+        // Formatierung anwenden
+        String transformiertesDatum = veroeffentlichungsdatum.format(datumstransformator);
+		return transformiertesDatum;
 	}
 
 	public void setDatum(java.time.LocalDate datum) {
@@ -116,7 +123,7 @@ public class Zeitungsartikel extends Literatur {
 
 
 	@Override
-	String generiereKurzbeleg() {
+	public String generiereKurzbeleg() {
 		String b = "(";
 		
 		b += getAutorAsStringKurz();

@@ -1,13 +1,20 @@
 package model.Audiovisuell;
 
-public abstract class Audiovisuell {
-	private String titel;
-	private String produzent;
-	private String erscheinungsDatum;
-	private String beitragsArt;
-	private String medium;
-	private String url;
-	private String abruffDatum;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
+
+import model.Literatur;
+public abstract class Audiovisuell extends Literatur{
+	protected String beitragsArt;
+	protected String medium;
+	protected String url;
+
+	// public List<String> autor;
+	// public LocalDate veroeffentlichungsdatum;
+	// public LocalDate abrufdatum;
 
 	public String getTitel() {
 		return titel;
@@ -17,21 +24,38 @@ public abstract class Audiovisuell {
 		this.titel = titel;
 	}
 
-	public String getProduzent() {
-		return produzent;
+	public List<String> getAutor() {
+		return this.autor;
 	}
 
-	public void setProduzent(String produzent) {
-		this.produzent = produzent;
+	public void setAutor(List<String> autoren) {
+        this.autor = new ArrayList<>();
+
+        for(String autor : autoren) {
+            if(!autor.isBlank()) {
+                this.autor.add(autor.trim());
+            }
+        }
+    }
+
+	public LocalDate getVeroeffentlichungsdatum()
+	{
+		return this.veroeffentlichungsdatum;
 	}
 
-	public String getErscheinungsDatum() {
-		return erscheinungsDatum;
-	}
-
-	public void setErscheinungsDatum(String erscheinungsDatum) {
-		this.erscheinungsDatum = erscheinungsDatum;
-	}
+	public void setVeroffentlichungsdatum(LocalDate veroeffentlichungsdatum) throws DateTimeParseException, DateTimeException{
+		try {
+			this.veroeffentlichungsdatum = veroeffentlichungsdatum;
+		}
+        catch (DateTimeParseException e) 
+		{
+			System.out.println("Failed to parse date: " + e.getMessage());
+		}
+		catch(DateTimeException e)
+		{
+			System.out.println("Invalid date: " + e.getMessage());
+		}
+    }
 
 	public String getBeitragsArt() {
 		return beitragsArt;
@@ -57,23 +81,35 @@ public abstract class Audiovisuell {
 		this.url = url;
 	}
 
-	public String getAbruffDatum() {
-		return abruffDatum;
+	public LocalDate getAbruffDatum() {
+		return this.abrufdatum;
 	}
 
-	public void setAbruffDatum(String abruffDatum) {
-		this.abruffDatum = abruffDatum;
+	public void setAbruffDatum(LocalDate abruffDatum) throws DateTimeParseException, DateTimeException{
+		try {
+			this.abrufdatum = abruffDatum;
+		}
+        catch (DateTimeParseException e) 
+		{
+			System.out.println("Failed to parse date: " + e.getMessage());
+		}
+		catch(DateTimeException e)
+		{
+			System.out.println("Invalid date: " + e.getMessage());
+		}
 	}
 
-	public void update() {
+	public abstract String datumFormatierung(LocalDate datum);
+
+	
+	public String getAutorsString(List<String> autors){
+		String autorsString = "";
+
+		for (int i = 0; i < autors.size(); i++){
+			if(i > 0)
+				autorsString += " ,";
+			autorsString += autors.get(i);
+		}
+		return autorsString;
 	}
-
-	public void delete() {
-	}
-
-	public void add() {
-	}
-
-	public abstract String erstelleQuellenangabe();
-
 }

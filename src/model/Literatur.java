@@ -2,11 +2,12 @@ package model;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class Literatur {
 	public List<String> autor;
-	public String titel;
-	public LocalDate veroeffentlichungsdatum;
+	public Optional<String> titel;
+	public Optional<LocalDate> veroeffentlichungsdatum;
 	public LocalDate abrufdatum;
 
 	abstract String generiereKurzbeleg();

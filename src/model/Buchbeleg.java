@@ -1,21 +1,19 @@
 package model;
 
 import java.util.Optional;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Buchbeleg {
-    private List<String> autoren;
-    private Optional<Integer> erscheinungsjahr;
-    private Optional<String> titel;
+public class Buchbeleg extends Literatur {
     private Optional<String> buchverlag;
     private Optional<Integer> auflage;
     private Optional<String> erscheinungsort;
     private Seitenangabe seitenangabe;
 
-    public Buchbeleg(List<String> autoren, Optional<Integer> erscheinungsjahr, Optional<String> titel, Optional<String> buchverlag, Optional<Integer> auflage, Optional<String> erscheinungsort, Optional<Integer> anfang, Optional<Integer> ende){
-        setAutoren(autoren);
-        setErscheinungsjahr(erscheinungsjahr);
+    public Buchbeleg(List<String> autor, Optional<LocalDate> veroeffentlichungsdatum, Optional<String> titel, Optional<String> buchverlag, Optional<Integer> auflage, Optional<String> erscheinungsort, Optional<Integer> anfang, Optional<Integer> ende){
+        setAutoren(autor);
+        setErscheinungsdatum(veroeffentlichungsdatum);
         setTitel(titel);
         setAuflage(auflage);
         setBuchverlag(buchverlag);
@@ -23,27 +21,27 @@ public class Buchbeleg {
         setSeitenangabe(anfang, ende);
     }
 
-    public Buchbeleg(List<String> autoren, Optional<Integer> erscheinungsjahr, Optional<Integer> anfang, Optional<Integer> ende) { //Kurzbeleg
+    public Buchbeleg(List<String> autoren, Optional<LocalDate> erscheinungsjahr, Optional<Integer> anfang, Optional<Integer> ende) { //Kurzbeleg
         setAutoren(autoren);
-        setErscheinungsjahr(erscheinungsjahr);
+        setErscheinungsdatum(erscheinungsjahr);
         setSeitenangabe(anfang, ende);
     }
 
     public void setAutoren(List<String> autoren) {
-        this.autoren = new ArrayList<>();
+        this.autor = new ArrayList<>();
 
         for(String autor : autoren) {
             if(!autor.isBlank()) {
-                this.autoren.add(autor.trim());
+                this.autor.add(autor.trim());
             }
         }
     }
 
-    public void setErscheinungsjahr(Optional<Integer> erscheinungsjahr) throws IllegalArgumentException {
-        if(erscheinungsjahr.isPresent() && erscheinungsjahr.get() <= 0) {
-            throw new IllegalArgumentException("Das Erscheinungsjahr muss größer als 0 sein.");
+    public void setErscheinungsdatum(Optional<LocalDate> erscheinungsdatum) throws IllegalArgumentException {
+        if(erscheinungsdatum.isPresent() && erscheinungsdatum.get().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Das Veröffentlichungsdatum darf nicht in der Zukunft liegen.");
         }
-        this.erscheinungsjahr = erscheinungsjahr;
+        this.veroeffentlichungsdatum = erscheinungsdatum;
     }
 
     public void setTitel(Optional<String> titel) {
@@ -73,7 +71,7 @@ public class Buchbeleg {
     }
 
     public String getAutoren() {
-        return this.autoren.isEmpty() ? 
+        return this.autor.isEmpty() ? 
             "o.A." : formatiereAutoren();
     }
 
@@ -81,27 +79,27 @@ public class Buchbeleg {
         final int MAX_AUTORENANZAHL = 3;
         String ergebnis = "";
 
-        for(int i = 0; i < this.autoren.size(); i++) {
+        for(int i = 0; i < this.autor.size(); i++) {
             if(i >= MAX_AUTORENANZAHL) {
                 return ergebnis += ", et al.";
             }
 
             if(i > 0) {
                 ergebnis += 
-                    i == this.autoren.size() - 1 ? 
+                    i == this.autor.size() - 1 ? 
                     " & " : ", ";
             }
-            ergebnis += this.autoren.get(i);
+            ergebnis += this.autor.get(i);
         }
 
         return ergebnis;
     }
 
     public String getErscheinungsjahr() {
-        return this.erscheinungsjahr.isPresent() ? 
-            this.erscheinungsjahr.get().toString() : "o.J.";
+        return this.veroeffentlichungsdatum.isPresent() ? 
+            String.valueOf(this.veroeffentlichungsdatum.get().getYear()) : "o.J.";
     }
-
+    
     public String getTitel() {
         return this.titel.orElse("o.T.");
     }
@@ -123,8 +121,20 @@ public class Buchbeleg {
         return this.seitenangabe.getSeitenangabe();
     }
 
-    public String getBelegLang() throws IllegalArgumentException {
-        if(this.titel.isEmpty() || this.buchverlag.isEmpty()) {
+
+ 
+
+	@Override
+	public String generiereKurzbeleg() {
+		String beleg = getAutoren() + ", " + getErscheinungsjahr();
+        String seiten = getSeitenangabe();
+
+        return seiten.isEmpty() ? "(" + beleg + ")" : "(" + beleg + ", " + "S." + seiten + ")";
+	}
+
+	@Override
+	public String generiereLangbeleg() {
+		if(this.titel.isEmpty() || this.buchverlag.isEmpty()) {
             throw new IllegalArgumentException("Für einen Langbeleg müssen Titel und Verlag angegeben sein.");
         }
 
@@ -140,12 +150,5 @@ public class Buchbeleg {
                 getErscheinungsort() + ": " +
                 getBuchverlag() + "."
                 );
-    }
-
-    public String getBelegKurz() {
-        String beleg = getAutoren() + ", " + getErscheinungsjahr();
-        String seiten = getSeitenangabe();
-
-        return seiten.isEmpty() ? "(" + beleg + ")" : "(" + beleg + ", " + "S." + seiten + ")";
     }
 }

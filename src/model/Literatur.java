@@ -4,12 +4,12 @@ import java.time.LocalDate;
 import java.util.List;
 
 public abstract class Literatur {
-	public List<String> autor;
-	public String titel;
-	public LocalDate veroeffentlichungsdatum;
-	public LocalDate abrufdatum;
+	protected List<String> autor;
+	protected String titel;
+	protected LocalDate veroeffentlichungsdatum;
+	protected LocalDate abrufdatum;
 
-	abstract String generiereKurzbeleg();
+	public abstract String generiereKurzbeleg();
 
-	abstract String generiereLangbeleg();
+	public abstract String generiereLangbeleg();
 }

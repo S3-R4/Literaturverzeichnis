@@ -7,6 +7,6 @@ import javax.swing.SwingUtilities;
 public class Literaturverzeichnis {
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(GUI_Verzeichnis_Importieren::new);
+        SwingUtilities.invokeLater(GUI::new);
     }
 }

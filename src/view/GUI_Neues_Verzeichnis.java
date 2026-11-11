@@ -17,7 +17,7 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 	
 	public GUI_Neues_Verzeichnis() {
 		setTitle(titel);
-        setSize(600, 280);
+        setSize(600, 200);
         setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new GridLayout(0,2,10,10));
@@ -30,6 +30,7 @@ public class GUI_Neues_Verzeichnis extends JFrame {
         this.add(tfdVerzeichnisname);
         
         JButton btnSpreicherort = new JButton("Speicherort wählen"); //TODO: implement Action later
+        btnSpreicherort.addActionListener(e -> openFileChooser());
         this.add(btnSpreicherort);
         
         JLabel lblDateipfad = new JLabel(" <Dateipfad> ");
@@ -41,14 +42,30 @@ public class GUI_Neues_Verzeichnis extends JFrame {
         JPanel pnlHolder = new JPanel();
         pnlHolder.setLayout(new GridLayout(0,2));
         
-        JButton btnAbbrechen = new JButton("Abbrechen"); //TODO: implement Action later
+        JButton btnAbbrechen = new JButton("Abbrechen");
+        btnAbbrechen.addActionListener(e -> returnToStart());
         pnlHolder.add(btnAbbrechen);
         
-        JButton btnBestätigen = new JButton("Bestätigen"); //TODO: implement Action later
-        pnlHolder.add(btnBestätigen);
+        JButton btnBestaetigen = new JButton("Bestätigen");
+        btnBestaetigen.addActionListener(e -> confirmSelection());
+        pnlHolder.add(btnBestaetigen);
 
         this.add(pnlHolder);
         
+        setLocationRelativeTo(null); 
         setVisible(true);
+	}
+	
+	private void returnToStart() {
+		new GUI();
+		dispose();
+	}
+	
+	private void confirmSelection() { //TODO: implement Action later
+		;
+	}
+	
+	private void openFileChooser() { //TODO: implement Action later
+		;
 	}
 }

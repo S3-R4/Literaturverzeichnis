@@ -30,24 +30,43 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
         
         JLabel lblVerzeichnis = new JLabel(" <Verzeichnisname> ", SwingConstants.CENTER);
         lblVerzeichnis.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        lblVerzeichnis.setOpaque(true);
+        lblVerzeichnis.setBackground(new Color(224,224,224));
         oberesPanel.add(lblVerzeichnis);
         
-        JButton btnDateiAuswaehlen = new JButton("Datei wählen"); //TODO: implement Action later
+        JButton btnDateiAuswaehlen = new JButton("Datei wählen");
+        btnDateiAuswaehlen.addActionListener(e -> openFileChooser());
         oberesPanel.add(btnDateiAuswaehlen);
         
         this.add(oberesPanel, BorderLayout.NORTH);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         
-        JButton btnAbbrechen = new JButton("Abbrechen"); //TODO: implement Action later
-        JButton btnBestätigen = new JButton("Bestätigen"); //TODO: implement Action later
+        JButton btnAbbrechen = new JButton("Abbrechen");
+        btnAbbrechen.addActionListener(e -> returnToStart());
+        
+        JButton btnBestaetigen = new JButton("Bestätigen");
+        btnBestaetigen.addActionListener(e -> confirmSelection());
         
         buttonPanel.add(btnAbbrechen);
-        buttonPanel.add(btnBestätigen);
+        buttonPanel.add(btnBestaetigen);
         
         this.add(buttonPanel, BorderLayout.SOUTH);
         
         setLocationRelativeTo(null); 
         setVisible(true);
+	}
+	
+	private void openFileChooser() { //TODO: implement Action later
+		
+	}
+	
+	private void returnToStart() {
+		new GUI();
+		dispose();
+	}
+	
+	private void confirmSelection() { //TODO: implement Action later
+		;
 	}
 }

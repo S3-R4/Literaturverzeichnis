@@ -1,8 +1,7 @@
 package model;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
 
 public class BildQuelle extends Literatur {
 
@@ -172,13 +171,11 @@ public void setAnbieter(String anbieter) {
 Anbieter = anbieter == null ? "" : anbieter;
 }
 
-public String getAbrufdatum() {
-    if (abrufdatum == null) {
-        return "";
+public String DatumFormatierung() {
+	if (abrufdatum == null)
+		return "";
+	return "[" + abrufdatum.format(java.time.format.DateTimeFormatter.ofPattern("d.M.yyyy")) + "].";
     }
-
-    return "[" + abrufdatum.format(java.time.format.DateTimeFormatter.ofPattern("d.M.yyyy")) + "].";
-}
 
 public String setAbrufdatum(String abrufdatum) {
 if (abrufdatum == null || abrufdatum.trim().isEmpty()) {
@@ -203,15 +200,11 @@ return getUrheber1() + getUrheber2() + getUrheber3() + getUrheber4() + getMehrUr
 
 @Override
 public String generiereKurzbeleg() {
-    if (veroeffentlichungsdatum == null || veroeffentlichungsdatum.isEmpty()) { 
-    return "(" + getUrheber1() + ")";
-    }
-
-    return "(" + getUrheber1() + ", "+ veroeffentlichungsdatum.get().getYear() + ")";
+return "(" + getUrheber1() + ", "+ veroeffentlichungsdatum.getYear() + ")";
 }
 
 @Override
-public String generiereLangbeleg() { 
+public String generiereLangbeleg() {
 return getbeleg();
 }
 }

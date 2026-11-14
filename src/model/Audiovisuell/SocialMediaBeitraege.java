@@ -47,4 +47,16 @@ public class SocialMediaBeitraege extends Audiovisuell {
 	public void setBeschreibung(String beschreibung) {
 		this.beschreibung = beschreibung;
 	}
+
+	@Override
+	public int getAnzahlAusgefuellterAttribute() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getAnzahlRelevanterAttribute() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

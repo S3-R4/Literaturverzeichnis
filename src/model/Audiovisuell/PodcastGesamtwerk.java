@@ -33,4 +33,16 @@ public class PodcastGesamtwerk extends Audiovisuell {
 	public void setHerausgebendeOrganisation(String herausgebendeOrganisation) {
 		this.herausgebendeOrganisation = herausgebendeOrganisation;
 	}
+
+	@Override
+	public int getAnzahlAusgefuellterAttribute() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getAnzahlRelevanterAttribute() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

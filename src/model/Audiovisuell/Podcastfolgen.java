@@ -91,4 +91,16 @@ public class Podcastfolgen extends Audiovisuell {
 	public void setPodcastFolgenName(String podcastFolgenName) {
 		this.podcastFolgenName = podcastFolgenName;
 	}
+
+	@Override
+	public int getAnzahlAusgefuellterAttribute() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getAnzahlRelevanterAttribute() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

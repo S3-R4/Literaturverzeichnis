@@ -53,4 +53,16 @@ public class FIlmsVideos extends Audiovisuell {
 		return ("(" + datum.getYear() + ")");
 	}
 
+	@Override
+	public int getAnzahlAusgefuellterAttribute() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getAnzahlRelevanterAttribute() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }

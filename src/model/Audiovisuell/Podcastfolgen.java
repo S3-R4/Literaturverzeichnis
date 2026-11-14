@@ -31,7 +31,6 @@ public class Podcastfolgen extends Audiovisuell {
 		this.podcastFolge = podcastFolge;
 	}
 
-
 	public void addProduzent(String produzent) {
 		getAutor().add(produzent);
 	}
@@ -39,7 +38,6 @@ public class Podcastfolgen extends Audiovisuell {
 	public void removeProduzent(int index) {
 		getAutor().remove(index);
 	}
-
 
 	@Override
 	public String generiereLangbeleg() {
@@ -69,6 +67,8 @@ public class Podcastfolgen extends Audiovisuell {
 
 	@Override
 	public String datumFormatierung(LocalDate datum) {
+		if (abrufdatum == null)
+			return "";
 		return "(" + datum.format(DateTimeFormatter.ofPattern("yyyy, d, MMMM", Locale.GERMAN)) + ")";
 	}
 
@@ -84,11 +84,9 @@ public class Podcastfolgen extends Audiovisuell {
 				+ " & " + autor.get(autor.size() - 1);
 	}
 
-
 	public String getPodcastFolgenName() {
 		return podcastFolgenName;
 	}
-
 
 	public void setPodcastFolgenName(String podcastFolgenName) {
 		this.podcastFolgenName = podcastFolgenName;

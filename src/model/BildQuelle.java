@@ -147,11 +147,10 @@ public void setAnbieter(String anbieter) {
 Anbieter = anbieter;
 }
 
-public LocalDate getAbrufdatum() {
-if (abrufdatum == null) {
-return "";
-        }
-return "[" + abrufdatum.format(java.time.format.DateTimeFormatter.ofPattern("d.M.yyyy")) + "].";
+public String DatumFormatierung() {
+	if (abrufdatum == null)
+		return "";
+	return "[" + abrufdatum.format(java.time.format.DateTimeFormatter.ofPattern("d.M.yyyy")) + "].";
     }
 
 public void setAbrufdatum(String abrufdatum) {

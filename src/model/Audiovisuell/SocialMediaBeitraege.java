@@ -27,6 +27,8 @@ public class SocialMediaBeitraege extends Audiovisuell {
 
 	@Override
 	public String datumFormatierung(LocalDate datum) {
+		if (abrufdatum == null)
+			return "";
 		return "(" + datum.getYear() + ")";
 	}
 

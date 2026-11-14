@@ -1,4 +1,5 @@
 import view.GUI;
+import view.GUI_Literaturverwaltung;
 import view.GUI_Neues_Verzeichnis;
 import view.GUI_Verzeichnis_Importieren;
 

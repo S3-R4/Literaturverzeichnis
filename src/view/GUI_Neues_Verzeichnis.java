@@ -83,6 +83,8 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 	}
 	
 	private void confirmSelection() { //TODO: implement Action later
+		new GUI_Literaturverwaltung();
+		dispose();
 		; // should create a new data for a new Verzeichnis
 	}
 	

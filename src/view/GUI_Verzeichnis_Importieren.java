@@ -79,6 +79,8 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
 	}
 	
 	private void confirmSelection() { //TODO: implement Action later
+		new GUI_Literaturverwaltung();
+		dispose();
 		; // should load the exisiting data in the filepath or what ever
 	}
 }

@@ -151,24 +151,22 @@ public int getAnzahlAusgefuellterAttribute() {
 int anzahl = 0;
 
 if (autor != null && autor.stream().anyMatch(a -> a != null && !a.isBlank())) {
-    anzahl++;
+anzahl++;
 }
 
 if (veroeffentlichungsdatum != null) {
-    anzahl++;
+anzahl++;
 }
 
 if (titel != null && !titel.isBlank()) {
+anzahl++;
+}
+
+if (buchverlag != null && buchverlag.isPresent()&& !buchverlag.get().isBlank()) {
     anzahl++;
 }
 
-if (buchverlag != null && buchverlag.isPresent()
-        && !buchverlag.get().isBlank()) {
-    anzahl++;
-}
-
-if (erscheinungsort != null && erscheinungsort.isPresent()
-        && !erscheinungsort.get().isBlank()) {
+if (erscheinungsort != null && erscheinungsort.isPresent()&& !erscheinungsort.get().isBlank()) {
     anzahl++;
 }
 

@@ -19,7 +19,7 @@ autor.add("");
     }
 }
 
-public BildQuelle(String urheber1, String urheber2, String urheber3, String urheber4, boolean mehrurheber,String titel, String medienart, LocalDate veroeffentlichungsdatum, String herausgeber, String anbieter,String abrufdatum) {
+public BildQuelle(String urheber1, String urheber2, String urheber3, String urheber4, boolean mehrurheber,String titel, String medienart, LocalDate veroeffentlichungsdatum, String herausgeber, String anbieter) {
 this();
 
 setUrheber1(urheber1);
@@ -35,9 +35,7 @@ this.MehrUrheber = mehrurheber;
 this.titel = titel;
 this.veroeffentlichungsdatum = veroeffentlichungsdatum;
 
-if (abrufdatum != null && !abrufdatum.trim().isEmpty()) {
-    setAbrufdatum(abrufdatum);
-}
+this.abrufdatum = LocalDate.now();
 }
 
 public List<String> validiere() {
@@ -208,7 +206,7 @@ this.abrufdatum = LocalDate.parse(abrufdatum,java.time.format.DateTimeFormatter.
 return null;
 }
 
-public String getbeleg() {return getUrheber1() + getUrheber2() + getUrheber3()+ getUrheber4() + getMehrUrheber(MehrUrheber)+ getErscheinungsjahr() + getTitel() + getMedienart()+ getHerausgeber() + getAnbieter() + getAbrufdatum();
+public String getbeleg() {return getUrheber1() + getUrheber2() + getUrheber3()+ getUrheber4() + getMehrUrheber(MehrUrheber)+ getErscheinungsjahr() + getTitel() + getMedienart()+ getHerausgeber() + getAnbieter() + DatumFormatierung();
 }
 
 @Override
@@ -253,9 +251,8 @@ if (veroeffentlichungsdatum != null) {
 }
 
 // Herausgeber oder Anbieter
-if ((Herausgeber != null && !Herausgeber.isBlank())
-        || (Anbieter != null && !Anbieter.isBlank())) {
-    anzahl++;
+if ((Herausgeber != null && !Herausgeber.isBlank())|| (Anbieter != null && !Anbieter.isBlank())) {
+anzahl++;
 }
 
 return anzahl;

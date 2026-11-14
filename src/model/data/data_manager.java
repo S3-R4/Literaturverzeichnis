@@ -18,7 +18,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 public class data_manager {
 
-	private final Path quellenFile = Path.of("data", "quellenData.json");
+	private Path quellenFile = Path.of("data", "quellenDataStandard.json");
 
 	private final ObjectMapper mapper = JsonMapper.builder()
 			.changeDefaultVisibility(visibility -> visibility.withFieldVisibility(JsonAutoDetect.Visibility.ANY))
@@ -115,55 +115,56 @@ public class data_manager {
 	}
 
 	// --------------------------------------------------------------------------------------
-	//edit
+	// edit
 	public boolean edit_entry(String id, Literatur updatedEntry) throws IOException {
-    Objects.requireNonNull(id, "id");
-    Objects.requireNonNull(updatedEntry, "updatedEntry");
+		Objects.requireNonNull(id, "id");
+		Objects.requireNonNull(updatedEntry, "updatedEntry");
 
-    ObjectNode root = loadData();
-    JsonNode idTarget = mapper.valueToTree(id);
+		ObjectNode root = loadData();
+		JsonNode idTarget = mapper.valueToTree(id);
 
-    ArrayNode originalEntries = null;
-    int originalIndex = -1;
+		ArrayNode originalEntries = null;
+		int originalIndex = -1;
 
-    //looks for the entry
-    for (JsonNode category : root.values()) {
-        if (!(category instanceof ArrayNode entries)) {
-            continue;
-        }
+		// looks for the entry
+		for (JsonNode category : root.values()) {
+			if (!(category instanceof ArrayNode entries)) {
+				continue;
+			}
 
-        int index = findIndex(entries, idTarget);
-        if (index >= 0) {
-            originalEntries = entries;
-            originalIndex = index;
-            break;
-        }
-    }
+			int index = findIndex(entries, idTarget);
+			if (index >= 0) {
+				originalEntries = entries;
+				originalIndex = index;
+				break;
+			}
+		}
 
-    if (originalEntries == null) {
-        return false;
-    }
+		if (originalEntries == null) {
+			return false;
+		}
 
-    // Converts the new data into the entry, but preserves the id
-    ObjectNode replacement = mapper.valueToTree(updatedEntry);
-    replacement.put("id", id);
+		// Converts the new data into the entry, but preserves the id
+		ObjectNode replacement = mapper.valueToTree(updatedEntry);
+		replacement.put("id", id);
 
-    String type = updatedEntry.getClass().getSimpleName();
-    ArrayNode targetEntries = root.withArrayProperty(type);
+		String type = updatedEntry.getClass().getSimpleName();
+		ArrayNode targetEntries = root.withArrayProperty(type);
 
-    if (originalEntries == targetEntries) {
-        originalEntries.set(originalIndex, replacement);
-    } else {
-        originalEntries.remove(originalIndex);
-        targetEntries.add(replacement);
-    }
+		if (originalEntries == targetEntries) {
+			originalEntries.set(originalIndex, replacement);
+		} else {
+			originalEntries.remove(originalIndex);
+			targetEntries.add(replacement);
+		}
 
-    mapper.writerWithDefaultPrettyPrinter()
-            .writeValue(quellenFile.toFile(), root);
+		mapper.writerWithDefaultPrettyPrinter()
+				.writeValue(quellenFile.toFile(), root);
 
-    return true;
-}
-	//---------------------------------------------------------------------------------------
+		return true;
+	}
+
+	// ---------------------------------------------------------------------------------------
 	// This function checks if the file already exists and creates it if not
 	// returns the data as ObjectNode
 	private ObjectNode loadData() throws IOException {
@@ -185,5 +186,13 @@ public class data_manager {
 		}
 
 		return -1;
+	}
+
+	// ---------------------------------------------------------------------------------------
+	// import
+	public void importJson(Path path) {
+		if (path == null)
+			return;
+		this.quellenFile = path;
 	}
 }

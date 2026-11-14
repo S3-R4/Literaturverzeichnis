@@ -5,47 +5,49 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
 
 public class GUI extends JFrame {
-    final String maintitle = "Literaturverzeichnis";
+	final String maintitle = "Literaturverzeichnis";
 
-    public GUI() {
-        setTitle(maintitle);
-        setSize(600, 280);
-        setResizable(false);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+	public GUI() {
+		setTitle(maintitle);
+		setSize(600, 280);
+		setResizable(false);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setLayout(new BorderLayout());
 
-        JLabel lblWindowLabel = new JLabel(maintitle);
-        lblWindowLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        lblWindowLabel.setFont(new Font("SansSerif", Font.BOLD, 26));
-        add(lblWindowLabel, BorderLayout.CENTER);
+		JLabel lblWindowLabel = new JLabel(maintitle);
+		lblWindowLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		lblWindowLabel.setFont(new Font("SansSerif", Font.BOLD, 26));
+		add(lblWindowLabel, BorderLayout.CENTER);
 
-        JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 40));
+		JPanel pnlButtons = new JPanel(new GridLayout(1, 2, 20, 0));
+		pnlButtons.setBorder(BorderFactory.createEmptyBorder(0, 15, 40, 15));
 
-        JButton btnVerzeichnisAnlegen = new JButton("Neues Verzeichnis anlegen");
-        btnVerzeichnisAnlegen.setPreferredSize(new Dimension(245, 48));
-        btnVerzeichnisAnlegen.addActionListener(e -> openVerzeichnisAnlegen());
-        pnlButtons.add(btnVerzeichnisAnlegen);
+		JButton btnVerzeichnisAnlegen = new JButton("Neues Verzeichnis anlegen");
+		btnVerzeichnisAnlegen.setPreferredSize(new Dimension(245, 48));
+		btnVerzeichnisAnlegen.addActionListener(e -> openVerzeichnisAnlegen());
+		pnlButtons.add(btnVerzeichnisAnlegen);
 
-        JButton btnVerzeichnisImportieren = new JButton("Verzeichnis importieren");
-        btnVerzeichnisImportieren.setPreferredSize(new Dimension(245, 48));
-        btnVerzeichnisImportieren.addActionListener(e -> openVerzeichnisImportieren());
-        pnlButtons.add(btnVerzeichnisImportieren);
+		JButton btnVerzeichnisImportieren = new JButton("Verzeichnis importieren");
+		btnVerzeichnisImportieren.setPreferredSize(new Dimension(245, 48));
+		btnVerzeichnisImportieren.addActionListener(e -> openVerzeichnisImportieren());
+		pnlButtons.add(btnVerzeichnisImportieren);
 
-        add(pnlButtons, BorderLayout.SOUTH);
+		add(pnlButtons, BorderLayout.SOUTH);
 
-        setLocationRelativeTo(null); 
-        setVisible(true);
-    }
-    
-    private void openVerzeichnisAnlegen() {
-    	new GUI_Neues_Verzeichnis();
-    	dispose();
-    }
-    
-    private void openVerzeichnisImportieren() {
-    	new GUI_Verzeichnis_Importieren();
-    	dispose();
-    }
+		setLocationRelativeTo(null);
+		setVisible(true);
+	}
+
+	private void openVerzeichnisAnlegen() {
+		new GUI_Neues_Verzeichnis();
+		dispose();
+	}
+
+	private void openVerzeichnisImportieren() {
+		new GUI_Verzeichnis_Importieren();
+		dispose();
+	}
 }

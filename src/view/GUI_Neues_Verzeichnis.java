@@ -10,8 +10,10 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -81,10 +83,18 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 	}
 	
 	private void confirmSelection() { //TODO: implement Action later
-		;
+		; // should create a new data for a new Verzeichnis
 	}
 	
-	private void openFileChooser() { //TODO: implement Action later
-		;
+	private void openFileChooser() {
+		JFileChooser filechooser = new JFileChooser();
+		
+		int result = filechooser.showOpenDialog(null);
+		
+		if(result == JFileChooser.APPROVE_OPTION) {
+			//TODO: filechooser.getAbsolutePath(); to data_manager
+		} else {
+			new JOptionPane("Unexpected Error");
+		}
 	}
 }

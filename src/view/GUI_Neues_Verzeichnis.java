@@ -8,6 +8,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.nio.file.Path;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -17,9 +18,15 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import model.data.data_manager;
 
 public class GUI_Neues_Verzeichnis extends JFrame {
 	final String titel = "Neues Verzeichnis anlegen"; 
+	private Path chosenFile;
+	private final JLabel lblVerzeichnis = new JLabel(" <Verzeichnisname> ", SwingConstants.CENTER);
+
 	
 	public GUI_Neues_Verzeichnis() {
 		setTitle(titel);
@@ -83,20 +90,26 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 	}
 	
 	private void confirmSelection() { //TODO: implement Action later
-		new GUI_Literaturverwaltung();
+		if (chosenFile == null) {
+			JOptionPane.showMessageDialog(this, "Bitte zuerst eine JSON-Datei auswählen.");
+			return;
+		}
+
+		data_manager manager = new data_manager();
+		manager.importJson(chosenFile);
+		new GUI_Literaturverwaltung(manager);
 		dispose();
-		; // should create a new data for a new Verzeichnis
 	}
 	
 	private void openFileChooser() {
-		JFileChooser filechooser = new JFileChooser();
-		
-		int result = filechooser.showOpenDialog(null);
-		
-		if(result == JFileChooser.APPROVE_OPTION) {
-			//TODO: filechooser.getAbsolutePath(); to data_manager
-		} else {
-			new JOptionPane("Unexpected Error");
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setAcceptAllFileFilterUsed(false);
+		fileChooser.setFileFilter(new FileNameExtensionFilter("JSON-Dateien (*.json)", "json"));
+
+		if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+			chosenFile = fileChooser.getSelectedFile().toPath();
+			lblVerzeichnis.setText(chosenFile.getFileName().toString());
+			lblVerzeichnis.setToolTipText(chosenFile.toString());
 		}
 	}
 }

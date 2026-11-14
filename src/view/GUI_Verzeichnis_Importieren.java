@@ -68,8 +68,7 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
 	private void openFileChooser() {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setAcceptAllFileFilterUsed(false);
-		fileChooser.setFileFilter(
-				new FileNameExtensionFilter("JSON-Dateien (*.json)", "json"));
+		fileChooser.setFileFilter(new FileNameExtensionFilter("JSON-Dateien (*.json)", "json"));
 
 		if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
 			chosenFile = fileChooser.getSelectedFile().toPath();

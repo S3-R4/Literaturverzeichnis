@@ -6,10 +6,10 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 
-public class GUI extends JFrame {
+public class GUI_Startfenster extends JFrame {
     final String maintitle = "Literaturverzeichnis";
 
-    public GUI() {
+    public GUI_Startfenster() {
         setTitle(maintitle);
         setSize(600, 280);
         setResizable(false);

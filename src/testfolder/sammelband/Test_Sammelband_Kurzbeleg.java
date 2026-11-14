@@ -1,6 +1,6 @@
-
 package testfolder.sammelband;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,11 +15,11 @@ public class Test_Sammelband_Kurzbeleg {
 	@Test
 	public void testNormalerKurzbeleg() {
 
-		Sammelbandbeleg beleg = new Sammelbandbeleg(List.of("Müller"), Optional.of(2020), Optional.of("Informatik"),
+		Sammelbandbeleg beleg = new Sammelbandbeleg(List.of("Müller"), Optional.of(LocalDate.of(2020, 1, 1)), Optional.of("Informatik"),
 				List.of("Lahm"), Optional.of("Grundlagen"), Optional.of(2), Optional.of("Springer"),
 				Optional.of("Berlin"), Optional.of(19), Optional.of(31));
 
-		assertEquals("(Müller, 2020, S. 19-31)", beleg.getBelegKurz());
+		assertEquals("(Müller, 2020, S. 19-31)", beleg.generiereKurzbeleg());
 	}
 
 	@Test
@@ -29,16 +29,16 @@ public class Test_Sammelband_Kurzbeleg {
 				List.of("Lahm"), Optional.of("Grundlagen"), Optional.empty(), Optional.of("Springer"),
 				Optional.of("Berlin"), Optional.of(19), Optional.of(31));
 
-		assertEquals("(Müller, o.J., S. 19-31)", beleg.getBelegKurz());
+		assertEquals("(Müller, o.J., S. 19-31)", beleg.generiereKurzbeleg());
 	}
 
 	@Test
 	public void testOhneSeitenangabe() {
 
-		Sammelbandbeleg beleg = new Sammelbandbeleg(List.of("Müller"), Optional.of(2020), Optional.of("Informatik"),
+		Sammelbandbeleg beleg = new Sammelbandbeleg(List.of("Müller"), Optional.of(LocalDate.of(2020, 1, 1)), Optional.of("Informatik"),
 				List.of("Lahm"), Optional.of("Grundlagen"), Optional.empty(), Optional.of("Springer"),
 				Optional.of("Berlin"), Optional.empty(), Optional.empty());
 
-		assertEquals("(Müller, 2020)", beleg.getBelegKurz());
+		assertEquals("(Müller, 2020)", beleg.generiereKurzbeleg());
 	}
 }

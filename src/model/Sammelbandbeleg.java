@@ -1,14 +1,14 @@
 package model;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class Sammelbandbeleg {
+public class Sammelbandbeleg extends Literatur {
 
-	private List<String> autoren;
+
 	private List<String> herausgeber;
-	private Optional<Integer> erscheinungsjahr;
 	private Optional<String> beitragstitel;
 	private Optional<String> sammelbandtitel;
 	private Optional<String> verlag;
@@ -17,14 +17,14 @@ public class Sammelbandbeleg {
 	private Seitenangabe seitenangabe;
 
 	// Konstruktor für einen vollständigen Beleg
-	public Sammelbandbeleg(List<String> autoren, Optional<Integer> erscheinungsjahr, Optional<String> beitragstitel,
+	public Sammelbandbeleg(List<String> autoren, Optional<LocalDate> veroeffentlichungsdatum, Optional<String> beitragstitel,
 			List<String> herausgeber, Optional<String> sammelbandtitel, Optional<Integer> auflage,
 			Optional<String> verlag, Optional<String> erscheinungsort, Optional<Integer> anfang,
 			Optional<Integer> ende) {
 
 		setAutoren(autoren);
 		setHerausgeber(herausgeber);
-		setErscheinungsjahr(erscheinungsjahr);
+		setVeroeffentlichungsdatum(veroeffentlichungsdatum.orElse(null));
 		setBeitragstitel(beitragstitel);
 		setSammelbandtitel(sammelbandtitel);
 		setAuflage(auflage);
@@ -33,20 +33,6 @@ public class Sammelbandbeleg {
 		setSeitenangabe(anfang, ende);
 	}
 
-	// Konstruktor für einen Kurzbeleg
-	public Sammelbandbeleg(List<String> autoren, Optional<Integer> erscheinungsjahr, Optional<Integer> anfang,
-			Optional<Integer> ende) {
-
-		setAutoren(autoren);
-		setHerausgeber(new ArrayList<>());
-		setErscheinungsjahr(erscheinungsjahr);
-		setBeitragstitel(Optional.empty());
-		setSammelbandtitel(Optional.empty());
-		setAuflage(Optional.empty());
-		setVerlag(Optional.empty());
-		setErscheinungsort(Optional.empty());
-		setSeitenangabe(anfang, ende);
-	}
 
 	private List<String> bereinigePersonen(List<String> personen) {
 
@@ -65,16 +51,13 @@ public class Sammelbandbeleg {
 	}
 
 	public void setAutoren(List<String> autoren) {
-		this.autoren = bereinigePersonen(autoren);
+		this.autor = bereinigePersonen(autoren);
 	}
 
 	public void setHerausgeber(List<String> herausgeber) {
 		this.herausgeber = bereinigePersonen(herausgeber);
 	}
 
-	public void setErscheinungsjahr(Optional<Integer> erscheinungsjahr) {
-		this.erscheinungsjahr = erscheinungsjahr;
-	}
 
 	public void setBeitragstitel(Optional<String> beitragstitel) {
 		this.beitragstitel = bereinigeText(beitragstitel);
@@ -112,14 +95,7 @@ public class Sammelbandbeleg {
 		this.seitenangabe = new Seitenangabe(anfang, ende);
 	}
 
-	public String getAutoren() {
 
-		if (autoren.isEmpty()) {
-			return "";
-		}
-
-		return String.join(", ", autoren);
-	}
 
 	public String getHerausgeber() {
 
@@ -132,8 +108,8 @@ public class Sammelbandbeleg {
 
 	public String getErscheinungsjahr() {
 
-		if (erscheinungsjahr.isPresent()) {
-			return erscheinungsjahr.get().toString();
+		if (veroeffentlichungsdatum != null) {
+			return String.valueOf(veroeffentlichungsdatum.getYear());
 		}
 
 		return "";
@@ -168,8 +144,29 @@ public class Sammelbandbeleg {
 		return seitenangabe.getSeitenangabe();
 	}
 
-	// Erzeugt einen Langbeleg
-	public String getBelegLang() {
+
+
+
+	@Override
+	public String generiereKurzbeleg() {
+		String beleg;
+		if (getErscheinungsjahr().isEmpty()) {
+			beleg = getAutoren() + ", o.J.";
+		} else {
+			beleg = getAutoren() + ", " + getErscheinungsjahr();
+		}
+		
+		String seiten = getSeitenangabe();
+
+		if (seiten.isEmpty()) {
+			return "(" + beleg + ")";
+		}
+
+		return "(" + beleg + ", S. " + seiten + ")";
+	}
+
+	@Override
+	public String generiereLangbeleg() {
 
 		if (beitragstitel.isEmpty() || sammelbandtitel.isEmpty() || verlag.isEmpty() || herausgeber.isEmpty()) {
 
@@ -177,10 +174,10 @@ public class Sammelbandbeleg {
 					"Es müssen Beitragstitel, " + "Sammelbandtitel, Herausgeber und Verlag angegeben sein.");
 		}
 
-		String bandtitelMitAuflage = getSammelbandtitel() + ".";
+		String bandtitelMitAuflage = getSammelbandtitel() + " (";
 
 		if (auflage.isPresent()) {
-			bandtitelMitAuflage += " " + getAuflage() + ". Aufl.";
+			bandtitelMitAuflage += getAuflage() + ". Aufl.";
 		}
 
 		String seiten = getSeitenangabe();
@@ -190,22 +187,36 @@ public class Sammelbandbeleg {
 		if (!seiten.isEmpty()) {
 			seitenTeil = ", S. " + seiten;
 		}
-
-		return getAutoren() + " (" + getErscheinungsjahr() + "): " + getBeitragstitel() + ". In: " + getHerausgeber()
-				+ " (Hrsg.): " + bandtitelMitAuflage + " " + getErscheinungsort() + ": " + getBuchverlag() + seitenTeil
+		
+		if (getAutoren().equals("")) {
+			return "o.A. (" + getErscheinungsjahr() + "). " + getBeitragstitel() + ". In " + getHerausgeber()
+			+ " (Hrsg.), " + bandtitelMitAuflage + seitenTeil + "). " + getErscheinungsort() + ": " + getBuchverlag()
+			+ ".";
+		}
+		
+		return getAutoren() + " (" + getErscheinungsjahr() + "). " + getBeitragstitel() + ". In " + getHerausgeber()
+				+ " (Hrsg.), " + bandtitelMitAuflage + seitenTeil + "). " + getErscheinungsort() + ": " + getBuchverlag()
 				+ ".";
 	}
 
-	// Erzeugt einen Kurzbeleg
-	public String getBelegKurz() {
+	private String getAutoren() {
 
-		String beleg = getAutoren() + ", " + getErscheinungsjahr();
-		String seiten = getSeitenangabe();
-
-		if (seiten.isEmpty()) {
-			return "(" + beleg + ")";
+		if (autor.isEmpty()) {
+			return "";
 		}
 
-		return "(" + beleg + ", S. " + seiten + ")";
+		return String.join(", ", autor);
+	}
+
+	@Override
+	public int getAnzahlAusgefuellterAttribute() {
+		// TODO Auto-generated method stub
+				return 0;
+	}
+
+	@Override
+	public int getAnzahlRelevanterAttribute() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

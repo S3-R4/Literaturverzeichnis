@@ -10,16 +10,17 @@ public class Validierung {
 public Validierung(){
 
 }
-public static String istJahrGueltig(String jahr) {
-if (jahr == null || jahr.isEmpty()) {
-        return Fehlermeldungen.getJahrFehler();
+public static String pruefeJahr(String jahr) {
+if (jahr == null || jahr.trim().isEmpty()) {
+    return Fehlermeldungen.getJahrFehler();
     }
 
     try {
+    jahr = jahr.trim();
     int jahrzahl = Integer.parseInt(jahr);
 
     if (jahrzahl < 1000 || jahrzahl > 2027) {
-        return Fehlermeldungen.getJahrFehler();
+    return Fehlermeldungen.getJahrFehler();
         }
 
     } catch (NumberFormatException e) {
@@ -30,11 +31,12 @@ if (jahr == null || jahr.isEmpty()) {
 }
 
 public static String pruefeDatum(String datum) {
-if (datum == null || datum.isEmpty()) {
+if (datum == null || datum.trim().isEmpty()) {
     return Fehlermeldungen.getDatumFehler();
     }
 
     try {
+        datum = datum.trim();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d.M.uuuu").withResolverStyle(ResolverStyle.STRICT);
 
         LocalDate.parse(datum, formatter);
@@ -69,13 +71,6 @@ if (url == null || url.trim().isEmpty()) {
 
     } catch (URISyntaxException e) {
         return Fehlermeldungen.getURLFehler();
-    }
-
-    return null;
-}
-public static String pruefeEingabe(String eingabe) { //For empty inputs
-    if (eingabe == null || eingabe.trim().isEmpty()) {
-        return Fehlermeldungen.getLeeresFeld();
     }
 
     return null;

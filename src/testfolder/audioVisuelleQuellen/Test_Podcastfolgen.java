@@ -3,6 +3,9 @@ package testfolder.audioVisuelleQuellen;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import model.Audiovisuell.Audiovisuell;
@@ -15,15 +18,16 @@ class Test_Podcastfolgen {
 		folge.setTitel("TestPodcast");
 		folge.setPodcastFolgenName("Test Folge - Die test folge!");
 		folge.setPodcastFolge(40);
-		folge.setProduzent("Person, M.");
-		folge.addProduzent("AnderePerson");
+		folge.setAutor(List.of("Person, M.", "AnderePerson."));
 		folge.setHerausgebendeOrganisation("Podcast-Team");
-		folge.setErscheinungsDatum("01.01.2029");
+		folge.setVeroffentlichungsdatum(LocalDate.of(2029, 1, 1));
 		folge.setUrl("https://www.real-link-not-suspicious.com/fole#40 - testfolge");
-		folge.setAbruffDatum("07.10.2329");
+		folge.setAbruffDatum(LocalDate.of(2329, 10, 7));
 		assertInstanceOf(Audiovisuell.class, folge);
 		assertEquals("TestPodcast", folge.getTitel());
-		assertEquals("Person, M.", folge.getProduzent());
-		assertEquals("Person, M., AnderePerson. (01.01.2029) Folge #40 - Test Folge - Die test folge!. [Podcast-Folge] In: TestPodcast Podcast-Team. https://www.real-link-not-suspicious.com/fole#40 - testfolge (07.10.2329).", folge.erstelleQuellenangabe());
+		assertEquals(List.of("Person, M.", "AnderePerson."), folge.getAutor());
+		assertEquals("Person, M. & AnderePerson. (2029, 1, Januar). Folge #40 - Test Folge - Die test folge!. [Podcast-Folge]. In: TestPodcast Podcast-Team. https://www.real-link-not-suspicious.com/fole#40 - testfolge (07.10.2329).",
+				folge.generiereLangbeleg());
+		assertEquals("Person, M. & AnderePerson. (2029, 1, Januar) Folge #40", folge.generiereKurzbeleg());
 	}
 }

@@ -2,6 +2,7 @@ package view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 
@@ -28,23 +29,24 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
 	private final JLabel lblVerzeichnis = new JLabel(" <Verzeichnisname> ", SwingConstants.CENTER);
 
 	public GUI_Verzeichnis_Importieren() {
-		setTitle("Verzeichnis importieren");
+		setTitle(titel);
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLayout(new BorderLayout(10, 10));
-		setSize(800, 800);
+		setSize(550, 200);
 		((JComponent) getContentPane()).setBorder(new EmptyBorder(15, 15, 15, 15));
 
-		JPanel oberesPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+		JPanel oberesPanel = new JPanel(new BorderLayout(10, 0));
 
 		lblVerzeichnis.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 		lblVerzeichnis.setOpaque(true);
 		lblVerzeichnis.setBackground(new Color(224, 224, 224));
-		oberesPanel.add(lblVerzeichnis);
-
+		lblVerzeichnis.setPreferredSize(new Dimension(400, 30));
+		oberesPanel.add(lblVerzeichnis, BorderLayout.CENTER);
+		
 		JButton btnDateiAuswaehlen = new JButton("Datei wählen");
 		btnDateiAuswaehlen.addActionListener(e -> openFileChooser());
-		oberesPanel.add(btnDateiAuswaehlen);
+		oberesPanel.add(btnDateiAuswaehlen, BorderLayout.EAST);
 
 		add(oberesPanel, BorderLayout.NORTH);
 

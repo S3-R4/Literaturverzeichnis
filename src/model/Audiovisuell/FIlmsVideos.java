@@ -13,17 +13,17 @@ public class FIlmsVideos extends Audiovisuell {
 	// public LocalDate veroeffentlichungsdatum;
 	// public LocalDate abrufdatum;
 
-	@Override 
-	public String generiereLangbeleg(){
+	@Override
+	public String generiereLangbeleg() {
 		if (getUrl() != null) {
-			return  getAutorsString(autor)+ ". " +
+			return getAutorsString(autor) + ". " +
 					datumFormatierung(veroeffentlichungsdatum) + ". " +
 					getTitel() + " [" +
 					getBeitragsArt() + "]. " +
 					getProduktionsfirma() + ". " +
 					getUrl() + ".";
 		} else {
-			return	getAutorsString(autor) + ". " +
+			return getAutorsString(autor) + ". " +
 					datumFormatierung(veroeffentlichungsdatum) + ". " +
 					getTitel() + " [" +
 					getBeitragsArt() + "]. " +
@@ -31,12 +31,11 @@ public class FIlmsVideos extends Audiovisuell {
 		}
 	}
 
-	@Override 
-	public String generiereKurzbeleg(){
-			return	getAutorsString(autor) + ". " +
-					datumFormatierung(veroeffentlichungsdatum) + ". " +
-					getTitel() + " [";
-		}
+	@Override
+	public String generiereKurzbeleg() {
+		return getAutorsString(autor) + ". " +
+				datumFormatierung(veroeffentlichungsdatum) + ". " +
+				getTitel() + " [";
 	}
 
 	public String getProduktionsfirma() {
@@ -47,8 +46,8 @@ public class FIlmsVideos extends Audiovisuell {
 		this.produktionsfirma = produktionsfirma;
 	}
 
-	@Override 
-	public String datumFormatierung(LocalDate datum){
+	@Override
+	public String datumFormatierung(LocalDate datum) {
 		return ("(" + datum.getYear() + ")");
 	}
 

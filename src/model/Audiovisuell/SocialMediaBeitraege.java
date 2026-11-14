@@ -1,18 +1,33 @@
 package model.Audiovisuell;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 public class SocialMediaBeitraege extends Audiovisuell {
 	private String text;
 	private String beschreibung;
 
 	@Override
-	public String erstelleQuellenangabe() {
-		return getProduzent() + ". " +
-				getErscheinungsDatum() + ". " +
+	public String generiereLangbeleg() {
+		return getAutorsString(autor) + ". " +
+				datumFormatierung(veroeffentlichungsdatum) + ". " +
 				getTitel() + ". [" +
 				getBeitragsArt() + "]. " +
 				getMedium() +
 				getUrl() + " " +
-				getAbruffDatum();
+				getAbruffDatum().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+	}
+
+	@Override
+	public String generiereKurzbeleg() {
+		return getAutorsString(autor) + ". " +
+				datumFormatierung(veroeffentlichungsdatum) + ". " +
+				getTitel();
+	}
+
+	@Override
+	public String datumFormatierung(LocalDate datum) {
+		return "(" + datum.getYear() + ")";
 	}
 
 	public String getText() {

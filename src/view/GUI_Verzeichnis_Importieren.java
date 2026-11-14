@@ -74,7 +74,7 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
 	}
 	
 	private void returnToStart() {
-		new GUI();
+		new GUI_Startfenster();
 		dispose();
 	}
 	

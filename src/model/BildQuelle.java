@@ -1,5 +1,6 @@
 package model;
 import java.util.ArrayList;
+import java.time.LocalDate;
 
 public class BildQuelle extends Literatur {
 
@@ -146,7 +147,7 @@ public void setAnbieter(String anbieter) {
 Anbieter = anbieter;
 }
 
-public String getAbrufdatum() {
+public LocalDate getAbrufdatum() {
 if (abrufdatum == null) {
 return "";
         }
@@ -173,7 +174,7 @@ return "(" + getUrheber1() + ", "+ veroeffentlichungsdatum.getYear() + ")";
 }
 
 @Override
-public String generiereLangbeleg() { 
+public String generiereLangbeleg() {
 return getbeleg();
 }
 }

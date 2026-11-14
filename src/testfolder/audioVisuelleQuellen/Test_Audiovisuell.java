@@ -25,6 +25,18 @@ class Test_Audiovisuell {
 		public String datumFormatierung(LocalDate datum) {
 			return "(" + datum.getYear() + ")";
 		}
+
+		@Override
+		public int getAnzahlAusgefuellterAttribute() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public int getAnzahlRelevanterAttribute() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
 	}
 
 	@Test

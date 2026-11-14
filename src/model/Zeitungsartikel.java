@@ -176,4 +176,22 @@ public class Zeitungsartikel extends Literatur {
 			b += ". " + url;
 		return b;
 	}
+@Override
+public int getAnzahlAusgefuellterAttribute() {
+int anzahl = 0;
+
+if (autor != null && autor.stream().anyMatch(a -> a != null && !a.isBlank())) anzahl++;
+if (veroeffentlichungsdatum != null) anzahl++;
+if (titel != null && !titel.isBlank()) anzahl++;
+if (zeitung != null && !zeitung.isBlank()) anzahl++;
+if (seitenzahl != null && !seitenzahl.isBlank()) anzahl++;
+if (url != null && !url.isBlank()) anzahl++;
+
+return anzahl;
+}
+
+@Override
+public int getAnzahlRelevanterAttribute() {
+return 6;
+}
 }

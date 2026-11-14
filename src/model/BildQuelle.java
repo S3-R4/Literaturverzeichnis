@@ -1,5 +1,7 @@
 package model;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class BildQuelle extends Literatur {
 
@@ -14,7 +16,7 @@ for (int i = 0; i < 4; i++) {
 autor.add("");}
 }
 
-public BildQuelle(String urheber1, String urheber2,String urheber3, String urheber4, boolean mehrurheber,String titel, String medienart, String erscheinungsjahr,String herausgeber, String anbieter, String abrufdatum) {
+public BildQuelle(String urheber1, String urheber2,String urheber3, String urheber4, boolean mehrurheber,Optional<String> titel, String medienart, Optional<LocalDate> veroeffentlichungsdatum,String herausgeber, String anbieter, String abrufdatum) {
 this();
 
 setUrheber1(urheber1);
@@ -22,16 +24,11 @@ setUrheber2(urheber2);
 setUrheber3(urheber3);
 setUrheber4(urheber4);
 
-MehrUrheber = mehrurheber;
-this.titel = titel;
-Medienart = medienart;
-Herausgeber = herausgeber;
-Anbieter = anbieter;
+this.titel = titel == null ? Optional.empty() : titel;
+this.veroeffentlichungsdatum = veroeffentlichungsdatum == null? Optional.empty(): veroeffentlichungsdatum;
 
-if (erscheinungsjahr != null && !erscheinungsjahr.isEmpty()) {
-this.veroeffentlichungsdatum =
-java.time.LocalDate.of(
-Integer.parseInt(erscheinungsjahr), 1, 1);
+if (veroeffentlichungsdatum != null) {
+    this.veroeffentlichungsdatum = veroeffentlichungsdatum;
 }
 
 if (abrufdatum != null && !abrufdatum.isEmpty()) {
@@ -95,13 +92,12 @@ MehrUrheber = mehrurheber;
 }
 
 public String getTitel() {
-return titel;
+    return titel.orElse("");
 }
 
 public void setTitel(String titel) {
-this.titel = titel;
+    this.titel = Optional.ofNullable(titel);
 }
-
 public String getMedienart() {
 if (Medienart.equals("")) {
 return "";
@@ -114,18 +110,20 @@ Medienart = medienart;
 }
 
 public String getErscheinungsjahr() {
-if (veroeffentlichungsdatum == null) {
-    return "";
-        }
-    return " (" + veroeffentlichungsdatum.getYear() + "). ";
+    if (veroeffentlichungsdatum.isEmpty()) {
+        return "";
     }
+    return " (" + veroeffentlichungsdatum.get().getYear() + "). ";
+}
 
 public void setErscheinungsjahr(String erscheinungsjahr) {
-if (erscheinungsjahr == null || erscheinungsjahr.isEmpty()) {
-veroeffentlichungsdatum = null;
-    } else {veroeffentlichungsdatum = java.time.LocalDate.of(Integer.parseInt(erscheinungsjahr), 1, 1);
-        }
+    if (erscheinungsjahr == null || erscheinungsjahr.isEmpty()) {
+        veroeffentlichungsdatum = Optional.empty();
+    } else {
+        veroeffentlichungsdatum = Optional.of(LocalDate.of(Integer.parseInt(erscheinungsjahr), 1, 1)
+        );
     }
+}
 
 public String getHerausgeber() {
 if (Herausgeber.equals("")) {
@@ -147,19 +145,20 @@ Anbieter = anbieter;
 }
 
 public String getAbrufdatum() {
-if (abrufdatum == null) {
-return "";
-        }
-return "[" + abrufdatum.format(java.time.format.DateTimeFormatter.ofPattern("d.M.yyyy")) + "].";
+    if (abrufdatum == null) {
+        return "";
     }
+
+    return "[" + abrufdatum.format(
+        java.time.format.DateTimeFormatter.ofPattern("d.M.yyyy")
+    ) + "].";
+}
 
 public void setAbrufdatum(String abrufdatum) {
 if (abrufdatum == null || abrufdatum.isEmpty()) {
     this.abrufdatum = null;
         } else {
-        this.abrufdatum = java.time.LocalDate.parse(
-        abrufdatum,
-        java.time.format.DateTimeFormatter.ofPattern("d.M.yyyy"));
+        this.abrufdatum = java.time.LocalDate.parse(abrufdatum,java.time.format.DateTimeFormatter.ofPattern("d.M.yyyy"));
     }
 }
 
@@ -169,7 +168,11 @@ return getUrheber1() + getUrheber2() + getUrheber3() + getUrheber4() + getMehrUr
 
 @Override
 public String generiereKurzbeleg() {
-return "(" + getUrheber1() + ", "+ veroeffentlichungsdatum.getYear() + ")";
+    if (veroeffentlichungsdatum.isEmpty()) {
+        return "(" + getUrheber1() + ")";
+    }
+
+    return "(" + getUrheber1() + ", "+ veroeffentlichungsdatum.get().getYear() + ")";
 }
 
 @Override

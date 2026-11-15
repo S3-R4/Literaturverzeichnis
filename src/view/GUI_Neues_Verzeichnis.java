@@ -84,11 +84,17 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 
 	}
 	
+	/*
+	 * Open the start window
+	 */
 	private void returnToStart() {
 		new GUI_Startfenster();
 		dispose();
 	}
 	
+	/*
+	 * if user chose a location to save the new file -> open the Literaturverwaltung
+	 */
 	private void confirmSelection() { //TODO: implement Action later
 		if (chosenFile == null) {
 			JOptionPane.showMessageDialog(this, "Bitte zuerst eine JSON-Datei auswählen.");
@@ -101,6 +107,9 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 		dispose();
 	}
 	
+	/*
+	 * craet a fileChooser to select a file to save the Quellenverzeichnis
+	 */
 	private void openFileChooser() {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setAcceptAllFileFilterUsed(false);

@@ -67,6 +67,9 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
 		setVisible(true);
 	}
 
+	/*
+	 * craet a fileChooser to select a file to save the Quellenverzeichnis
+	 */
 	private void openFileChooser() {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setAcceptAllFileFilterUsed(false);
@@ -79,11 +82,17 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
 		}
 	}
 
+	/*
+	 * Open the start window
+	 */
 	private void returnToStart() {
 		new GUI_Startfenster();
 		dispose();
 	}
 
+	/*
+	 * if user chose Literaturveruzeichnis to import -> open the Literaturverwaltung
+	 */
 	private void confirmSelection() {
 		if (chosenFile == null) {
 			JOptionPane.showMessageDialog(this, "Bitte zuerst eine JSON-Datei auswählen.");

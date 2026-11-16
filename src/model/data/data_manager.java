@@ -165,8 +165,8 @@ public class data_manager {
 	}
 
 	// ---------------------------------------------------------------------------------------
-	// This function checks if the file already exists and creates it if not
-	// returns the data as ObjectNode
+	// Loads the JSON data, or returns an empty object if the file is missing or
+	// empty.
 	private ObjectNode loadData() throws IOException {
 		if (Files.notExists(quellenFile) || Files.size(quellenFile) == 0)
 			return mapper.createObjectNode();
@@ -191,8 +191,28 @@ public class data_manager {
 	// ---------------------------------------------------------------------------------------
 	// import
 	public void importJson(Path path) {
-		if (path == null)
-			return;
+		Objects.requireNonNull(path, "path");
 		this.quellenFile = path;
+	}
+
+	public boolean createJson(Path path) throws IOException {
+		Objects.requireNonNull(path, "path");
+
+		Path parent = path.getParent();
+		if (parent != null) {
+			Files.createDirectories(parent);
+		}
+
+		try {
+			Files.writeString(
+					path,
+					"{}",
+					java.nio.file.StandardOpenOption.CREATE_NEW);
+		} catch (java.nio.file.FileAlreadyExistsException e) {
+			return false;
+		}
+
+		this.quellenFile = path;
+		return true;
 	}
 }

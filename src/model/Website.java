@@ -2,8 +2,10 @@
 package model;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 public class Website extends Literatur {
@@ -71,7 +73,7 @@ if (autor == null || autor.isEmpty()) {
 
 // Veröffentlichung
 if (veroeffentlichungsdatum != null) {
-	textBaustein += "(" + veroeffentlichungsdatum + "). ";
+	textBaustein += "(" + getVeroeffentlichungsDatum() + "). ";
 }
 
 // Textart
@@ -92,7 +94,7 @@ textBaustein += url + " ";
 
 // Aufrufdatum
 if (abrufdatum != null) {
-	textBaustein += "(" + abrufdatum + ").";
+	textBaustein += "(" + getAbrufDatum() + ").";
 }
 
 return textBaustein;
@@ -111,7 +113,7 @@ public String generiereKurzbeleg() {
 
 	// Veröffentlichung
 	if (veroeffentlichungsdatum != null) {
-		textbaustein += "(" + veroeffentlichungsdatum + ")";
+		textbaustein += "(" + getVeroeffentlichungsDatum() + ")";
 	}
 
 	return textbaustein;
@@ -151,5 +153,23 @@ public int getAnzahlAusgefuellterAttribute() {
 @Override
 public int getAnzahlRelevanterAttribute() {
 	return 6;
+}
+
+public String getVeroeffentlichungsDatum() {
+	// Definition des gewünschten Formats und der deutschen Sprache
+    DateTimeFormatter datumstransformator = DateTimeFormatter.ofPattern("yyyy, d. MMMM", Locale.GERMAN);
+    
+    // Formatierung anwenden
+    String transformiertesDatum = veroeffentlichungsdatum.format(datumstransformator);
+	return transformiertesDatum;
+}
+
+public String getAbrufDatum() {
+	// Definition des gewünschten Formats und der deutschen Sprache
+	DateTimeFormatter datumstransformator = DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.GERMAN);
+    
+    // Formatierung anwenden
+    String transformiertesDatum = abrufdatum.format(datumstransformator);
+	return transformiertesDatum;
 }
 }

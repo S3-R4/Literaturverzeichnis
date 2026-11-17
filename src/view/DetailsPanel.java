@@ -11,6 +11,9 @@ import java.time.LocalDate;
 import model.Literatur;
 import model.Buchbeleg;
 import model.Website;
+import model.BildQuelle;
+import model.Zeitungsartikel;
+import model.Audiovisuell.*;
 import javax.swing.*;
 
 final class DetailsPanel extends JPanel {
@@ -21,6 +24,15 @@ final class DetailsPanel extends JPanel {
     private final JLabel sourceType = new JLabel();
 
     private final Consumer<Literatur> saveChanges;
+    private final Consumer<Literatur> addSource;
+    private final JPanel sourceTypePanel = new JPanel(new BorderLayout());
+    private final JComboBox<String> creationTypeComboBox = new JComboBox<>(new String[] {
+        "Quellentyp wählen…", "Buchbeleg", "Website", "BildQuelle", "Zeitungsartikel",
+        "FIlmsVideos", "Youtube", "PodcastGesamtwerk", "Podcastfolgen",
+        "SocialMediaBeitraege", "Sammelbandbeleg"
+    });
+    private final LinkedHashMap<String, String> creationDraft = new LinkedHashMap<>();
+    private boolean creating;
     private final Consumer<Boolean> editingChanged;
     private final JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
     private final JLabel inputError = new JLabel();
@@ -30,9 +42,11 @@ final class DetailsPanel extends JPanel {
     private Literatur currentSource;
     private boolean editing;
 
-    DetailsPanel(Consumer<Literatur> saveChanges, Consumer<Boolean> editingChanged) {
+    DetailsPanel(Consumer<Literatur> saveChanges, Consumer<Literatur> addSource,
+            Consumer<Boolean> editingChanged) {
         super(new BorderLayout(0, 16));
         this.saveChanges = saveChanges;
+        this.addSource = addSource;
         this.editingChanged = editingChanged;
         setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         setBackground(new Color(0xE6E6E6));
@@ -53,7 +67,13 @@ final class DetailsPanel extends JPanel {
         sourceTitle.setFont(getFont().deriveFont(Font.BOLD, 13f));
         sourceType.setFont(getFont());
         sourceHeading.add(sourceTitle);
-        sourceHeading.add(sourceType);
+        sourceTypePanel.setOpaque(false);
+        sourceTypePanel.add(sourceType, BorderLayout.CENTER);
+        sourceHeading.add(sourceTypePanel);
+        creationTypeComboBox.getAccessibleContext().setAccessibleName("Quellentyp für neuen Verweis");
+        creationTypeComboBox.addActionListener(event -> {
+            if (creating) showCreationFields();
+        });
         JPanel header = new JPanel(new BorderLayout(0, 14));
         header.setOpaque(false);
         header.add(headingPanel, BorderLayout.NORTH);
@@ -108,6 +128,17 @@ final class DetailsPanel extends JPanel {
             showDetails("", "", Map.of(), "");
             return;
         }
+        LinkedHashMap<String, String> attributes = readAttributes(source);
+        String shortCitation;
+        try {
+            shortCitation = source.generiereKurzbeleg();
+        } catch (RuntimeException error) {
+            shortCitation = "Kurzbeleg konnte nicht erstellt werden: " + error.getMessage();
+        }
+        showDetails(source.getTitel(), source.getClass().getSimpleName(), attributes, shortCitation);
+    }
+
+    private LinkedHashMap<String, String> readAttributes(Literatur source) {
         LinkedHashMap<String, String> attributes = new LinkedHashMap<>();
         String authors = source.getAutor() == null ? "" : String.join(", ", source.getAutor().stream()
                 .filter(author -> author != null && !author.isBlank()).toList());
@@ -124,14 +155,32 @@ final class DetailsPanel extends JPanel {
             attributes.put("Websitename", website.getWebsitename());
             attributes.put("URL", website.getUrl());
             attributes.put("Textart", website.getTextart());
+        } else if (source instanceof BildQuelle image) {
+            attributes.put("Medienart", image.getMedienart());
+            attributes.put("Herausgeber", image.getHerausgeber());
+            attributes.put("Anbieter", image.getAnbieter());
+        } else if (source instanceof Zeitungsartikel article) {
+            attributes.put("Zeitung", article.getZeitung());
+            attributes.put("Seitenzahl", article.getSeitenzahl());
+            attributes.put("URL", article.getUrl());
+        } else if (source instanceof Audiovisuell media) {
+            attributes.put("Beitragsart", media.getBeitragsArt());
+            attributes.put("Medium", media.getMedium());
+            attributes.put("URL", media.getUrl());
+            if (media instanceof FIlmsVideos film) {
+                attributes.put("Produktionsfirma", film.getProduktionsfirma());
+            } else if (media instanceof PodcastGesamtwerk podcast) {
+                attributes.put("Herausgebende Organisation", podcast.getHerausgebendeOrganisation());
+            } else if (media instanceof Podcastfolgen episode) {
+                attributes.put("Herausgebende Organisation", episode.getHerausgebendeOrganisation());
+                attributes.put("Folgennummer", Integer.toString(episode.getPodcastFolge()));
+                attributes.put("Folgentitel", episode.getPodcastFolgenName());
+            } else if (media instanceof SocialMediaBeitraege post) {
+                attributes.put("Text", post.getText());
+                attributes.put("Beschreibung", post.getBeschreibung());
+            }
         }
-        String shortCitation;
-        try {
-            shortCitation = source.generiereKurzbeleg();
-        } catch (RuntimeException error) {
-            shortCitation = "Kurzbeleg konnte nicht erstellt werden: " + error.getMessage();
-        }
-        showDetails(source.getTitel(), source.getClass().getSimpleName(), attributes, shortCitation);
+        return attributes;
     }
 
     private String formatDate(LocalDate date) {
@@ -142,10 +191,15 @@ final class DetailsPanel extends JPanel {
         shownAttributes = attributes;
         sourceTitle.setText(title);
         sourceType.setText(type);
+        sourceTypePanel.removeAll();
+        sourceTypePanel.add(creating ? creationTypeComboBox : sourceType, BorderLayout.CENTER);
+        sourceTypePanel.revalidate();
+        sourceTypePanel.repaint();
         attributesPanel.removeAll();
         editFields.clear();
         if (attributes.isEmpty()) {
-            JLabel prompt = new JLabel("Bitte einen Eintrag auswählen.");
+            JLabel prompt = new JLabel(creating
+                    ? "Bitte einen Quellentyp auswählen." : "Bitte einen Eintrag auswählen.");
             prompt.setFont(getFont());
             attributesPanel.add(prompt);
         }
@@ -196,6 +250,50 @@ final class DetailsPanel extends JPanel {
         attributesPanel.add(Box.createVerticalStrut(12));
     }
 
+    void beginCreation() {
+        if (editing) return;
+        creating = true;
+        creationDraft.clear();
+        setEditing(true);
+        creationTypeComboBox.setSelectedIndex(0);
+        showCreationFields();
+    }
+
+    private void showCreationFields() {
+        for (Map.Entry<String, JTextField> entry : editFields.entrySet()) {
+            creationDraft.put(entry.getKey(), entry.getValue().getText());
+        }
+        inputError.setText("");
+        LinkedHashMap<String, String> attributes = new LinkedHashMap<>();
+        if (creationTypeComboBox.getSelectedIndex() > 0) {
+            if ("Sammelbandbeleg".equals(creationTypeComboBox.getSelectedItem())) {
+                // shortcut: enable this form once Sammelbandbeleg extends Literatur on this branch.
+                inputError.setText("Sammelbandbeleg ist hier noch kein Literatur-Typ.");
+            } else {
+                attributes = readAttributes(createBlankSource((String) creationTypeComboBox.getSelectedItem()));
+                attributes.replaceAll((name, value) -> creationDraft.getOrDefault(name, ""));
+            }
+        }
+        showDetails("Neuen Verweis erstellen", "", attributes, "");
+        updateActions();
+    }
+
+    private Literatur createBlankSource(String type) {
+        return switch (type) {
+            case "Buchbeleg" -> new Buchbeleg(List.of(), Optional.empty(), Optional.empty(),
+                    Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+            case "Website" -> new Website(List.of(), "", Optional.empty(), "", null, null, "");
+            case "BildQuelle" -> new BildQuelle();
+            case "Zeitungsartikel" -> new Zeitungsartikel(null, "", "", "", "", List.of());
+            case "FIlmsVideos" -> new FIlmsVideos();
+            case "Youtube" -> new Youtube();
+            case "PodcastGesamtwerk" -> new PodcastGesamtwerk();
+            case "Podcastfolgen" -> new Podcastfolgen();
+            case "SocialMediaBeitraege" -> new SocialMediaBeitraege();
+            default -> throw new IllegalArgumentException("Unbekannter Quellentyp: " + type);
+        };
+    }
+
     private void beginEditing() {
         LinkedHashMap<String, String> values = new LinkedHashMap<>(shownAttributes);
         List<String> authors = currentSource.getAutor();
@@ -212,6 +310,8 @@ final class DetailsPanel extends JPanel {
     }
 
     private void cancelEditing() {
+        creating = false;
+        creationDraft.clear();
         setEditing(false);
         showSource(currentSource);
     }
@@ -219,27 +319,78 @@ final class DetailsPanel extends JPanel {
     private void acceptEditing() {
         Literatur replacement;
         try {
-            replacement = readEditedSource();
+            replacement = readFormSource();
         } catch (IllegalArgumentException | java.time.DateTimeException error) {
             inputError.setText(error.getMessage() == null ? "Auflage und Seitenangabe prüfen." : error.getMessage());
             inputError.setToolTipText(inputError.getText());
             return;
         }
+        boolean newSource = creating;
+        creating = false;
+        creationDraft.clear();
         setEditing(false);
-        saveChanges.accept(replacement);
+        if (newSource) {
+            addSource.accept(replacement);
+        } else {
+            saveChanges.accept(replacement);
+        }
         showSource(replacement);
     }
 
-    private Literatur readEditedSource() {
+    private Literatur readFormSource() {
         List<String> authors = new ArrayList<>();
         for (String author : inputText("Autor / Herausgeber").split(";")) {
             if (!author.isBlank()) authors.add(author.trim());
         }
         Optional<LocalDate> published = readDate("Veröffentlichungsdatum");
         Optional<LocalDate> retrieved = readDate("Abrufdatum");
-        if (currentSource instanceof Website) {
+        String type = creating ? (String) creationTypeComboBox.getSelectedItem()
+                : currentSource.getClass().getSimpleName();
+        if (type.equals(Website.class.getSimpleName())) {
             return new Website(authors, inputText("Websitename"), readText("Titel"),
                     inputText("URL"), retrieved.orElse(null), published.orElse(null), inputText("Textart"));
+        }
+        if (!type.equals("Buchbeleg")) {
+            Literatur source = createBlankSource(type);
+            if (source instanceof BildQuelle image) {
+                if (authors.size() > 4) {
+                    throw new IllegalArgumentException("Bildquellen unterstützen hier höchstens vier Urheber.");
+                }
+                image.setUrheber1(authors.size() > 0 ? authors.get(0) : "");
+                image.setUrheber2(authors.size() > 1 ? authors.get(1) : "");
+                image.setUrheber3(authors.size() > 2 ? authors.get(2) : "");
+                image.setUrheber4(authors.size() > 3 ? authors.get(3) : "");
+                image.setMedienart(inputText("Medienart"));
+                image.setHerausgeber(inputText("Herausgeber"));
+                image.setAnbieter(inputText("Anbieter"));
+            } else {
+                source.setAutor(authors);
+            }
+            source.setTitel(inputText("Titel"));
+            source.setVeroeffentlichungsdatum(published.orElse(null));
+            source.setAbrufdatum(retrieved.orElse(null));
+            if (source instanceof Zeitungsartikel article) {
+                article.setZeitung(inputText("Zeitung"));
+                article.setSeitenzahl(inputText("Seitenzahl"));
+                article.setUrl(inputText("URL"));
+            } else if (source instanceof Audiovisuell media) {
+                media.setBeitragsArt(inputText("Beitragsart"));
+                media.setMedium(inputText("Medium"));
+                media.setUrl(inputText("URL"));
+                if (media instanceof FIlmsVideos film) {
+                    film.setProduktionsfirma(inputText("Produktionsfirma"));
+                } else if (media instanceof PodcastGesamtwerk podcast) {
+                    podcast.setHerausgebendeOrganisation(inputText("Herausgebende Organisation"));
+                } else if (media instanceof Podcastfolgen episode) {
+                    episode.setHerausgebendeOrganisation(inputText("Herausgebende Organisation"));
+                    episode.setPodcastFolge(readNumber(inputText("Folgennummer")).orElse(0));
+                    episode.setPodcastFolgenName(inputText("Folgentitel"));
+                } else if (media instanceof SocialMediaBeitraege post) {
+                    post.setText(inputText("Text"));
+                    post.setBeschreibung(inputText("Beschreibung"));
+                }
+            }
+            return source;
         }
         String[] pages = inputText("Seitenangabe").split("-", -1);
         if (pages.length > 2 || (pages.length == 2 && (pages[0].isBlank() || pages[1].isBlank()))) {
@@ -289,6 +440,8 @@ final class DetailsPanel extends JPanel {
             cancel.addActionListener(event -> cancelEditing());
             JButton accept = new JButton("Übernehmen");
             accept.addActionListener(event -> acceptEditing());
+            accept.setEnabled(!creating || (creationTypeComboBox.getSelectedIndex() > 0
+                    && !"Sammelbandbeleg".equals(creationTypeComboBox.getSelectedItem())));
             actionPanel.add(cancel);
             actionPanel.add(accept);
         } else {

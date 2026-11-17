@@ -33,7 +33,9 @@ public class GUI_Literaturverwaltung extends JFrame {
     private JComboBox<String> sourceTypeComboBox;
     private final LinkedHashMap<Integer, Richtung> sortDirectionsByColumn = new LinkedHashMap<>();
     private int nextSourceNumber = 1;
+    private boolean updatingSourceTypes;
     private DetailsPanel detailsPanel;
+    private JButton createReferenceButton;
     private final LinkedHashMap<Integer, Literatur> sourcesByNumber = new LinkedHashMap<>();
 
     public GUI_Literaturverwaltung() {
@@ -80,7 +82,8 @@ public class GUI_Literaturverwaltung extends JFrame {
         listPanel.add(createSearchPanel(), BorderLayout.NORTH);
         sourceTable = createSourceTable();
         listPanel.add(new JScrollPane(sourceTable), BorderLayout.CENTER);
-        JButton createReferenceButton = new JButton("+ Neuen Verweis erstellen +");
+        createReferenceButton = new JButton("+ Neuen Verweis erstellen +");
+        createReferenceButton.addActionListener(event -> detailsPanel.beginCreation());
         listPanel.add(createReferenceButton, BorderLayout.SOUTH);
         return listPanel;
     }
@@ -136,6 +139,9 @@ public class GUI_Literaturverwaltung extends JFrame {
 
         sourceTypeComboBox = new JComboBox<>(new String[] {"Alle Quellentypen"});
         sourceTypeComboBox.getAccessibleContext().setAccessibleName("Quellentyp");
+        sourceTypeComboBox.addActionListener(event -> {
+            if (!updatingSourceTypes) refreshTable();
+        });
         searchPanel.add(sourceTypeComboBox, BorderLayout.EAST);
         return searchPanel;
     }
@@ -143,11 +149,30 @@ public class GUI_Literaturverwaltung extends JFrame {
     private JPanel createDetailsPanel() {
         detailsPanel = new DetailsPanel(
                 source -> updateTableRow(sourceTable.getSelectedRow(), source),
+                this::addCreatedSource,
                 editing -> {
+                    createReferenceButton.setEnabled(!editing);
+                    sourceTypeComboBox.setEnabled(!editing);
                     sourceTable.setEnabled(!editing);
                     sourceTable.getTableHeader().setEnabled(!editing);
                 });
         return detailsPanel;
+    }
+
+    private void addCreatedSource(Literatur source) {
+        int number = nextSourceNumber;
+        addTableRow(source);
+        String filter = (String) sourceTypeComboBox.getSelectedItem();
+        String type = source.getClass().getSimpleName();
+        if (!"Alle Quellentypen".equals(filter) && !type.equals(filter)) {
+            sourceTypeComboBox.setSelectedItem(type);
+        }
+        for (int row = 0; row < tableModel.getRowCount(); row++) {
+            if (tableModel.getValueAt(row, 0).equals(number)) {
+                sourceTable.setRowSelectionInterval(row, row);
+                break;
+            }
+        }
     }
 
     private void showSelectedSource() {
@@ -218,74 +243,92 @@ public class GUI_Literaturverwaltung extends JFrame {
         };
     }
 
+    private void refreshTable() {
+        int selectedRow = sourceTable.getSelectedRow();
+        Integer selectedNumber = selectedRow < 0 ? null
+                : (Integer) tableModel.getValueAt(selectedRow, 0);
+        String filter = (String) sourceTypeComboBox.getSelectedItem();
+        List<Object[]> visibleRows = new ArrayList<>();
+        for (var entry : sourcesByNumber.entrySet()) {
+            Literatur source = entry.getValue();
+            if (filter == null || filter.equals("Alle Quellentypen")
+                    || filter.equals(source.getClass().getSimpleName())) {
+                visibleRows.add(createTableRow(source, entry.getKey()));
+            }
+        }
+        tableModel.setRowCount(0);
+        for (Object[] row : visibleRows) {
+            tableModel.addRow(row);
+        }
+        sortTableRows();
+        if (selectedNumber != null) {
+            for (int row = 0; row < tableModel.getRowCount(); row++) {
+                if (selectedNumber.equals(tableModel.getValueAt(row, 0))) {
+                    sourceTable.setRowSelectionInterval(row, row);
+                    break;
+                }
+            }
+        }
+    }
+
     private void updateSourceTypes() {
         String selectedType = (String) sourceTypeComboBox.getSelectedItem();
         List<String> types = new ArrayList<>();
-        for (int row = 0; row < tableModel.getRowCount(); row++) {
-            String type = (String) tableModel.getValueAt(row, 2);
-            if (!types.contains(type)) {
-                types.add(type);
+        for (Literatur source : sourcesByNumber.values()) {
+            String type = source.getClass().getSimpleName();
+            if (!types.contains(type)) types.add(type);
+        }
+        updatingSourceTypes = true;
+        try {
+            sourceTypeComboBox.removeAllItems();
+            sourceTypeComboBox.addItem("Alle Quellentypen");
+            for (String type : types) sourceTypeComboBox.addItem(type);
+            if (selectedType != null && types.contains(selectedType)) {
+                sourceTypeComboBox.setSelectedItem(selectedType);
             }
-        }
-        sourceTypeComboBox.removeAllItems();
-        sourceTypeComboBox.addItem("Alle Quellentypen");
-        for (String type : types) {
-            sourceTypeComboBox.addItem(type);
-        }
-        if (selectedType != null && types.contains(selectedType)) {
-            sourceTypeComboBox.setSelectedItem(selectedType);
+        } finally {
+            updatingSourceTypes = false;
         }
     }
 
     public void addTableRow(Literatur source) {
-        Object[] row = createTableRow(source, nextSourceNumber);
+        Objects.requireNonNull(source, "source");
         sourcesByNumber.put(nextSourceNumber, source);
-        tableModel.addRow(row);
         nextSourceNumber++;
-        sortTableRows();
         updateSourceTypes();
+        refreshTable();
     }
 
     public void addTableRows(Literatur[] sources) {
         Objects.requireNonNull(sources, "sources");
-        List<Object[]> rows = new ArrayList<>();
-        int number = nextSourceNumber;
+        for (Literatur source : sources) Objects.requireNonNull(source, "source");
         for (Literatur source : sources) {
-            rows.add(createTableRow(source, number));
-            number++;
+            sourcesByNumber.put(nextSourceNumber, source);
+            nextSourceNumber++;
         }
-        for (int i = 0; i < sources.length; i++) {
-            sourcesByNumber.put(nextSourceNumber + i, sources[i]);
-            tableModel.addRow(rows.get(i));
-        }
-        nextSourceNumber = number;
-        sortTableRows();
         updateSourceTypes();
+        refreshTable();
     }
 
     public void removeTableRow(int rowIndex) {
         sourcesByNumber.remove((Integer) tableModel.getValueAt(rowIndex, 0));
-        tableModel.removeRow(rowIndex);
-        sortTableRows();
         updateSourceTypes();
+        refreshTable();
     }
 
     public void updateTableRow(int rowIndex, Literatur source) {
+        Objects.requireNonNull(source, "source");
         int number = (Integer) tableModel.getValueAt(rowIndex, 0);
-        Object[] rowData = createTableRow(source, number);
         sourcesByNumber.put(number, source);
-        for (int column = 0; column < tableModel.getColumnCount(); column++) {
-            tableModel.setValueAt(rowData[column], rowIndex, column);
-        }
-        sortTableRows();
         updateSourceTypes();
+        refreshTable();
         showSelectedSource();
     }
 
     public void resetTable() {
         sourcesByNumber.clear();
-        tableModel.setRowCount(0);
         nextSourceNumber = 1;
         updateSourceTypes();
+        refreshTable();
     }
 }

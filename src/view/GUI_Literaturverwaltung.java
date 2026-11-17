@@ -161,7 +161,8 @@ public class GUI_Literaturverwaltung extends JFrame {
 	}
 
 	private void einstellungen() { // TODO: implement code
-		;
+		GUI_Einstellungen dialog = new GUI_Einstellungen(this);
+		dialog.setVisible(true);
 	}
 
 	private String fetchVerzeichnisName() { // TODO: implement code

@@ -2,6 +2,10 @@ package view;
 
 import java.awt.*;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.LinkedHashMap;
 import java.time.LocalDate;
 import model.Literatur;
@@ -16,8 +20,20 @@ final class DetailsPanel extends JPanel {
     private final JLabel sourceTitle = new JLabel();
     private final JLabel sourceType = new JLabel();
 
-    DetailsPanel() {
+    private final Consumer<Literatur> saveChanges;
+    private final Consumer<Boolean> editingChanged;
+    private final JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+    private final JLabel inputError = new JLabel();
+    private final JButton editButton = new JButton("Bearbeiten");
+    private final LinkedHashMap<String, JTextField> editFields = new LinkedHashMap<>();
+    private Map<String, String> shownAttributes = Map.of();
+    private Literatur currentSource;
+    private boolean editing;
+
+    DetailsPanel(Consumer<Literatur> saveChanges, Consumer<Boolean> editingChanged) {
         super(new BorderLayout(0, 16));
+        this.saveChanges = saveChanges;
+        this.editingChanged = editingChanged;
         setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         setBackground(new Color(0xE6E6E6));
         setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
@@ -65,13 +81,29 @@ final class DetailsPanel extends JPanel {
         JLabel caption = new JLabel("Kurzbeleg");
         caption.setFont(getFont().deriveFont(11f));
         caption.setForeground(Color.DARK_GRAY);
-        citationPanel.add(caption, BorderLayout.NORTH);
+        actionPanel.setOpaque(false);
+        inputError.setForeground(new Color(0xA00000));
+        inputError.setFont(getFont().deriveFont(11f));
+        editButton.setEnabled(false);
+        editButton.addActionListener(event -> beginEditing());
+        JPanel controls = new JPanel(new BorderLayout(0, 5));
+        controls.setOpaque(false);
+        controls.add(actionPanel, BorderLayout.NORTH);
+        controls.add(inputError, BorderLayout.CENTER);
+        controls.add(caption, BorderLayout.SOUTH);
+        citationPanel.add(controls, BorderLayout.NORTH);
+        updateActions();
         citationPanel.add(previewScrollPane, BorderLayout.CENTER);
         add(citationPanel, BorderLayout.SOUTH);
         showDetails("", "", Map.of(), "");
     }
 
     void showSource(Literatur source) {
+        if (editing) {
+            return;
+        }
+        currentSource = source;
+        editButton.setEnabled(source instanceof Buchbeleg || source instanceof Website);
         if (source == null) {
             showDetails("", "", Map.of(), "");
             return;
@@ -107,9 +139,11 @@ final class DetailsPanel extends JPanel {
     }
 
     void showDetails(String title, String type, Map<String, String> attributes, String shortCitation) {
+        shownAttributes = attributes;
         sourceTitle.setText(title);
         sourceType.setText(type);
         attributesPanel.removeAll();
+        editFields.clear();
         if (attributes.isEmpty()) {
             JLabel prompt = new JLabel("Bitte einen Eintrag auswählen.");
             prompt.setFont(getFont());
@@ -142,10 +176,125 @@ final class DetailsPanel extends JPanel {
         valueLabel.setFont(getFont());
         valueLabel.setToolTipText(text);
         fieldPanel.add(nameLabel, BorderLayout.NORTH);
-        fieldPanel.add(valueLabel, BorderLayout.CENTER);
+        if (editing) {
+            JTextField input = new JTextField(value == null ? "" : value);
+            input.setFont(getFont());
+            input.getAccessibleContext().setAccessibleName(name);
+            if (name.equals("Autor / Herausgeber")) {
+                input.setToolTipText("Mehrere Autoren mit Semikolon trennen.");
+            } else if (name.equals("Veröffentlichungsdatum") || name.equals("Abrufdatum")) {
+                input.setToolTipText("JJJJ-MM-TT; leer lassen, wenn unbekannt.");
+            }
+            editFields.put(name, input);
+            fieldPanel.add(input, BorderLayout.CENTER);
+        } else {
+            fieldPanel.add(valueLabel, BorderLayout.CENTER);
+        }
         fieldPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         fieldPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, fieldPanel.getPreferredSize().height));
         attributesPanel.add(fieldPanel);
         attributesPanel.add(Box.createVerticalStrut(12));
+    }
+
+    private void beginEditing() {
+        LinkedHashMap<String, String> values = new LinkedHashMap<>(shownAttributes);
+        List<String> authors = currentSource.getAutor();
+        values.put("Autor / Herausgeber", authors == null ? "" : String.join("; ", authors.stream()
+                .filter(author -> author != null && !author.isBlank()).toList()));
+        if (currentSource instanceof Buchbeleg) {
+            // These strings are the book getters' placeholders for missing values.
+            if (values.get("Titel").equals("o.T.")) values.put("Titel", "");
+            if (values.get("Verlag").equals("o.V.")) values.put("Verlag", "");
+            if (values.get("Erscheinungsort").equals("o.O.")) values.put("Erscheinungsort", "");
+        }
+        setEditing(true);
+        showDetails(sourceTitle.getText(), sourceType.getText(), values, citationPreview.getText());
+    }
+
+    private void cancelEditing() {
+        setEditing(false);
+        showSource(currentSource);
+    }
+
+    private void acceptEditing() {
+        Literatur replacement;
+        try {
+            replacement = readEditedSource();
+        } catch (IllegalArgumentException | java.time.DateTimeException error) {
+            inputError.setText(error.getMessage() == null ? "Auflage und Seitenangabe prüfen." : error.getMessage());
+            inputError.setToolTipText(inputError.getText());
+            return;
+        }
+        setEditing(false);
+        saveChanges.accept(replacement);
+        showSource(replacement);
+    }
+
+    private Literatur readEditedSource() {
+        List<String> authors = new ArrayList<>();
+        for (String author : inputText("Autor / Herausgeber").split(";")) {
+            if (!author.isBlank()) authors.add(author.trim());
+        }
+        Optional<LocalDate> published = readDate("Veröffentlichungsdatum");
+        Optional<LocalDate> retrieved = readDate("Abrufdatum");
+        if (currentSource instanceof Website) {
+            return new Website(authors, inputText("Websitename"), readText("Titel"),
+                    inputText("URL"), retrieved.orElse(null), published.orElse(null), inputText("Textart"));
+        }
+        String[] pages = inputText("Seitenangabe").split("-", -1);
+        if (pages.length > 2 || (pages.length == 2 && (pages[0].isBlank() || pages[1].isBlank()))) {
+            throw new IllegalArgumentException("Seitenangabe: z. B. 12 oder 12-20.");
+        }
+        Buchbeleg book = new Buchbeleg(authors, published, readText("Titel"), readText("Verlag"),
+                readNumber(inputText("Auflage")), readText("Erscheinungsort"), readNumber(pages[0]),
+                pages.length == 2 ? readNumber(pages[1]) : Optional.empty());
+        book.setAbrufdatum(retrieved.orElse(null));
+        return book;
+    }
+
+    private String inputText(String name) {
+        return editFields.get(name).getText().trim();
+    }
+
+    private Optional<String> readText(String name) {
+        String text = inputText(name);
+        return text.isEmpty() ? Optional.empty() : Optional.of(text);
+    }
+
+    private Optional<LocalDate> readDate(String name) {
+        String text = inputText(name);
+        return text.isEmpty() ? Optional.empty() : Optional.of(LocalDate.parse(text));
+    }
+
+    private Optional<Integer> readNumber(String text) {
+        if (text.isBlank()) return Optional.empty();
+        try {
+            return Optional.of(Integer.parseInt(text.trim()));
+        } catch (NumberFormatException error) {
+            throw new IllegalArgumentException("Auflage und Seitenangaben müssen ganze Zahlen sein.");
+        }
+    }
+
+    private void setEditing(boolean editing) {
+        this.editing = editing;
+        inputError.setText("");
+        editingChanged.accept(editing);
+        updateActions();
+    }
+
+    private void updateActions() {
+        actionPanel.removeAll();
+        if (editing) {
+            JButton cancel = new JButton("Abbrechen");
+            cancel.addActionListener(event -> cancelEditing());
+            JButton accept = new JButton("Übernehmen");
+            accept.addActionListener(event -> acceptEditing());
+            actionPanel.add(cancel);
+            actionPanel.add(accept);
+        } else {
+            actionPanel.add(editButton);
+        }
+        actionPanel.revalidate();
+        actionPanel.repaint();
     }
 }

@@ -107,7 +107,7 @@ public class GUI_Literaturverwaltung extends JFrame {
             @Override
             public void mouseClicked(MouseEvent event) {
                 int column = table.columnAtPoint(event.getPoint());
-                if (SwingUtilities.isLeftMouseButton(event) && event.getClickCount() == 1
+                if (table.isEnabled() && SwingUtilities.isLeftMouseButton(event) && event.getClickCount() == 1
                         && column >= 0 && table.getTableHeader().getResizingColumn() == null) {
                     updateSortPriority(column, event.isControlDown());
                     sortTableRows();
@@ -141,7 +141,12 @@ public class GUI_Literaturverwaltung extends JFrame {
     }
 
     private JPanel createDetailsPanel() {
-        detailsPanel = new DetailsPanel();
+        detailsPanel = new DetailsPanel(
+                source -> updateTableRow(sourceTable.getSelectedRow(), source),
+                editing -> {
+                    sourceTable.setEnabled(!editing);
+                    sourceTable.getTableHeader().setEnabled(!editing);
+                });
         return detailsPanel;
     }
 

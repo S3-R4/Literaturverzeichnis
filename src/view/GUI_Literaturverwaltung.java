@@ -1,175 +1,364 @@
 package view;
 
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.io.IOException;
-
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.table.DefaultTableModel;
-
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import model.Buchbeleg;
+import model.Website;
 import model.data.data_manager;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import model.Literatur;
+import model.Sortierer;
+import model.Sortierer.Kriterium;
+import model.Sortierer.Richtung;
+import model.Sortierer.SortierPrioritaet;
 
 public class GUI_Literaturverwaltung extends JFrame {
-	final String titel = "Literaturverwaltung - Literaturverzeichnis";
-	private final data_manager manager;
+    private static final String[] COLUMN_NAMES = {
+        "Nr.", "Titel", "Quellentyp", "Autor", "Jahr"
+    };
+    private static final Kriterium[] SORT_CRITERIA = {
+        Kriterium.TITEL, Kriterium.QUELLENTYP,
+        Kriterium.AUTOR, Kriterium.JAHR
+    };
 
-	public GUI_Literaturverwaltung(data_manager manager) {
-		this.manager = manager;
-		// Test just to guarantee that the fucking import is working
-		try {
-			System.out.println(this.manager.read_data());
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
+    private final data_manager manager;
+    private DefaultTableModel tableModel;
+    private JTable sourceTable;
+    private JComboBox<String> sourceTypeComboBox;
+    private final LinkedHashMap<Integer, Richtung> sortDirectionsByColumn = new LinkedHashMap<>();
+    private int nextSourceNumber = 1;
+    private boolean updatingSourceTypes;
+    private DetailsPanel detailsPanel;
+    private JButton createReferenceButton;
+    private final LinkedHashMap<Integer, Literatur> sourcesByNumber = new LinkedHashMap<>();
 
-		setTitle(titel);
-		setTitle(titel);
-		setSize(600, 600);
-		setResizable(false);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    public GUI_Literaturverwaltung() {
+        this(new data_manager());
+    }
 
-		setLayout(new GridBagLayout());
-		GridBagConstraints gbc = new GridBagConstraints();
+    public GUI_Literaturverwaltung(data_manager manager) {
+        this.manager = Objects.requireNonNull(manager, "manager");
+        setTitle("Literaturverwaltung - Literaturverzeichnis");
+        setSize(600, 600);
+        setResizable(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setJMenuBar(createMenuBar());
 
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.weightx = 1;
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        setContentPane(mainPanel);
+        JSplitPane contentSplitPane = new JSplitPane(
+                JSplitPane.HORIZONTAL_SPLIT,
+                createListPanel(),
+                createDetailsPanel());
+        contentSplitPane.setResizeWeight(1);
+        mainPanel.add(contentSplitPane, BorderLayout.CENTER);
 
-		// ---- Zeile 1 ----
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.gridwidth = 2;
+        // TEST: remove these examples after reviewing table selection.
+        addTableRows(new Literatur[] {
+            new Buchbeleg(List.of("Kafka, Franz"), Optional.of(LocalDate.of(1915, 1, 1)),
+                    Optional.of("Die Verwandlung"), Optional.of("Kurt Wolff Verlag"),
+                    Optional.of(1), Optional.of("Leipzig"), Optional.of(1), Optional.of(72)),
+            new Buchbeleg(List.of("Goethe, Johann Wolfgang von"), Optional.of(LocalDate.of(1808, 1, 1)),
+                    Optional.of("Faust"), Optional.of("Cotta"), Optional.of(1),
+                    Optional.of("Tübingen"), Optional.of(1), Optional.of(200)),
+            new Website(List.of("Beispielautor"), "Beispielwebsite", Optional.of("Digitale Medien"),
+                    "https://example.org", LocalDate.of(2026, 11, 17),
+                    LocalDate.of(2024, 6, 1), "Artikel")
+        });
+        setVisible(true);
+        SwingUtilities.invokeLater(() -> contentSplitPane.setDividerLocation(0.65));
+    }
 
-		JPanel pnlFirstLine = new JPanel();
-		add(pnlFirstLine, gbc);
+    private JMenuBar createMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+        menuBar.add(new JMenu("Datei"));
+        menuBar.add(new JMenu("Einstellungen"));
+        return menuBar;
+    }
 
-		JButton btnDateiExportieren = new JButton("Datei exportieren");
-		btnDateiExportieren.addActionListener(e -> dateiExportieren());
-		pnlFirstLine.add(btnDateiExportieren);
+    private JPanel createListPanel() {
+        JPanel listPanel = new JPanel(new BorderLayout());
+        listPanel.add(createSearchPanel(), BorderLayout.NORTH);
+        sourceTable = createSourceTable();
+        listPanel.add(new JScrollPane(sourceTable), BorderLayout.CENTER);
+        createReferenceButton = new JButton("+ Neuen Verweis erstellen +");
+        createReferenceButton.addActionListener(event -> detailsPanel.beginCreation());
+        listPanel.add(createReferenceButton, BorderLayout.SOUTH);
+        return listPanel;
+    }
 
-		JButton btnEinstellungen = new JButton("Einstellungen");
-		btnEinstellungen.addActionListener(e -> einstellungen());
-		pnlFirstLine.add(btnEinstellungen);
+    private JTable createSourceTable() {
+        tableModel = new DefaultTableModel(COLUMN_NAMES, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        JTable table = new JTable(tableModel);
+        int[] columnWidths = {45, 250, 110, 160, 60};
+        for (int column = 0; column < columnWidths.length; column++) {
+            table.getColumnModel().getColumn(column).setPreferredWidth(columnWidths[column]);
+        }
 
-		// Zeile 2
-		gbc.gridy = 1;
-		add(new JLabel("Literaturverzeichnis: " + fetchVerzeichnisName()), gbc);
+        table.setFillsViewportHeight(true);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.getTableHeader().setReorderingAllowed(false);
+        table.getTableHeader().setFont(table.getTableHeader().getFont().deriveFont(Font.BOLD));
+        
+        table.getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent event) {
+                int column = table.columnAtPoint(event.getPoint());
+                if (table.isEnabled() && SwingUtilities.isLeftMouseButton(event) && event.getClickCount() == 1
+                        && column >= 0 && table.getTableHeader().getResizingColumn() == null) {
+                    updateSortPriority(column, event.isControlDown());
+                    sortTableRows();
+                    updateSortIndicators();
+                }
+            }
+        });
+        table.getSelectionModel().addListSelectionListener(event -> {
+            if (!event.getValueIsAdjusting()) {
+                showSelectedSource();
+            }
+        });
+        return table;
+    }
 
-		// unten links
-		gbc.gridy = 2;
-		gbc.gridx = 0;
-		gbc.gridwidth = 1;
-		gbc.weightx = 3;
-		gbc.weighty = 1;
+    private JPanel createSearchPanel() {
+        JPanel searchPanel = new JPanel(new BorderLayout());
+        JPanel searchControlsPanel = new JPanel(new BorderLayout());
+        JTextField searchField = new JTextField();
+        searchField.getAccessibleContext().setAccessibleName("Quellen durchsuchen");
+        searchControlsPanel.add(searchField, BorderLayout.CENTER);
+        JButton searchButton = new JButton("Suchen");
+        searchButton.setIcon(new ImageIcon("src/view/assets/magnifier.png"));
+        searchControlsPanel.add(searchButton, BorderLayout.EAST);
+        searchPanel.add(searchControlsPanel, BorderLayout.CENTER);
 
-		JPanel pnlVerwaltung = new JPanel(new GridBagLayout());
-		GridBagConstraints gbc2 = new GridBagConstraints();
-		gbc2.fill = GridBagConstraints.BOTH;
-		add(pnlVerwaltung, gbc);
+        sourceTypeComboBox = new JComboBox<>(new String[] {"Alle Quellentypen"});
+        sourceTypeComboBox.getAccessibleContext().setAccessibleName("Quellentyp");
+        sourceTypeComboBox.addActionListener(event -> {
+            if (!updatingSourceTypes) refreshTable();
+        });
+        searchPanel.add(sourceTypeComboBox, BorderLayout.EAST);
+        return searchPanel;
+    }
 
-		// obere Zeile (75/25)
+    private JPanel createDetailsPanel() {
+        detailsPanel = new DetailsPanel(
+                source -> updateTableRow(sourceTable.getSelectedRow(), source),
+                this::addCreatedSource,
+                editing -> {
+                    createReferenceButton.setEnabled(!editing);
+                    sourceTypeComboBox.setEnabled(!editing);
+                    sourceTable.setEnabled(!editing);
+                    sourceTable.getTableHeader().setEnabled(!editing);
+                });
+        return detailsPanel;
+    }
 
-		gbc2.gridx = 0;
-		gbc2.gridy = 0;
-		gbc2.weightx = 3;
-		gbc2.weighty = 0;
+    private void addCreatedSource(Literatur source) {
+        int number = nextSourceNumber;
+        addTableRow(source);
+        String filter = (String) sourceTypeComboBox.getSelectedItem();
+        String type = source.getClass().getSimpleName();
+        if (!"Alle Quellentypen".equals(filter) && !type.equals(filter)) {
+            sourceTypeComboBox.setSelectedItem(type);
+        }
+        for (int row = 0; row < tableModel.getRowCount(); row++) {
+            if (tableModel.getValueAt(row, 0).equals(number)) {
+                sourceTable.setRowSelectionInterval(row, row);
+                break;
+            }
+        }
+    }
 
-		pnlVerwaltung.add(new JTextField("Suchen..."), gbc2);
+    private void showSelectedSource() {
+        int selectedRow = sourceTable.getSelectedRow();
+        Literatur source = selectedRow < 0 ? null
+                : sourcesByNumber.get((Integer) tableModel.getValueAt(selectedRow, 0));
+        detailsPanel.showSource(source);
+    }
 
-		gbc2.gridx = 1;
-		gbc2.weightx = 1;
+    private void updateSortPriority(int column, boolean onlyThisColumn) {
+        Richtung direction = sortDirectionsByColumn.get(column) == Richtung.AUFSTEIGEND
+                ? Richtung.ABSTEIGEND : Richtung.AUFSTEIGEND;
+        if (onlyThisColumn) {
+            sortDirectionsByColumn.clear();
+        }
+        sortDirectionsByColumn.put(column, direction);
+    }
 
-		pnlVerwaltung.add(new JLabel("<Platzhalter>"), gbc2); // TODO: implement JCombobox for selection of wanted
-																// quellen types
+    private void sortTableRows() {
+        if (sortDirectionsByColumn.isEmpty()) {
+            return;
+        }
+        List<SortierPrioritaet> priorities = new ArrayList<>();
+        for (var entry : sortDirectionsByColumn.entrySet()) {
+            // Numbers are unique, so criteria after Nr. cannot change the order.
+            if (entry.getKey() == 0) break;
+            priorities.add(new SortierPrioritaet(SORT_CRITERIA[entry.getKey() - 1], entry.getValue()));
+        }
+        int selectedRow = sourceTable.getSelectedRow();
+        Integer selectedNumber = selectedRow < 0 ? null
+                : (Integer) tableModel.getValueAt(selectedRow, 0);
+        List<Integer> rowNumbers = new ArrayList<>();
+        for (int row = 0; row < tableModel.getRowCount(); row++) {
+            rowNumbers.add((Integer) tableModel.getValueAt(row, 0));
+        }
+        Richtung numberDirection = sortDirectionsByColumn.get(0);
+        if (numberDirection != null) {
+            rowNumbers.sort((a, b) -> numberDirection == Richtung.AUFSTEIGEND
+                    ? Integer.compare(a, b) : Integer.compare(b, a));
+        }
+        List<Literatur> sources = new ArrayList<>();
+        IdentityHashMap<Literatur, ArrayDeque<Integer>> numbersBySource = new IdentityHashMap<>();
+        for (int number : rowNumbers) {
+            Literatur source = sourcesByNumber.get(number);
+            sources.add(source);
+            numbersBySource.computeIfAbsent(source, key -> new ArrayDeque<>()).addLast(number);
+        }
+        List<Literatur> sortedSources = new Sortierer().sortiere(sources, priorities);
+        tableModel.setRowCount(0);
+        for (Literatur source : sortedSources) {
+            int number = numbersBySource.get(source).removeFirst();
+            tableModel.addRow(createTableRow(source, number));
+        }
+        if (selectedNumber != null) {
+            for (int row = 0; row < tableModel.getRowCount(); row++) {
+                if (selectedNumber.equals(tableModel.getValueAt(row, 0))) {
+                    sourceTable.setRowSelectionInterval(row, row);
+                    break;
+                }
+            }
+        }
+    }
 
-		// JTable über volle Breite
+    private void updateSortIndicators() {
+        for (int column = 0; column < tableModel.getColumnCount(); column++) {
+            sourceTable.getColumnModel().getColumn(column).setHeaderValue(tableModel.getColumnName(column));
+        }
+        int priority = 1;
+        for (var entry : sortDirectionsByColumn.entrySet()) {
+            int column = entry.getKey();
+            String triangle = entry.getValue() == Richtung.AUFSTEIGEND ? " ▲" : " ▼";
+            String label = tableModel.getColumnName(column) + triangle + priority;
+            sourceTable.getColumnModel().getColumn(column).setHeaderValue(label);
+            priority++;
+        }
+        sourceTable.getTableHeader().repaint();
+    }
 
-		gbc2.gridx = 0;
-		gbc2.gridy = 1;
-		gbc2.gridwidth = 2;
-		gbc2.weightx = 1;
-		gbc2.weighty = 1;
+    private Object[] createTableRow(Literatur source, int number) {
+        Objects.requireNonNull(source, "source");
+        List<String> authors = source.getAutor().orElse(List.of());
+        String authorText = String.join(", ", authors.stream()
+                .filter(author -> author != null && !author.isBlank()).toList());
+        Integer publicationYear = source.getVeroeffentlichungsdatum()
+                .map(LocalDate::getYear).orElse(null);
+        return new Object[] {
+            number, source.getTitel().orElse(""), source.getClass().getSimpleName(), authorText,
+            publicationYear
+        };
+    }
 
-		String[] header = { "Nr.", "Titel", "Quellentyp", "Autor", "Jahr" };
+    private void refreshTable() {
+        int selectedRow = sourceTable.getSelectedRow();
+        Integer selectedNumber = selectedRow < 0 ? null
+                : (Integer) tableModel.getValueAt(selectedRow, 0);
+        String filter = (String) sourceTypeComboBox.getSelectedItem();
+        List<Object[]> visibleRows = new ArrayList<>();
+        for (var entry : sourcesByNumber.entrySet()) {
+            Literatur source = entry.getValue();
+            if (filter == null || filter.equals("Alle Quellentypen")
+                    || filter.equals(source.getClass().getSimpleName())) {
+                visibleRows.add(createTableRow(source, entry.getKey()));
+            }
+        }
+        tableModel.setRowCount(0);
+        for (Object[] row : visibleRows) {
+            tableModel.addRow(row);
+        }
+        sortTableRows();
+        if (selectedNumber != null) {
+            for (int row = 0; row < tableModel.getRowCount(); row++) {
+                if (selectedNumber.equals(tableModel.getValueAt(row, 0))) {
+                    sourceTable.setRowSelectionInterval(row, row);
+                    break;
+                }
+            }
+        }
+    }
 
-		DefaultTableModel dtm = new DefaultTableModel(header, 0);
-		JTable jtb = new JTable(dtm);
-		JScrollPane scpView = new JScrollPane(jtb);
+    private void updateSourceTypes() {
+        String selectedType = (String) sourceTypeComboBox.getSelectedItem();
+        List<String> types = new ArrayList<>();
+        for (Literatur source : sourcesByNumber.values()) {
+            String type = source.getClass().getSimpleName();
+            if (!types.contains(type)) types.add(type);
+        }
+        updatingSourceTypes = true;
+        try {
+            sourceTypeComboBox.removeAllItems();
+            sourceTypeComboBox.addItem("Alle Quellentypen");
+            for (String type : types) sourceTypeComboBox.addItem(type);
+            if (selectedType != null && types.contains(selectedType)) {
+                sourceTypeComboBox.setSelectedItem(selectedType);
+            }
+        } finally {
+            updatingSourceTypes = false;
+        }
+    }
 
-		pnlVerwaltung.add(scpView, gbc2);
+    public void addTableRow(Literatur source) {
+        Objects.requireNonNull(source, "source");
+        sourcesByNumber.put(nextSourceNumber, source);
+        nextSourceNumber++;
+        updateSourceTypes();
+        refreshTable();
+    }
 
-		// Button über volle Breite
+    public void addTableRows(Literatur[] sources) {
+        Objects.requireNonNull(sources, "sources");
+        for (Literatur source : sources) Objects.requireNonNull(source, "source");
+        for (Literatur source : sources) {
+            sourcesByNumber.put(nextSourceNumber, source);
+            nextSourceNumber++;
+        }
+        updateSourceTypes();
+        refreshTable();
+    }
 
-		gbc2.gridy = 2;
-		gbc2.weighty = 0;
+    public void removeTableRow(int rowIndex) {
+        sourcesByNumber.remove((Integer) tableModel.getValueAt(rowIndex, 0));
+        updateSourceTypes();
+        refreshTable();
+    }
 
-		JButton btnNeuerVerweis = new JButton("+ Neuen Verweis erstellen");
-		btnNeuerVerweis.addActionListener(e -> neuerVerweis());
-		pnlVerwaltung.add(btnNeuerVerweis, gbc);
+    public void updateTableRow(int rowIndex, Literatur source) {
+        Objects.requireNonNull(source, "source");
+        int number = (Integer) tableModel.getValueAt(rowIndex, 0);
+        sourcesByNumber.put(number, source);
+        updateSourceTypes();
+        refreshTable();
+        showSelectedSource();
+    }
 
-		// unten rechts
-		gbc.gridx = 1;
-		gbc.weightx = 1;
-
-		JPanel pnlQuellendetails = new JPanel();
-		pnlQuellendetails.setLayout(new BoxLayout(pnlQuellendetails, BoxLayout.Y_AXIS));
-		add(pnlQuellendetails, gbc);
-
-		JLabel lblQuellendetials = new JLabel("Quellendetails");
-		pnlQuellendetails.add(lblQuellendetials);
-
-		JLabel lblQuellentyp = new JLabel("Quellentyp"); // TODO: combobox?
-		pnlQuellendetails.add(lblQuellentyp);
-
-		JLabel lblHerrausgeber = new JLabel("Autor / Herausgeber");
-		pnlQuellendetails.add(lblHerrausgeber);
-
-		JTextField tfdHerrausgeber = new JTextField("Autorenliste");
-		pnlQuellendetails.add(tfdHerrausgeber);
-
-		JLabel lblErscheinungsjahr = new JLabel("Erscheinungsjahr");
-		pnlQuellendetails.add(lblErscheinungsjahr);
-
-		JTextField tfdErscheinungsjahr = new JTextField("2000");
-		pnlQuellendetails.add(tfdErscheinungsjahr);
-
-		JLabel lblVerlag = new JLabel("Verlag / Fundstelle");
-		pnlQuellendetails.add(lblVerlag);
-
-		JTextField tfdVerlag = new JTextField("Berliner");
-		pnlQuellendetails.add(tfdVerlag);
-
-		JTextArea txaVorschau = new JTextArea("Autor: 2000, Berliner");
-		pnlQuellendetails.add(txaVorschau);
-
-		setLocationRelativeTo(null);
-		setVisible(true);
-	}
-
-	private void dateiExportieren() { // TODO: implement code
-		;
-	}
-
-	private void einstellungen() { // TODO: implement code
-		GUI_Einstellungen dialog = new GUI_Einstellungen(this);
-		dialog.setVisible(true);
-	}
-
-	private String fetchVerzeichnisName() { // TODO: implement code
-		return "";
-	}
-
-	private void neuerVerweis() { // TODO: implement code
-		;
-	}
+    public void resetTable() {
+        sourcesByNumber.clear();
+        nextSourceNumber = 1;
+        updateSourceTypes();
+        refreshTable();
+    }
 }

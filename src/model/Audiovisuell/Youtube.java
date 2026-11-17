@@ -1,6 +1,7 @@
 package model.Audiovisuell;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.time.format.DateTimeFormatter;
 
 public class Youtube extends Audiovisuell {
@@ -8,25 +9,23 @@ public class Youtube extends Audiovisuell {
 	public String generiereLangbeleg() {
 		return getAutorsString(autor) + ". " +
 				datumFormatierung(veroeffentlichungsdatum) + ". " +
-				getTitel() + ". [" +
-				getBeitragsArt() + "]. " +
-				getMedium() + ". " +
-				getUrl() + " " +
-				getAbruffDatum().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+				getTitel().orElse("") + ". [" +
+				getBeitragsArt().orElse("") + "]. " +
+				getMedium().orElse("") + ". " +
+				getUrl().orElse("") + " " +
+				getAbruffDatum().map(d -> d.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))).orElse("");
 	}
 
 	@Override
 	public String generiereKurzbeleg() {
 		return getAutorsString(autor) + ". " +
 				datumFormatierung(veroeffentlichungsdatum) + ". " +
-				getTitel();
+				getTitel().orElse("");
 	}
 
 	@Override
-	public String datumFormatierung(LocalDate datum) {
-		if (abrufdatum == null)
-			return "";
-		return "(" + datum.getYear() + ")";
+	public String datumFormatierung(Optional<LocalDate> datum) {
+		return datum.map(d -> "(" + d.getYear() + ")").orElse("");
 	}
 
 	@Override

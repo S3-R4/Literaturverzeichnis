@@ -1,33 +1,28 @@
 package model.Audiovisuell;
 
 import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Objects;
 
 public class FIlmsVideos extends Audiovisuell {
-	private String produktionsfirma;
+	private Optional<String> produktionsfirma = Optional.empty();
 
-	// protected String beitragsArt;
-	// protected String medium;
-	// protected String url;
-	// protected String titel
-	// public List<String> autor;
-	// public LocalDate veroeffentlichungsdatum;
-	// public LocalDate abrufdatum;
 
 	@Override
 	public String generiereLangbeleg() {
-		if (getUrl() != null) {
+		if (getUrl().isPresent()) {
 			return getAutorsString(autor) + ". " +
 					datumFormatierung(veroeffentlichungsdatum) + ". " +
-					getTitel() + " [" +
-					getBeitragsArt() + "]. " +
-					getProduktionsfirma() + ". " +
-					getUrl() + ".";
+					getTitel().orElse("") + " [" +
+					getBeitragsArt().orElse("") + "]. " +
+					getProduktionsfirma().orElse("") + ". " +
+					getUrl().orElse("") + ".";
 		} else {
 			return getAutorsString(autor) + ". " +
 					datumFormatierung(veroeffentlichungsdatum) + ". " +
-					getTitel() + " [" +
-					getBeitragsArt() + "]. " +
-					getProduktionsfirma() + ".";
+					getTitel().orElse("") + " [" +
+					getBeitragsArt().orElse("") + "]. " +
+					getProduktionsfirma().orElse("") + ".";
 		}
 	}
 
@@ -35,22 +30,20 @@ public class FIlmsVideos extends Audiovisuell {
 	public String generiereKurzbeleg() {
 		return getAutorsString(autor) + ". " +
 				datumFormatierung(veroeffentlichungsdatum) + ". " +
-				getTitel() + " [";
+				getTitel().orElse("") + " [";
 	}
 
-	public String getProduktionsfirma() {
+	public Optional<String> getProduktionsfirma() {
 		return this.produktionsfirma;
 	}
 
-	public void setProduktionsfirma(String produktionsfirma) {
-		this.produktionsfirma = produktionsfirma;
+	public void setProduktionsfirma(Optional<String> produktionsfirma) {
+		this.produktionsfirma = Objects.requireNonNull(produktionsfirma, "produktionsfirma");
 	}
 
 	@Override
-	public String datumFormatierung(LocalDate datum) {
-		if (abrufdatum == null)
-			return "";
-		return ("(" + datum.getYear() + ")");
+	public String datumFormatierung(Optional<LocalDate> datum) {
+		return datum.map(d -> "(" + d.getYear() + ")").orElse("");
 	}
 
 	@Override

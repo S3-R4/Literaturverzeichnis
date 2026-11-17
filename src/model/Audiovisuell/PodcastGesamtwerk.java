@@ -1,37 +1,37 @@
 package model.Audiovisuell;
 
 import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Objects;
 import java.time.format.DateTimeFormatter;
 
 public class PodcastGesamtwerk extends Audiovisuell {
 
-	private String herausgebendeOrganisation;
+	private Optional<String> herausgebendeOrganisation = Optional.empty();
 
 	@Override
 	public String generiereLangbeleg() {
-		return getAutorsString(autor) + ". " + datumFormatierung(veroeffentlichungsdatum) + ". [" + getTitel() + "]. "
-				+ getHerausgebendeOrganisation() + ". " + getUrl() + " "
-				+ getAbruffDatum().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+		return getAutorsString(autor) + ". " + datumFormatierung(veroeffentlichungsdatum) + ". [" + getTitel().orElse("") + "]. "
+				+ getHerausgebendeOrganisation().orElse("") + ". " + getUrl().orElse("") + " "
+				+ getAbruffDatum().map(d -> d.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))).orElse("");
 	}
 
 	@Override
 	public String generiereKurzbeleg() {
-		return getAutorsString(autor) + ". " + datumFormatierung(veroeffentlichungsdatum) + ". [" + getTitel() + "]";
+		return getAutorsString(autor) + ". " + datumFormatierung(veroeffentlichungsdatum) + ". [" + getTitel().orElse("") + "]";
 	}
 
 	@Override
-	public String datumFormatierung(LocalDate datum) {
-		if (abrufdatum == null)
-			return "";
-		return "(" + datum.getYear() + ")";
+	public String datumFormatierung(Optional<LocalDate> datum) {
+		return datum.map(d -> "(" + d.getYear() + ")").orElse("");
 	}
 
-	public String getHerausgebendeOrganisation() {
+	public Optional<String> getHerausgebendeOrganisation() {
 		return herausgebendeOrganisation;
 	}
 
-	public void setHerausgebendeOrganisation(String herausgebendeOrganisation) {
-		this.herausgebendeOrganisation = herausgebendeOrganisation;
+	public void setHerausgebendeOrganisation(Optional<String> herausgebendeOrganisation) {
+		this.herausgebendeOrganisation = Objects.requireNonNull(herausgebendeOrganisation, "herausgebendeOrganisation");
 	}
 
 	@Override

@@ -1,42 +1,47 @@
 package model.Audiovisuell;
 
 import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Objects;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class Podcastfolgen extends Audiovisuell {
-	private String herausgebendeOrganisation = "";
-	private int podcastFolge = 0;
-	private String podcastFolgenName = "";
+	private Optional<String> herausgebendeOrganisation = Optional.empty();
+	private Optional<Integer> podcastFolge = Optional.empty();
+	private Optional<String> podcastFolgenName = Optional.empty();
 
 	public Podcastfolgen() {
-		setAutor(new ArrayList<>());
-		setBeitragsArt("Podcast-Folge");
+		setAutor(Optional.of(new ArrayList<>()));
+		setBeitragsArt(Optional.of("Podcast-Folge"));
 	}
 
-	public String getHerausgebendeOrganisation() {
+	public Optional<String> getHerausgebendeOrganisation() {
 		return herausgebendeOrganisation;
 	}
 
-	public void setHerausgebendeOrganisation(String herausgebendeOrganisation) {
-		this.herausgebendeOrganisation = herausgebendeOrganisation;
+	public void setHerausgebendeOrganisation(Optional<String> herausgebendeOrganisation) {
+		this.herausgebendeOrganisation = Objects.requireNonNull(herausgebendeOrganisation, "herausgebendeOrganisation");
 	}
 
-	public int getPodcastFolge() {
+	public Optional<Integer> getPodcastFolge() {
 		return podcastFolge;
 	}
 
-	public void setPodcastFolge(int podcastFolge) {
-		this.podcastFolge = podcastFolge;
+	public void setPodcastFolge(Optional<Integer> podcastFolge) {
+		this.podcastFolge = Objects.requireNonNull(podcastFolge, "podcastFolge");
 	}
 
 	public void addProduzent(String produzent) {
-		getAutor().add(produzent);
+		List<String> produzenten = new ArrayList<>(getAutor().orElseGet(List::of));
+		produzenten.add(produzent);
+		setAutor(Optional.of(produzenten));
 	}
 
 	public void removeProduzent(int index) {
-		getAutor().remove(index);
+		getAutor().ifPresent(produzenten -> produzenten.remove(index));
 	}
 
 	@Override
@@ -45,16 +50,16 @@ public class Podcastfolgen extends Audiovisuell {
 		String langbeleg = autorenString
 				+ (autorenString.endsWith(".") ? " " : ". ")
 				+ datumFormatierung(veroeffentlichungsdatum) + ". "
-				+ "Folge #" + podcastFolge + " - " + getPodcastFolgenName() + ". "
-				+ "[" + getBeitragsArt() + "]. "
-				+ "In: " + getTitel();
+				+ "Folge #" + podcastFolge.map(String::valueOf).orElse("") + " - " + getPodcastFolgenName().orElse("") + ". "
+				+ "[" + getBeitragsArt().orElse("") + "]. "
+				+ "In: " + getTitel().orElse("");
 
-		if (herausgebendeOrganisation != null && !herausgebendeOrganisation.isBlank()) {
-			langbeleg += " " + herausgebendeOrganisation;
+		if (herausgebendeOrganisation.filter(wert -> !wert.isBlank()).isPresent()) {
+			langbeleg += " " + herausgebendeOrganisation.orElse("");
 		}
 
-		return langbeleg + ". " + getUrl() + " ("
-				+ abrufdatum.format(DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.GERMAN))
+		return langbeleg + ". " + getUrl().orElse("") + " ("
+				+ abrufdatum.map(d -> d.format(DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.GERMAN))).orElse("")
 				+ ").";
 	}
 
@@ -62,34 +67,33 @@ public class Podcastfolgen extends Audiovisuell {
 	public String generiereKurzbeleg() {
 		String autorenString = generiereAutorenString();
 		return autorenString + (autorenString.endsWith(".") ? " " : ". ")
-				+ datumFormatierung(veroeffentlichungsdatum) + " Folge #" + podcastFolge;
+				+ datumFormatierung(veroeffentlichungsdatum) + " Folge #" + podcastFolge.map(String::valueOf).orElse("");
 	}
 
 	@Override
-	public String datumFormatierung(LocalDate datum) {
-		if (abrufdatum == null)
-			return "";
-		return "(" + datum.format(DateTimeFormatter.ofPattern("yyyy, d, MMMM", Locale.GERMAN)) + ")";
+	public String datumFormatierung(Optional<LocalDate> datum) {
+		return datum.map(d -> "(" + d.format(DateTimeFormatter.ofPattern("yyyy, d, MMMM", Locale.GERMAN)) + ")").orElse("");
 	}
 
 	private String generiereAutorenString() {
-		if (autor == null || autor.isEmpty()) {
+		List<String> autoren = autor.orElseGet(List::of);
+		if (autoren.isEmpty()) {
 			return "";
 		}
-		if (autor.size() == 1) {
-			return autor.get(0);
+		if (autoren.size() == 1) {
+			return autoren.get(0);
 		}
 
-		return String.join(", ", autor.subList(0, autor.size() - 1))
-				+ " & " + autor.get(autor.size() - 1);
+		return String.join(", ", autoren.subList(0, autoren.size() - 1))
+				+ " & " + autoren.get(autoren.size() - 1);
 	}
 
-	public String getPodcastFolgenName() {
+	public Optional<String> getPodcastFolgenName() {
 		return podcastFolgenName;
 	}
 
-	public void setPodcastFolgenName(String podcastFolgenName) {
-		this.podcastFolgenName = podcastFolgenName;
+	public void setPodcastFolgenName(Optional<String> podcastFolgenName) {
+		this.podcastFolgenName = Objects.requireNonNull(podcastFolgenName, "podcastFolgenName");
 	}
 
 	@Override

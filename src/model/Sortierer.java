@@ -45,7 +45,7 @@ int vergleich = 0;
 switch (prioritaet.kriterium()) {
 case TITEL:
 
-vergleich = vergleicheText(a.getTitel(), b.getTitel(), prioritaet.richtung());
+vergleich = vergleicheText(a.getTitel().orElse(null), b.getTitel().orElse(null), prioritaet.richtung());
 break;
 
 case QUELLENTYP:
@@ -54,13 +54,13 @@ break;
 
 case AUTOR:
 vergleich = vergleicheText(
-ersterAutor(a.getAutor()),
-ersterAutor(b.getAutor()),
+ersterAutor(a.getAutor().orElse(null)),
+ersterAutor(b.getAutor().orElse(null)),
 prioritaet.richtung());
 break;
 
 case JAHR:
-vergleich = vergleicheDatum(a.getVeroeffentlichungsdatum(),b.getVeroeffentlichungsdatum(),prioritaet.richtung());
+vergleich = vergleicheDatum(a.getVeroeffentlichungsdatum().orElse(null),b.getVeroeffentlichungsdatum().orElse(null),prioritaet.richtung());
 break;
 }
 

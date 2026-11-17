@@ -2,43 +2,45 @@ package model;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.Objects;
 
 public abstract class Literatur {
-protected List<String> autor;
-protected String titel;
-protected LocalDate veroeffentlichungsdatum;
-protected LocalDate abrufdatum;
+protected Optional<List<String>> autor = Optional.empty();
+protected Optional<String> titel = Optional.empty();
+protected Optional<LocalDate> veroeffentlichungsdatum = Optional.empty();
+protected Optional<LocalDate> abrufdatum = Optional.empty();
 
-public List<String> getAutor() {
+public Optional<List<String>> getAutor() {
     return autor;
 }
 
-public void setAutor(List<String> autor) {
-this.autor = autor;
+public void setAutor(Optional<List<String>> autor) {
+this.autor = Objects.requireNonNull(autor, "autor");
 }
 
-public String getTitel() {
+public Optional<String> getTitel() {
 return titel;
 }
 
-public void setTitel(String titel) {
-this.titel = titel;
+public void setTitel(Optional<String> titel) {
+this.titel = Objects.requireNonNull(titel, "titel");
 }
 
-public LocalDate getVeroeffentlichungsdatum() {
+public Optional<LocalDate> getVeroeffentlichungsdatum() {
 return veroeffentlichungsdatum;
 }
 
-public void setVeroeffentlichungsdatum(LocalDate veroeffentlichungsdatum) {
-this.veroeffentlichungsdatum = veroeffentlichungsdatum;
+public void setVeroeffentlichungsdatum(Optional<LocalDate> veroeffentlichungsdatum) {
+this.veroeffentlichungsdatum = Objects.requireNonNull(veroeffentlichungsdatum, "veroeffentlichungsdatum");
 }
 
-public LocalDate getAbrufdatum() {
+public Optional<LocalDate> getAbrufdatum() {
 return abrufdatum;
 }
 
-public void setAbrufdatum(LocalDate abrufdatum) {
-this.abrufdatum = abrufdatum;
+public void setAbrufdatum(Optional<LocalDate> abrufdatum) {
+this.abrufdatum = Objects.requireNonNull(abrufdatum, "abrufdatum");
 }
 
 public abstract String generiereKurzbeleg();

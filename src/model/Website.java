@@ -17,21 +17,21 @@ public Website(List<String> autor, String websitename, Optional<String> titel,St
 
 setAutoren(autor);
 setWebsitename(websitename);
-setTitel(titel.orElse(""));
+setTitel(titel);
 setUrl(url);
-this.abrufdatum = abrufdatum;
-this.veroeffentlichungsdatum = veroeffentlichungsdatum;
+this.abrufdatum = Optional.ofNullable(abrufdatum);
+this.veroeffentlichungsdatum = Optional.ofNullable(veroeffentlichungsdatum);
 this.textart = textart;
 }
 
 public void setAutoren(List<String> autoren) {
-this.autor = new ArrayList<>();
+this.autor = Optional.of(new ArrayList<>());
 
 if (autoren == null) return;
 
 for (String autor : autoren) {
 	if (autor != null && !autor.isBlank()) {
-		this.autor.add(autor.trim());
+		this.autor.orElseThrow().add(autor.trim());
 	}
 }
 }
@@ -44,8 +44,8 @@ public void setUrl(String url) {
 this.url = url == null ? "" : url.trim();
 }
 
-public void setTitel(String titel) {
-this.titel = titel == null || titel.isBlank() ? null : titel.trim();
+public void setTitel(Optional<String> titel) {
+this.titel = java.util.Objects.requireNonNull(titel).filter(v -> !v.isBlank()).map(String::trim);
 }
 
 public String getWebsitename() {
@@ -65,14 +65,14 @@ public String generiereLangbeleg() {
 String textBaustein;
 
 // Autor
-if (autor == null || autor.isEmpty()) {
+if (autor.orElseGet(List::of).isEmpty()) {
 	textBaustein = "u. Autor ";
 } else {
-	textBaustein = String.join(", ", autor) + " ";
+	textBaustein = String.join(", ", autor.orElseGet(List::of)) + " ";
 }
 
 // Veröffentlichung
-if (veroeffentlichungsdatum != null) {
+if (veroeffentlichungsdatum.isPresent()) {
 	textBaustein += "(" + getVeroeffentlichungsDatum() + "). ";
 }
 
@@ -82,8 +82,8 @@ if (textart != null && !textart.isBlank()) {
 }
 
 // Titel
-if (titel != null && !titel.isBlank()) {
-	textBaustein += titel + ". ";
+if (titel.filter(v -> !v.isBlank()).isPresent()) {
+	textBaustein += titel.orElse("") + ". ";
 }
 
 // Websitename
@@ -93,7 +93,7 @@ textBaustein += websitename + ". ";
 textBaustein += url + " ";
 
 // Aufrufdatum
-if (abrufdatum != null) {
+if (abrufdatum.isPresent()) {
 	textBaustein += "(" + getAbrufDatum() + ").";
 }
 
@@ -105,14 +105,14 @@ public String generiereKurzbeleg() {
 	String textbaustein;
 
 	// Autor
-	if (autor == null || autor.isEmpty()) {
+	if (autor.orElseGet(List::of).isEmpty()) {
 		textbaustein = websitename + " ";
 	} else {
-		textbaustein = String.join(", ", autor) + " ";
+		textbaustein = String.join(", ", autor.orElseGet(List::of)) + " ";
 	}
 
 	// Veröffentlichung
-	if (veroeffentlichungsdatum != null) {
+	if (veroeffentlichungsdatum.isPresent()) {
 		textbaustein += "(" + getVeroeffentlichungsDatum() + ")";
 	}
 
@@ -123,11 +123,11 @@ public String generiereKurzbeleg() {
 public int getAnzahlAusgefuellterAttribute() {
 	int anzahl = 0;
 
-	if (autor != null && autor.stream().anyMatch(a -> a != null && !a.isBlank())) {
+	if (autor.orElseGet(List::of).stream().anyMatch(a -> a != null && !a.isBlank())) {
 		anzahl++;
 	}
 
-	if (titel != null && !titel.isBlank()) {
+	if (titel.filter(v -> !v.isBlank()).isPresent()) {
 		anzahl++;
 	}
 
@@ -139,11 +139,11 @@ public int getAnzahlAusgefuellterAttribute() {
 		anzahl++;
 	}
 
-	if (veroeffentlichungsdatum != null) {
+	if (veroeffentlichungsdatum.isPresent()) {
 		anzahl++;
 	}
 
-	if (abrufdatum != null) {
+	if (abrufdatum.isPresent()) {
 		anzahl++;
 	}
 
@@ -160,7 +160,7 @@ public String getVeroeffentlichungsDatum() {
     DateTimeFormatter datumstransformator = DateTimeFormatter.ofPattern("yyyy, d. MMMM", Locale.GERMAN);
     
     // Formatierung anwenden
-    String transformiertesDatum = veroeffentlichungsdatum.format(datumstransformator);
+    String transformiertesDatum = veroeffentlichungsdatum.map(d -> d.format(datumstransformator)).orElse("");
 	return transformiertesDatum;
 }
 
@@ -169,7 +169,7 @@ public String getAbrufDatum() {
 	DateTimeFormatter datumstransformator = DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.GERMAN);
     
     // Formatierung anwenden
-    String transformiertesDatum = abrufdatum.format(datumstransformator);
+    String transformiertesDatum = abrufdatum.map(d -> d.format(datumstransformator)).orElse("");
 	return transformiertesDatum;
 }
 }

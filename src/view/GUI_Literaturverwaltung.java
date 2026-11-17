@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import model.Buchbeleg;
+import model.Website;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import model.Literatur;
@@ -30,6 +33,8 @@ public class GUI_Literaturverwaltung extends JFrame {
     private JComboBox<String> sourceTypeComboBox;
     private final LinkedHashMap<Integer, Richtung> sortDirectionsByColumn = new LinkedHashMap<>();
     private int nextSourceNumber = 1;
+    private DetailsPanel detailsPanel;
+    private final LinkedHashMap<Integer, Literatur> sourcesByNumber = new LinkedHashMap<>();
 
     public GUI_Literaturverwaltung() {
         setTitle("Literaturverwaltung - Literaturverzeichnis");
@@ -43,10 +48,22 @@ public class GUI_Literaturverwaltung extends JFrame {
         JSplitPane contentSplitPane = new JSplitPane(
                 JSplitPane.HORIZONTAL_SPLIT,
                 createListPanel(),
-                new JScrollPane(createDetailsPanel()));
+                createDetailsPanel());
         contentSplitPane.setResizeWeight(1);
         mainPanel.add(contentSplitPane, BorderLayout.CENTER);
 
+        // TEST: remove these examples after reviewing table selection.
+        addTableRows(new Literatur[] {
+            new Buchbeleg(List.of("Kafka, Franz"), Optional.of(LocalDate.of(1915, 1, 1)),
+                    Optional.of("Die Verwandlung"), Optional.of("Kurt Wolff Verlag"),
+                    Optional.of(1), Optional.of("Leipzig"), Optional.of(1), Optional.of(72)),
+            new Buchbeleg(List.of("Goethe, Johann Wolfgang von"), Optional.of(LocalDate.of(1808, 1, 1)),
+                    Optional.of("Faust"), Optional.of("Cotta"), Optional.of(1),
+                    Optional.of("Tübingen"), Optional.of(1), Optional.of(200)),
+            new Website(List.of("Beispielautor"), "Beispielwebsite", Optional.of("Digitale Medien"),
+                    "https://example.org", LocalDate.of(2026, 11, 17),
+                    LocalDate.of(2024, 6, 1), "Artikel")
+        });
         setVisible(true);
         SwingUtilities.invokeLater(() -> contentSplitPane.setDividerLocation(0.65));
     }
@@ -98,6 +115,11 @@ public class GUI_Literaturverwaltung extends JFrame {
                 }
             }
         });
+        table.getSelectionModel().addListSelectionListener(event -> {
+            if (!event.getValueIsAdjusting()) {
+                showSelectedSource();
+            }
+        });
         return table;
     }
 
@@ -118,8 +140,16 @@ public class GUI_Literaturverwaltung extends JFrame {
         return searchPanel;
     }
 
-    private JPanel createDetailsPanel() { //TODO:
-        return new JPanel(new GridBagLayout());
+    private JPanel createDetailsPanel() {
+        detailsPanel = new DetailsPanel();
+        return detailsPanel;
+    }
+
+    private void showSelectedSource() {
+        int selectedRow = sourceTable.getSelectedRow();
+        Literatur source = selectedRow < 0 ? null
+                : sourcesByNumber.get((Integer) tableModel.getValueAt(selectedRow, 0));
+        detailsPanel.showSource(source);
     }
 
     private void updateSortPriority(int column, boolean onlyThisColumn) {
@@ -204,6 +234,7 @@ public class GUI_Literaturverwaltung extends JFrame {
 
     public void addTableRow(Literatur source) {
         Object[] row = createTableRow(source, nextSourceNumber);
+        sourcesByNumber.put(nextSourceNumber, source);
         tableModel.addRow(row);
         nextSourceNumber++;
         sortTableRows();
@@ -218,8 +249,9 @@ public class GUI_Literaturverwaltung extends JFrame {
             rows.add(createTableRow(source, number));
             number++;
         }
-        for (Object[] row : rows) {
-            tableModel.addRow(row);
+        for (int i = 0; i < sources.length; i++) {
+            sourcesByNumber.put(nextSourceNumber + i, sources[i]);
+            tableModel.addRow(rows.get(i));
         }
         nextSourceNumber = number;
         sortTableRows();
@@ -227,6 +259,7 @@ public class GUI_Literaturverwaltung extends JFrame {
     }
 
     public void removeTableRow(int rowIndex) {
+        sourcesByNumber.remove((Integer) tableModel.getValueAt(rowIndex, 0));
         tableModel.removeRow(rowIndex);
         sortTableRows();
         updateSourceTypes();
@@ -235,14 +268,17 @@ public class GUI_Literaturverwaltung extends JFrame {
     public void updateTableRow(int rowIndex, Literatur source) {
         int number = (Integer) tableModel.getValueAt(rowIndex, 0);
         Object[] rowData = createTableRow(source, number);
+        sourcesByNumber.put(number, source);
         for (int column = 0; column < tableModel.getColumnCount(); column++) {
             tableModel.setValueAt(rowData[column], rowIndex, column);
         }
         sortTableRows();
         updateSourceTypes();
+        showSelectedSource();
     }
 
     public void resetTable() {
+        sourcesByNumber.clear();
         tableModel.setRowCount(0);
         nextSourceNumber = 1;
         updateSourceTypes();

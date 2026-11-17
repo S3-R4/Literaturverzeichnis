@@ -24,7 +24,7 @@ public class Sammelbandbeleg extends Literatur {
 
 		setAutoren(autoren);
 		setHerausgeber(herausgeber);
-		setVeroeffentlichungsdatum(veroeffentlichungsdatum.orElse(null));
+		setVeroeffentlichungsdatum(veroeffentlichungsdatum);
 		setBeitragstitel(beitragstitel);
 		setSammelbandtitel(sammelbandtitel);
 		setAuflage(auflage);
@@ -51,7 +51,7 @@ public class Sammelbandbeleg extends Literatur {
 	}
 
 	public void setAutoren(List<String> autoren) {
-		this.autor = bereinigePersonen(autoren);
+		this.autor = Optional.of(bereinigePersonen(autoren));
 	}
 
 	public void setHerausgeber(List<String> herausgeber) {
@@ -108,8 +108,8 @@ public class Sammelbandbeleg extends Literatur {
 
 	public String getErscheinungsjahr() {
 
-		if (veroeffentlichungsdatum != null) {
-			return String.valueOf(veroeffentlichungsdatum.getYear());
+		if (veroeffentlichungsdatum.isPresent()) {
+			return String.valueOf(veroeffentlichungsdatum.orElseThrow().getYear());
 		}
 
 		return "";
@@ -201,11 +201,11 @@ public class Sammelbandbeleg extends Literatur {
 
 	private String getAutoren() {
 
-		if (autor.isEmpty()) {
+		if (autor.orElseGet(List::of).isEmpty()) {
 			return "";
 		}
 
-		return String.join(", ", autor);
+		return String.join(", ", autor.orElseGet(List::of));
 	}
 
 	@Override

@@ -1,51 +1,51 @@
 package model.Audiovisuell;
 
 import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Objects;
 import java.time.format.DateTimeFormatter;
 
 public class SocialMediaBeitraege extends Audiovisuell {
-	private String text;
-	private String beschreibung;
+	private Optional<String> text = Optional.empty();
+	private Optional<String> beschreibung = Optional.empty();
 
 	@Override
 	public String generiereLangbeleg() {
 		return getAutorsString(autor) + ". " +
 				datumFormatierung(veroeffentlichungsdatum) + ". " +
-				getTitel() + ". [" +
-				getBeitragsArt() + "]. " +
-				getMedium() +
-				getUrl() + " " +
-				getAbruffDatum().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+				getTitel().orElse("") + ". [" +
+				getBeitragsArt().orElse("") + "]. " +
+				getMedium().orElse("") +
+				getUrl().orElse("") + " " +
+				getAbruffDatum().map(d -> d.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))).orElse("");
 	}
 
 	@Override
 	public String generiereKurzbeleg() {
 		return getAutorsString(autor) + ". " +
 				datumFormatierung(veroeffentlichungsdatum) + ". " +
-				getTitel();
+				getTitel().orElse("");
 	}
 
 	@Override
-	public String datumFormatierung(LocalDate datum) {
-		if (abrufdatum == null)
-			return "";
-		return "(" + datum.getYear() + ")";
+	public String datumFormatierung(Optional<LocalDate> datum) {
+		return datum.map(d -> "(" + d.getYear() + ")").orElse("");
 	}
 
-	public String getText() {
+	public Optional<String> getText() {
 		return text;
 	}
 
-	public void setText(String text) {
-		this.text = text;
+	public void setText(Optional<String> text) {
+		this.text = Objects.requireNonNull(text, "text");
 	}
 
-	public String getBeschreibung() {
+	public Optional<String> getBeschreibung() {
 		return beschreibung;
 	}
 
-	public void setBeschreibung(String beschreibung) {
-		this.beschreibung = beschreibung;
+	public void setBeschreibung(Optional<String> beschreibung) {
+		this.beschreibung = Objects.requireNonNull(beschreibung, "beschreibung");
 	}
 
 	@Override

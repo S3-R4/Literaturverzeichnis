@@ -1,6 +1,7 @@
 package model;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
@@ -23,20 +24,20 @@ public class Zeitungsartikel extends Literatur {
 	 */
 	public Zeitungsartikel(LocalDate veroeffentlichungsdatum, String titel, String zeitung, String seitenzahl,
 			String url, List<String> autor) {
-		setAutor(autor);
+		setAutor(Optional.ofNullable(autor));
 		setDatum(veroeffentlichungsdatum);
-		setTitel(titel);
+		setTitel(Optional.ofNullable(titel));
 		setZeitung(zeitung);
 		setSeitenzahl(seitenzahl);
 		setUrl(url);
 	}
 
-	public List<String> getAutor() {
+	public Optional<List<String>> getAutor() {
 		return autor;
 	}
 
-	public void setAutor(List<String> autor) {
-		this.autor = autor;
+	public void setAutor(Optional<List<String>> autor) {
+		this.autor = java.util.Objects.requireNonNull(autor);
 	}
 
 	public String getDatum() {
@@ -44,20 +45,20 @@ public class Zeitungsartikel extends Literatur {
         DateTimeFormatter datumstransformator = DateTimeFormatter.ofPattern("yyyy, d.MMMM", Locale.GERMAN);
         
         // Formatierung anwenden
-        String transformiertesDatum = veroeffentlichungsdatum.format(datumstransformator);
+        String transformiertesDatum = veroeffentlichungsdatum.map(d -> d.format(datumstransformator)).orElse("");
 		return transformiertesDatum;
 	}
 
 	public void setDatum(java.time.LocalDate datum) {
-		this.veroeffentlichungsdatum = datum;
+		this.veroeffentlichungsdatum = Optional.ofNullable(datum);
 	}
 
-	public String getTitel() {
+	public Optional<String> getTitel() {
 		return titel;
 	}
 
-	public void setTitel(String titel) {
-		this.titel = titel;
+	public void setTitel(Optional<String> titel) {
+		this.titel = java.util.Objects.requireNonNull(titel);
 	}
 
 	public String getZeitung() {
@@ -88,22 +89,22 @@ public class Zeitungsartikel extends Literatur {
 		String s = "";
 
 		// Autor Konventionen
-		switch (getAutor().size()) {
+		switch (getAutor().orElseGet(List::of).size()) {
 			case 0:
 				break;
 			case 1:
-				s += getAutor().get(0);
+				s += getAutor().orElseGet(List::of).get(0);
 				break;
 			case 2:
-				s += getAutor().get(0) + "&" + getAutor().get(1);
+				s += getAutor().orElseGet(List::of).get(0) + "&" + getAutor().orElseGet(List::of).get(1);
 				break;
 			default:
-				s += getAutor().get(0) + " et al.";
+				s += getAutor().orElseGet(List::of).get(0) + " et al.";
 		}
 
 		if (s.equals(""))
 			if (getZeitung().equals(""))
-				s += getTitel();
+				s += getTitel().orElse("");
 			else
 				s += getZeitung();
 
@@ -112,25 +113,25 @@ public class Zeitungsartikel extends Literatur {
 
 	private String getAutorAsStringLang() {
 		String s = "";
-		switch (getAutor().size()) {
+		switch (getAutor().orElseGet(List::of).size()) {
 			case 0:
 				break;
 			case 1:
-				s += getAutor().get(0);
+				s += getAutor().orElseGet(List::of).get(0);
 				break;
 			case 2:
-				s += getAutor().get(0) + ", " + getAutor().get(1);
+				s += getAutor().orElseGet(List::of).get(0) + ", " + getAutor().orElseGet(List::of).get(1);
 				break;
 			case 3:
-				s += getAutor().get(0) + ", " + getAutor().get(1) + ", " + getAutor().get(2);
+				s += getAutor().orElseGet(List::of).get(0) + ", " + getAutor().orElseGet(List::of).get(1) + ", " + getAutor().orElseGet(List::of).get(2);
 				break;
 			default:
-				s += getAutor().get(0) + ", " + getAutor().get(1) + ", " + getAutor().get(2) + ", et al.";
+				s += getAutor().orElseGet(List::of).get(0) + ", " + getAutor().orElseGet(List::of).get(1) + ", " + getAutor().orElseGet(List::of).get(2) + ", et al.";
 		}
 
 		if (s.equals(""))
 			if (getZeitung().equals(""))
-				s += getTitel();
+				s += getTitel().orElse("");
 			else
 				s += getZeitung();
 
@@ -160,8 +161,8 @@ public class Zeitungsartikel extends Literatur {
 
 		b += " (" + getDatum() + "). ";
 
-		if (!titel.equals(""))
-			b += titel + ". ";
+		if (!titel.orElse("").equals(""))
+			b += titel.orElse("") + ". ";
 		else
 			b += "[o. T.]. ";
 
@@ -180,9 +181,9 @@ public class Zeitungsartikel extends Literatur {
 public int getAnzahlAusgefuellterAttribute() {
 int anzahl = 0;
 
-if (autor != null && autor.stream().anyMatch(a -> a != null && !a.isBlank())) anzahl++;
-if (veroeffentlichungsdatum != null) anzahl++;
-if (titel != null && !titel.isBlank()) anzahl++;
+if (autor.orElseGet(List::of).stream().anyMatch(a -> a != null && !a.isBlank())) anzahl++;
+if (veroeffentlichungsdatum.isPresent()) anzahl++;
+if (titel.filter(v -> !v.isBlank()).isPresent()) anzahl++;
 if (zeitung != null && !zeitung.isBlank()) anzahl++;
 if (seitenzahl != null && !seitenzahl.isBlank()) anzahl++;
 if (url != null && !url.isBlank()) anzahl++;

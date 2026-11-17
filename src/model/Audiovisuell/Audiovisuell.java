@@ -1,103 +1,71 @@
 package model.Audiovisuell;
 
-import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import model.Literatur;
 
 public abstract class Audiovisuell extends Literatur {
-	protected String beitragsArt;
-	protected String medium;
-	protected String url;
+    protected Optional<String> beitragsArt = Optional.empty();
+    protected Optional<String> medium = Optional.empty();
+    protected Optional<String> url = Optional.empty();
 
-	public String getTitel() {
-		return titel;
-	}
+    @Override
+    public void setAutor(Optional<List<String>> autoren) {
+        this.autor = Objects.requireNonNull(autoren, "autoren").map(werte -> {
+            List<String> bereinigt = new ArrayList<>();
+            for (String wert : werte) {
+                if (wert != null && !wert.isBlank()) {
+                    bereinigt.add(wert.trim());
+                }
+            }
+            return bereinigt;
+        });
+    }
 
-	public void setTitel(String titel) {
-		this.titel = titel;
-	}
+    // Bestehende Schreibweise als Alias zur geerbten Methode beibehalten.
+    public void setVeroffentlichungsdatum(Optional<LocalDate> datum) {
+        setVeroeffentlichungsdatum(datum);
+    }
 
-	public List<String> getAutor() {
-		return this.autor;
-	}
+    public Optional<String> getBeitragsArt() {
+        return beitragsArt;
+    }
 
-	public void setAutor(List<String> autoren) {
-		this.autor = new ArrayList<>();
+    public void setBeitragsArt(Optional<String> beitragsArt) {
+        this.beitragsArt = Objects.requireNonNull(beitragsArt, "beitragsArt");
+    }
 
-		for (String autor : autoren) {
-			if (!autor.isBlank()) {
-				this.autor.add(autor.trim());
-			}
-		}
-	}
+    public Optional<String> getMedium() {
+        return medium;
+    }
 
-	public LocalDate getVeroeffentlichungsdatum() {
-		return this.veroeffentlichungsdatum;
-	}
+    public void setMedium(Optional<String> medium) {
+        this.medium = Objects.requireNonNull(medium, "medium");
+    }
 
-	public void setVeroffentlichungsdatum(LocalDate veroeffentlichungsdatum)
-			throws DateTimeParseException, DateTimeException {
-		try {
-			this.veroeffentlichungsdatum = veroeffentlichungsdatum;
-		} catch (DateTimeParseException e) {
-			System.out.println("Failed to parse date: " + e.getMessage());
-		} catch (DateTimeException e) {
-			System.out.println("Invalid date: " + e.getMessage());
-		}
-	}
+    public Optional<String> getUrl() {
+        return url;
+    }
 
-	public String getBeitragsArt() {
-		return beitragsArt;
-	}
+    public void setUrl(Optional<String> url) {
+        this.url = Objects.requireNonNull(url, "url");
+    }
 
-	public void setBeitragsArt(String beitragsArt) {
-		this.beitragsArt = beitragsArt;
-	}
+    public Optional<LocalDate> getAbruffDatum() {
+        return getAbrufdatum();
+    }
 
-	public String getMedium() {
-		return medium;
-	}
+    public void setAbruffDatum(Optional<LocalDate> datum) {
+        setAbrufdatum(datum);
+    }
 
-	public void setMedium(String medium) {
-		this.medium = medium;
-	}
+    public abstract String datumFormatierung(Optional<LocalDate> datum);
 
-	public String getUrl() {
-		return url;
-	}
-
-	public void setUrl(String url) {
-		this.url = url;
-	}
-
-	public LocalDate getAbruffDatum() {
-		return this.abrufdatum;
-	}
-
-	public void setAbruffDatum(LocalDate abruffDatum) throws DateTimeParseException, DateTimeException {
-		try {
-			this.abrufdatum = abruffDatum;
-		} catch (DateTimeParseException e) {
-			System.out.println("Failed to parse date: " + e.getMessage());
-		} catch (DateTimeException e) {
-			System.out.println("Invalid date: " + e.getMessage());
-		}
-	}
-
-	public abstract String datumFormatierung(LocalDate datum);
-
-	public String getAutorsString(List<String> autors) {
-		String autorsString = "";
-
-		for (int i = 0; i < autors.size(); i++) {
-			if (i > 0)
-				autorsString += " ,";
-			autorsString += autors.get(i);
-		}
-		return autorsString;
-	}
+    public String getAutorsString(Optional<List<String>> autors) {
+        return autors.map(werte -> String.join(" ,", werte)).orElse("");
+    }
 }

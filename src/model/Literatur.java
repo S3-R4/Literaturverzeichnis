@@ -6,41 +6,42 @@ import java.util.Optional;
 import java.util.Objects;
 
 public abstract class Literatur {
-protected Optional<List<String>> autor = Optional.empty();
+
+protected List<String> autor = new java.util.ArrayList<>();
 protected Optional<String> titel = Optional.empty();
 protected Optional<LocalDate> veroeffentlichungsdatum = Optional.empty();
 protected Optional<LocalDate> abrufdatum = Optional.empty();
 
-public Optional<List<String>> getAutor() {
+public List<String> getAutor() {
     return autor;
 }
 
-public void setAutor(Optional<List<String>> autor) {
-this.autor = Objects.requireNonNull(autor, "autor");
+public void setAutor(List<String> autor) {
+    this.autor = Objects.requireNonNull(autor, "autor");
 }
 
 public Optional<String> getTitel() {
-return titel;
+    return titel;
 }
 
 public void setTitel(Optional<String> titel) {
-this.titel = Objects.requireNonNull(titel, "titel");
+    this.titel = Objects.requireNonNull(titel, "titel");
 }
 
 public Optional<LocalDate> getVeroeffentlichungsdatum() {
-return veroeffentlichungsdatum;
+    return veroeffentlichungsdatum;
 }
 
 public void setVeroeffentlichungsdatum(Optional<LocalDate> veroeffentlichungsdatum) {
-this.veroeffentlichungsdatum = Objects.requireNonNull(veroeffentlichungsdatum, "veroeffentlichungsdatum");
+    this.veroeffentlichungsdatum = Objects.requireNonNull(veroeffentlichungsdatum, "veroeffentlichungsdatum");
 }
 
 public Optional<LocalDate> getAbrufdatum() {
-return abrufdatum;
+    return abrufdatum;
 }
 
 public void setAbrufdatum(Optional<LocalDate> abrufdatum) {
-this.abrufdatum = Objects.requireNonNull(abrufdatum, "abrufdatum");
+    this.abrufdatum = Objects.requireNonNull(abrufdatum, "abrufdatum");
 }
 
 public abstract String generiereKurzbeleg();
@@ -52,6 +53,6 @@ public abstract int getAnzahlAusgefuellterAttribute();
 public abstract int getAnzahlRelevanterAttribute();
 
 public String getErfassungsstand() {
-	return getAnzahlAusgefuellterAttribute() + "/"+ getAnzahlRelevanterAttribute() + " Attribute eingetragen";
-    }
+return getAnzahlAusgefuellterAttribute() + "/"+ getAnzahlRelevanterAttribute() + " Attribute eingetragen";
+}
 }

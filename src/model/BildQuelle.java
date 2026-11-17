@@ -2,6 +2,7 @@
 package model;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -14,12 +15,6 @@ public class BildQuelle extends Literatur {
     private boolean MehrUrheber = false;
 
     public BildQuelle() {
-        autor = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            autor.add("");
-        }
-        titel = Optional.empty();
-        veroeffentlichungsdatum = Optional.empty();
         abrufdatum = Optional.of(LocalDate.now());
     }
 
@@ -40,14 +35,14 @@ public class BildQuelle extends Literatur {
         this.MehrUrheber = mehrurheber;
         setTitel(titel);
 
-        this.veroeffentlichungsdatum = Optional.ofNullable(veroeffentlichungsdatum);
+        setVeroeffentlichungsdatum(veroeffentlichungsdatum);
 
     }
 
     public List<String> validiere() {
         List<String> fehler = new ArrayList<>();
 
-        if (titel != null && !titel.isBlank()) {
+        if (getTitel().isPresent()) {
             Optional<String> fehlerText = Validierung.pruefeText(titel);
 
             if (fehlerText.isPresent()) {
@@ -58,52 +53,54 @@ public class BildQuelle extends Literatur {
         return fehler;
     }
 
-    public String getUrheber1() {
-        if (autor.get(0).equals("")) {
-            return "Unbekannter Autor";
-        }
-
-        return autor.get(0);
+    private String urheber(int index) {
+        List<String> urheber = getAutor().orElse(List.of());
+        return index < urheber.size() && urheber.get(index) != null ? urheber.get(index) : "";
     }
 
-    public void setUrheber1(String urheber1) {
-        autor.set(0, urheber1 == null ? "" : urheber1);
+    private void setUrheber(int index, String name) {
+        List<String> urheber = new ArrayList<>(getAutor().orElse(List.of()));
+        while (urheber.size() <= index) {
+            urheber.add("");
+        }
+        urheber.set(index, name == null ? "" : name);
+        setAutor(Optional.of(urheber));
+    }
+
+    public String getUrheber1() {
+        String name = urheber(0);
+        return name.isBlank() ? "Unbekannter Autor" : name;
+    }
+
+    public void setUrheber1(String name) {
+        setUrheber(0, name);
     }
 
     public String getUrheber2() {
-        if (autor.get(1).equals("")) {
-            return "";
-        }
-
-        return ", " + autor.get(1);
+        String name = urheber(1);
+        return name.isBlank() ? "" : ", " + name;
     }
 
-    public void setUrheber2(String urheber2) {
-        autor.set(1, urheber2 == null ? "" : urheber2);
+    public void setUrheber2(String name) {
+        setUrheber(1, name);
     }
 
     public String getUrheber3() {
-        if (autor.get(2).equals("")) {
-            return "";
-        }
-
-        return ", " + autor.get(2);
+        String name = urheber(2);
+        return name.isBlank() ? "" : ", " + name;
     }
 
-    public void setUrheber3(String urheber3) {
-        autor.set(2, urheber3 == null ? "" : urheber3);
+    public void setUrheber3(String name) {
+        setUrheber(2, name);
     }
 
     public String getUrheber4() {
-        if (autor.get(3).equals("")) {
-            return "";
-        }
-
-        return ", " + autor.get(3);
+        String name = urheber(3);
+        return name.isBlank() ? "" : ", " + name;
     }
 
-    public void setUrheber4(String urheber4) {
-        autor.set(3, urheber4 == null ? "" : urheber4);
+    public void setUrheber4(String name) {
+        setUrheber(3, name);
     }
 
     public String getMehrUrheber(boolean mehrurheber) {
@@ -115,36 +112,24 @@ public class BildQuelle extends Literatur {
     }
 
     public void setMehrUrheber(Optional<Boolean> mehrurheber) {
-        MehrUrheber = mehrurheber;
-    }
-
-    @Override
-    public Optional<String> getTitel() {
-        return titel == null ? Optional.empty() : titel;
+        MehrUrheber = mehrurheber.orElse(false);
     }
 
     @Override
     public void setTitel(Optional<String> titel) {
-        this.titel = titel == null ? Optional.empty() : titel.map(String::trim);
+        super.setTitel(titel.map(String::trim).filter(wert -> !wert.isBlank()));
     }
 
     public String getMedienart() {
-        if (Medienart == null || Medienart.isEmpty()) {
-            return "";
-        }
-        return "[" + Medienart + "]. ";
+        return Medienart.map(wert -> "[" + wert + "]. ").orElse("");
     }
 
     public void setMedienart(Optional<String> medienart) {
-        Medienart = medienart == null ? Optional.empty() : medienart.map(String::trim);
+        Medienart = medienart.map(String::trim).filter(wert -> !wert.isBlank());
     }
 
     public String getveroeffentlichungsdatum() {
-        if (veroeffentlichungsdatum == null) {
-            return "";
-        }
-
-        return " (" + veroeffentlichungsdatum.get().getYear() + "). ";
+        return getVeroeffentlichungsdatum().map(datum -> " (" + datum.getYear() + "). ").orElse("");
     }
 
     public Optional<String> setVeröffentlichungsdatum(Optional<String> veroffentlichungsdatum) {
@@ -158,7 +143,7 @@ public class BildQuelle extends Literatur {
         Optional<String> fehler = Validierung.pruefeJahr(veroffentlichungsdatum);
 
         if (fehler.isPresent()) {
-            return Optional.of(fehler.get());
+            return fehler;
         }
 
         this.veroeffentlichungsdatum = Optional.of(LocalDate.of(Integer.parseInt(veroffentlichungsdatum.get()), 1, 1));
@@ -166,15 +151,11 @@ public class BildQuelle extends Literatur {
     }
 
     public String getHerausgeber() {
-        if (Herausgeber.equals("")) {
-            return "";
-        }
-
-        return Herausgeber + ". ";
+        return Herausgeber.map(wert -> wert + ". ").orElse("");
     }
 
     public void setHerausgeber(Optional<String> herausgeber) {
-        Herausgeber = herausgeber == null ? Optional.empty() : herausgeber;
+        Herausgeber = herausgeber.map(String::trim).filter(wert -> !wert.isBlank());
     }
 
     public Optional<String> getAnbieter() {
@@ -182,49 +163,38 @@ public class BildQuelle extends Literatur {
     }
 
     public void setAnbieter(Optional<String> anbieter) {
-        Anbieter = anbieter == null ? Optional.empty() : anbieter;
+        Anbieter = anbieter.map(String::trim).filter(wert -> !wert.isBlank());
     }
 
     public String DatumFormatierung() {
-        if (abrufdatum == null) {
-            return "";
-        }
-
-        return "[" + abrufdatum.get().format(java.time.format.DateTimeFormatter.ofPattern("d.M.yyyy")) + "].";
+        return getAbrufdatum().map(datum -> "[" + datum.format(DateTimeFormatter.ofPattern("d.M.yyyy")) + "].")
+                .orElse("");
     }
 
-    public Optional<String> setAbrufdatum(Optional<String> abrufdatum) {
-        if (abrufdatum == null || abrufdatum.map(String::trim).isEmpty()) {
-            this.abrufdatum = Optional.empty();
+    public Optional<String> setAbrufdatumText(Optional<String> abrufdatum) {
+        Optional<String> datum = abrufdatum.map(String::trim).filter(wert -> !wert.isBlank());
+        if (datum.isEmpty()) {
+            setAbrufdatum(Optional.empty());
             return Optional.empty();
         }
 
-        abrufdatum = abrufdatum.map(String::trim);
-
-        Optional<String> fehler = Validierung.pruefeDatum(abrufdatum);
-
-        if (fehler.isPresent()) {
-            return Optional.of(fehler);
+        Optional<String> fehler = Validierung.pruefeDatum(datum);
+        if (fehler.isEmpty()) {
+            setAbrufdatum(datum.map(wert -> LocalDate.parse(wert, DateTimeFormatter.ofPattern("d.M.uuuu"))));
         }
-
-        this.abrufdatum = LocalDate.parse(abrufdatum, java.time.format.DateTimeFormatter.ofPattern("d.M.uuuu"));
-
-        return Optional.empty();
+        return fehler;
     }
 
     public String getbeleg() {
         return getUrheber1() + getUrheber2() + getUrheber3() + getUrheber4() + getMehrUrheber(MehrUrheber)
-                + getErscheinungsjahr() + getTitel() + getMedienart() + getHerausgeber() + getAnbieter()
+                + getveroeffentlichungsdatum() + getTitel().orElse("") + getMedienart() + getHerausgeber() + getAnbieter().orElse("")
                 + DatumFormatierung();
     }
 
     @Override
     public String generiereKurzbeleg() {
-        if (veroeffentlichungsdatum == null) {
-            return "(" + getUrheber1() + ")";
-        }
-
-        return "(" + getUrheber1() + ", " + veroeffentlichungsdatum.getYear() + ")";
+        return "(" + getUrheber1()
+                + getVeroeffentlichungsdatum().map(datum -> ", " + datum.getYear()).orElse("") + ")";
     }
 
     @Override
@@ -239,28 +209,28 @@ public class BildQuelle extends Literatur {
         int anzahl = 0;
 
         // Urheber
-        if (autor != null && autor.stream()
+        if (getAutor().orElse(List.of()).stream()
                 .anyMatch(a -> a != null && !a.isBlank())) {
             anzahl++;
         }
 
         // Titel
-        if (titel != null && !titel.isBlank()) {
+        if (getTitel().isPresent()) {
             anzahl++;
         }
 
         // Medienart
-        if (Medienart != null && !Medienart.isBlank()) {
+        if (Medienart.isPresent()) {
             anzahl++;
         }
 
         // Erscheinungsjahr
-        if (veroeffentlichungsdatum != null) {
+        if (getVeroeffentlichungsdatum().isPresent()) {
             anzahl++;
         }
 
         // Herausgeber oder Anbieter
-        if ((Herausgeber != null && !Herausgeber.isBlank()) || (Anbieter != null && !Anbieter.isBlank())) {
+        if (Herausgeber.isPresent() || Anbieter.isPresent()) {
             anzahl++;
         }
 

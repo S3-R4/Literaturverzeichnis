@@ -301,7 +301,6 @@ final class DetailsPanel extends JPanel {
                 .filter(author -> author != null && !author.isBlank()).toList()));
         if (currentSource instanceof Buchbeleg) {
             // These strings are the book getters' placeholders for missing values.
-            if (values.get("Titel").equals("o.T.")) values.put("Titel", "");
             if (values.get("Verlag").equals("o.V.")) values.put("Verlag", "");
             if (values.get("Erscheinungsort").equals("o.O.")) values.put("Erscheinungsort", "");
         }

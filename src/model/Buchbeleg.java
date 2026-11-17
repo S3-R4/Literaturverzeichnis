@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 public class Buchbeleg extends Literatur {
-private Optional<String> buchverlag;
-private Optional<Integer> auflage;
-private Optional<String> erscheinungsort;
+private Optional<String> buchverlag = Optional.empty();
+private Optional<Integer> auflage = Optional.empty();
+private Optional<String> erscheinungsort = Optional.empty();
 private Seitenangabe seitenangabe;
 
 public Buchbeleg(List<String> autor, Optional<LocalDate> veroeffentlichungsdatum,Optional<String> titel, Optional<String> buchverlag,Optional<Integer> auflage, Optional<String> erscheinungsort,Optional<Integer> anfang, Optional<Integer> ende) {
@@ -29,15 +29,19 @@ setSeitenangabe(anfang, ende);
 }
 
 public void setAutoren(List<String> autoren) {
-this.autor = new ArrayList<>();
+List<String> bereinigt = new ArrayList<>();
 
-if (autoren == null) return;
+if (autoren == null) {
+    setAutor(Optional.empty());
+    return;
+}
 
 for (String autor : autoren) {
 if (autor != null && !autor.isBlank()) {
-    this.autor.add(autor.trim());
+    bereinigt.add(autor.trim());
     }
 }
+setAutor(bereinigt.isEmpty() ? Optional.empty() : Optional.of(bereinigt));
 }
 
 public void setErscheinungsdatum(Optional<LocalDate> erscheinungsdatum) {
@@ -46,12 +50,11 @@ throw new IllegalArgumentException("Das Veröffentlichungsdatum darf nicht in de
     );
 }
 
-this.veroeffentlichungsdatum = erscheinungsdatum.orElse(null);
+setVeroeffentlichungsdatum(erscheinungsdatum);
 }
 
 public void setTitel(Optional<String> titel) {
-String wert = titel.orElse("");
-this.titel = wert.isBlank() ? null : wert.trim();
+super.setTitel(titel.map(String::trim).filter(wert -> !wert.isBlank()));
 }
 
 public void setAuflage(Optional<Integer> auflage) {
@@ -76,35 +79,31 @@ this.seitenangabe = new Seitenangabe(anfang, ende);
 }
 
 public String getAutoren() {
-return this.autor.isEmpty() ? "o.A." : formatiereAutoren();
+List<String> autoren = getAutor().orElse(List.of());
+return autoren.isEmpty() ? "o.A." : formatiereAutoren(autoren);
 }
 
-private String formatiereAutoren() {
+private String formatiereAutoren(List<String> autoren) {
 final int MAX_AUTORENANZAHL = 3;
 String ergebnis = "";
 
-for (int i = 0; i < this.autor.size(); i++) {
+for (int i = 0; i < autoren.size(); i++) {
     if (i >= MAX_AUTORENANZAHL) {
         return ergebnis + ", et al.";
     }
 
     if (i > 0) {
-        ergebnis += i == this.autor.size() - 1 ? " & " : ", ";
+        ergebnis += i == autoren.size() - 1 ? " & " : ", ";
     }
 
-    ergebnis += this.autor.get(i);
+    ergebnis += autoren.get(i);
 }
 
 return ergebnis;
 }
 
 public String getErscheinungsjahr() {
-return this.veroeffentlichungsdatum != null? String.valueOf(this.veroeffentlichungsdatum.getYear()): "o.J.";
-}
-
-@Override
-public String getTitel() {
-return this.titel == null || this.titel.isBlank() ? "o.T." : this.titel;
+return getVeroeffentlichungsdatum().map(datum -> Integer.toString(datum.getYear())).orElse("o.J.");
 }
 
 public String getAuflage() {
@@ -133,10 +132,10 @@ return seiten.isEmpty()? "(" + beleg + ")": "(" + beleg + ", S." + seiten + ")";
 
 @Override
 public String generiereLangbeleg() {
-if (this.titel == null || this.titel.isBlank()|| this.buchverlag.isEmpty()) {throw new IllegalArgumentException("Für einen Langbeleg müssen Titel und Verlag angegeben sein.");
+if (getTitel().isEmpty() || buchverlag.isEmpty()) {throw new IllegalArgumentException("Für einen Langbeleg müssen Titel und Verlag angegeben sein.");
 }
 
-String titelMitAuflage = getTitel() + ".";
+String titelMitAuflage = getTitel().orElseThrow() + ".";
 
 if (this.auflage.isPresent()) {
     titelMitAuflage += " " + getAuflage() + ". Aufl.";
@@ -150,23 +149,23 @@ return String.join(" ",getAutoren(),"(" + getErscheinungsjahr() + "): " + titelM
 public int getAnzahlAusgefuellterAttribute() {
 int anzahl = 0;
 
-if (autor != null && autor.stream().anyMatch(a -> a != null && !a.isBlank())) {
+if (getAutor().orElse(List.of()).stream().anyMatch(a -> a != null && !a.isBlank())) {
 anzahl++;
 }
 
-if (veroeffentlichungsdatum != null) {
+if (getVeroeffentlichungsdatum().isPresent()) {
 anzahl++;
 }
 
-if (titel != null && !titel.isBlank()) {
+if (getTitel().isPresent()) {
 anzahl++;
 }
 
-if (buchverlag != null && buchverlag.isPresent()&& !buchverlag.get().isBlank()) {
+if (buchverlag.isPresent()) {
     anzahl++;
 }
 
-if (erscheinungsort != null && erscheinungsort.isPresent()&& !erscheinungsort.get().isBlank()) {
+if (erscheinungsort.isPresent()) {
     anzahl++;
 }
 

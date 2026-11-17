@@ -51,6 +51,7 @@
 				<configuration>
 					<excludes>
 						<exclude>testfolder/**</exclude>
+						<exclude>test/**</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

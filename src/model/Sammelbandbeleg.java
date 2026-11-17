@@ -9,7 +9,6 @@ public class Sammelbandbeleg extends Literatur {
 
 
 	private List<String> herausgeber;
-	private Optional<String> beitragstitel;
 	private Optional<String> sammelbandtitel;
 	private Optional<String> verlag;
 	private Optional<Integer> auflage;
@@ -60,7 +59,7 @@ public class Sammelbandbeleg extends Literatur {
 
 
 	public void setBeitragstitel(Optional<String> beitragstitel) {
-		this.beitragstitel = bereinigeText(beitragstitel);
+		setTitel(bereinigeText(beitragstitel));
 	}
 
 	public void setSammelbandtitel(Optional<String> sammelbandtitel) {
@@ -116,7 +115,7 @@ public class Sammelbandbeleg extends Literatur {
 	}
 
 	public String getBeitragstitel() {
-		return beitragstitel.orElse("");
+		return getTitel().orElse("");
 	}
 
 	public String getSammelbandtitel() {
@@ -168,7 +167,7 @@ public class Sammelbandbeleg extends Literatur {
 	@Override
 	public String generiereLangbeleg() {
 
-		if (beitragstitel.isEmpty() || sammelbandtitel.isEmpty() || verlag.isEmpty() || herausgeber.isEmpty()) {
+		if (getTitel().isEmpty() || sammelbandtitel.isEmpty() || verlag.isEmpty() || herausgeber.isEmpty()) {
 
 			throw new IllegalArgumentException(
 					"Es müssen Beitragstitel, " + "Sammelbandtitel, Herausgeber und Verlag angegeben sein.");

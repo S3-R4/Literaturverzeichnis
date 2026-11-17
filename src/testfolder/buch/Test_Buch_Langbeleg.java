@@ -131,7 +131,7 @@ public class Test_Buch_Langbeleg {
                 Optional.of(" Informatik "), Optional.of("Springer"), Optional.empty(), Optional.of("Berlin"), Optional.empty(), Optional.empty());
 
         assertEquals("Müller, Anna", beleg.getAutoren());
-        assertEquals("Informatik", beleg.getTitel());
+        assertEquals(Optional.of("Informatik"), beleg.getTitel());
     }
 
     @Test

@@ -5,6 +5,8 @@ import javax.swing.*;
 import model.Sammelbandbeleg;
 
 import java.awt.*;
+import java.time.LocalDate;
+import java.time.DateTimeException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -80,12 +82,12 @@ public class SammelbandBeitragGUI extends JFrame {
 
 		try {
 			Sammelbandbeleg beitrag = new Sammelbandbeleg(liste(txtAutoren.getText()),
-					optionalZahl(txtErscheinungsjahr.getText()), optionalText(txtBeitragstitel.getText()),
+					optionalZahl(txtErscheinungsjahr.getText()).map(jahr -> LocalDate.of(jahr, 1, 1)), optionalText(txtBeitragstitel.getText()),
 					liste(txtHerausgeber.getText()), optionalText(txtSammelbandtitel.getText()),
 					optionalZahl(txtAuflage.getText()), optionalText(txtVerlag.getText()),
 					optionalText(txtOrt.getText()), optionalZahl(txtAnfang.getText()), optionalZahl(txtEnde.getText()));
 
-			String belegLang = beitrag.getBelegLang();
+			String belegLang = beitrag.generiereLangbeleg();
 
 			txtResultat.setText(belegLang);
 
@@ -94,7 +96,7 @@ public class SammelbandBeitragGUI extends JFrame {
 			JOptionPane.showMessageDialog(this, "Jahr, Auflage und Seitenzahlen müssen Zahlen sein!", "Eingabefehler",
 					JOptionPane.ERROR_MESSAGE);
 
-		} catch (IllegalArgumentException ex) {
+		} catch (IllegalArgumentException | DateTimeException ex) {
 
 			JOptionPane.showMessageDialog(this, ex.getMessage(), "Ungültige Eingabe", JOptionPane.ERROR_MESSAGE);
 		}

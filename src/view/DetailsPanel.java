@@ -15,6 +15,7 @@ import model.BildQuelle;
 import model.Zeitungsartikel;
 import model.Audiovisuell.*;
 import javax.swing.*;
+import java.util.Objects;
 
 final class DetailsPanel extends JPanel {
     private final JPanel attributesPanel = new JPanel();
@@ -27,9 +28,9 @@ final class DetailsPanel extends JPanel {
     private final Consumer<Literatur> addSource;
     private final JPanel sourceTypePanel = new JPanel(new BorderLayout());
     private final JComboBox<String> creationTypeComboBox = new JComboBox<>(new String[] {
-        "Quellentyp wählen…", "Buchbeleg", "Website", "BildQuelle", "Zeitungsartikel",
-        "FIlmsVideos", "Youtube", "PodcastGesamtwerk", "Podcastfolgen",
-        "SocialMediaBeitraege", "Sammelbandbeleg"
+            "Quellentyp wählen…", "Buchbeleg", "Website", "BildQuelle", "Zeitungsartikel",
+            "FIlmsVideos", "Youtube", "PodcastGesamtwerk", "Podcastfolgen",
+            "SocialMediaBeitraege", "Sammelbandbeleg"
     });
     private final LinkedHashMap<String, String> creationDraft = new LinkedHashMap<>();
     private boolean creating;
@@ -72,7 +73,8 @@ final class DetailsPanel extends JPanel {
         sourceHeading.add(sourceTypePanel);
         creationTypeComboBox.getAccessibleContext().setAccessibleName("Quellentyp für neuen Verweis");
         creationTypeComboBox.addActionListener(event -> {
-            if (creating) showCreationFields();
+            if (creating)
+                showCreationFields();
         });
         JPanel header = new JPanel(new BorderLayout(0, 14));
         header.setOpaque(false);
@@ -199,7 +201,8 @@ final class DetailsPanel extends JPanel {
         editFields.clear();
         if (attributes.isEmpty()) {
             JLabel prompt = new JLabel(creating
-                    ? "Bitte einen Quellentyp auswählen." : "Bitte einen Eintrag auswählen.");
+                    ? "Bitte einen Quellentyp auswählen."
+                    : "Bitte einen Eintrag auswählen.");
             prompt.setFont(getFont());
             attributesPanel.add(prompt);
         }
@@ -251,7 +254,8 @@ final class DetailsPanel extends JPanel {
     }
 
     void beginCreation() {
-        if (editing) return;
+        if (editing)
+            return;
         creating = true;
         creationDraft.clear();
         setEditing(true);
@@ -267,7 +271,8 @@ final class DetailsPanel extends JPanel {
         LinkedHashMap<String, String> attributes = new LinkedHashMap<>();
         if (creationTypeComboBox.getSelectedIndex() > 0) {
             if ("Sammelbandbeleg".equals(creationTypeComboBox.getSelectedItem())) {
-                // shortcut: enable this form once Sammelbandbeleg extends Literatur on this branch.
+                // shortcut: enable this form once Sammelbandbeleg extends Literatur on this
+                // branch.
                 inputError.setText("Sammelbandbeleg ist hier noch kein Literatur-Typ.");
             } else {
                 attributes = readAttributes(createBlankSource((String) creationTypeComboBox.getSelectedItem()));
@@ -301,8 +306,10 @@ final class DetailsPanel extends JPanel {
                 .filter(author -> author != null && !author.isBlank()).toList()));
         if (currentSource instanceof Buchbeleg) {
             // These strings are the book getters' placeholders for missing values.
-            if (values.get("Verlag").equals("o.V.")) values.put("Verlag", "");
-            if (values.get("Erscheinungsort").equals("o.O.")) values.put("Erscheinungsort", "");
+            if (values.get("Verlag").equals("o.V."))
+                values.put("Verlag", "");
+            if (values.get("Erscheinungsort").equals("o.O."))
+                values.put("Erscheinungsort", "");
         }
         setEditing(true);
         showDetails(sourceTitle.getText(), sourceType.getText(), values, citationPreview.getText());
@@ -339,7 +346,8 @@ final class DetailsPanel extends JPanel {
     private Literatur readFormSource() {
         List<String> authors = new ArrayList<>();
         for (String author : inputText("Autor / Herausgeber").split(";")) {
-            if (!author.isBlank()) authors.add(author.trim());
+            if (!author.isBlank())
+                authors.add(author.trim());
         }
         Optional<LocalDate> published = readDate("Veröffentlichungsdatum");
         Optional<LocalDate> retrieved = readDate("Abrufdatum");
@@ -417,7 +425,8 @@ final class DetailsPanel extends JPanel {
     }
 
     private Optional<Integer> readNumber(String text) {
-        if (text.isBlank()) return Optional.empty();
+        if (text.isBlank())
+            return Optional.empty();
         try {
             return Optional.of(Integer.parseInt(text.trim()));
         } catch (NumberFormatException error) {
@@ -448,5 +457,32 @@ final class DetailsPanel extends JPanel {
         }
         actionPanel.revalidate();
         actionPanel.repaint();
+    }
+
+    public boolean hasUnsavedChanges() {
+        if (!editing)
+            return false;
+        if (creating && creationTypeComboBox.getSelectedIndex() > 0)
+            return false;
+        for (Map.Entry<String, JTextField> entry : editFields.entrySet()) {
+            String original = shownAttributes.getOrDefault(entry.getKey(), "");
+            if (!Objects.equals(entry.getValue().getText(), original)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void discardEditing() {
+        if (hasUnsavedChanges()) {
+            int choice = JOptionPane.showConfirmDialog(this, "Es gibt ungespeicherte Änderungen. Wirklich verwerfen?",
+                    "Ungespeicherte Änderungen", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (choice != JOptionPane.YES_OPTION) {
+                return;
+            }
+            setEditing(false);
+            showSource(currentSource);
+        }
+        discardEditing();
     }
 }

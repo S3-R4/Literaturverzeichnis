@@ -3,6 +3,8 @@ package view;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
@@ -23,12 +25,10 @@ import model.Sortierer.Richtung;
 import model.Sortierer.SortierPrioritaet;
 
 public class GUI_Literaturverwaltung extends JFrame {
-    private static final String[] COLUMN_NAMES = {
-        "Nr.", "Titel", "Quellentyp", "Autor", "Jahr"
-    };
+    private static final String[] COLUMN_NAMES = { "Nr.", "Titel", "Quellentyp", "Autor", "Jahr" };
     private static final Kriterium[] SORT_CRITERIA = {
-        Kriterium.TITEL, Kriterium.QUELLENTYP,
-        Kriterium.AUTOR, Kriterium.JAHR
+            Kriterium.TITEL, Kriterium.QUELLENTYP,
+            Kriterium.AUTOR, Kriterium.JAHR
     };
 
     private final data_manager manager;
@@ -51,7 +51,7 @@ public class GUI_Literaturverwaltung extends JFrame {
         setTitle("Literaturverwaltung - Literaturverzeichnis");
         setSize(1200, 750);
         setResizable(true);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setJMenuBar(createMenuBar());
 
         JPanel mainPanel = new JPanel(new BorderLayout());
@@ -62,6 +62,15 @@ public class GUI_Literaturverwaltung extends JFrame {
                 createDetailsPanel());
         contentSplitPane.setResizeWeight(1);
         mainPanel.add(contentSplitPane, BorderLayout.CENTER);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent event) {
+                if (detailsPanel.confirmCloseIfEditing()) {
+                    dispose();
+                }
+            }
+
+        });
 
         setVisible(true);
         SwingUtilities.invokeLater(() -> contentSplitPane.setDividerLocation(0.65));
@@ -93,7 +102,7 @@ public class GUI_Literaturverwaltung extends JFrame {
             }
         };
         JTable table = new JTable(tableModel);
-        int[] columnWidths = {45, 250, 110, 160, 60};
+        int[] columnWidths = { 45, 250, 110, 160, 60 };
         for (int column = 0; column < columnWidths.length; column++) {
             table.getColumnModel().getColumn(column).setPreferredWidth(columnWidths[column]);
         }
@@ -102,7 +111,7 @@ public class GUI_Literaturverwaltung extends JFrame {
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getTableHeader().setReorderingAllowed(false);
         table.getTableHeader().setFont(table.getTableHeader().getFont().deriveFont(Font.BOLD));
-        
+
         table.getTableHeader().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent event) {
@@ -134,10 +143,11 @@ public class GUI_Literaturverwaltung extends JFrame {
         searchControlsPanel.add(searchButton, BorderLayout.EAST);
         searchPanel.add(searchControlsPanel, BorderLayout.CENTER);
 
-        sourceTypeComboBox = new JComboBox<>(new String[] {"Alle Quellentypen"});
+        sourceTypeComboBox = new JComboBox<>(new String[] { "Alle Quellentypen" });
         sourceTypeComboBox.getAccessibleContext().setAccessibleName("Quellentyp");
         sourceTypeComboBox.addActionListener(event -> {
-            if (!updatingSourceTypes) refreshTable();
+            if (!updatingSourceTypes)
+                refreshTable();
         });
         searchPanel.add(sourceTypeComboBox, BorderLayout.EAST);
         return searchPanel;
@@ -158,6 +168,7 @@ public class GUI_Literaturverwaltung extends JFrame {
 
     /**
      * Add new Literatur to the table and saves it
+     * 
      * @param source
      */
     private void addCreatedSource(Literatur source) {
@@ -174,12 +185,12 @@ public class GUI_Literaturverwaltung extends JFrame {
                 break;
             }
         }
-        
-        //save the new Literatur
+
+        // save the new Literatur
         try {
-        	manager.add_data(source);
+            manager.add_data(source);
         } catch (Exception e) {
-        	new JOptionPane("" + e);
+            new JOptionPane("" + e);
         }
     }
 
@@ -192,7 +203,8 @@ public class GUI_Literaturverwaltung extends JFrame {
 
     private void updateSortPriority(int column, boolean onlyThisColumn) {
         Richtung direction = sortDirectionsByColumn.get(column) == Richtung.AUFSTEIGEND
-                ? Richtung.ABSTEIGEND : Richtung.AUFSTEIGEND;
+                ? Richtung.ABSTEIGEND
+                : Richtung.AUFSTEIGEND;
         if (onlyThisColumn) {
             sortDirectionsByColumn.clear();
         }
@@ -206,7 +218,8 @@ public class GUI_Literaturverwaltung extends JFrame {
         List<SortierPrioritaet> priorities = new ArrayList<>();
         for (var entry : sortDirectionsByColumn.entrySet()) {
             // Numbers are unique, so criteria after Nr. cannot change the order.
-            if (entry.getKey() == 0) break;
+            if (entry.getKey() == 0)
+                break;
             priorities.add(new SortierPrioritaet(SORT_CRITERIA[entry.getKey() - 1], entry.getValue()));
         }
         int selectedRow = sourceTable.getSelectedRow();
@@ -219,7 +232,8 @@ public class GUI_Literaturverwaltung extends JFrame {
         Richtung numberDirection = sortDirectionsByColumn.get(0);
         if (numberDirection != null) {
             rowNumbers.sort((a, b) -> numberDirection == Richtung.AUFSTEIGEND
-                    ? Integer.compare(a, b) : Integer.compare(b, a));
+                    ? Integer.compare(a, b)
+                    : Integer.compare(b, a));
         }
         List<Literatur> sources = new ArrayList<>();
         IdentityHashMap<Literatur, ArrayDeque<Integer>> numbersBySource = new IdentityHashMap<>();
@@ -267,8 +281,8 @@ public class GUI_Literaturverwaltung extends JFrame {
         Integer publicationYear = source.getVeroeffentlichungsdatum()
                 .map(LocalDate::getYear).orElse(null);
         return new Object[] {
-            number, source.getTitel().orElse(""), source.getClass().getSimpleName(), authorText,
-            publicationYear
+                number, source.getTitel().orElse(""), source.getClass().getSimpleName(), authorText,
+                publicationYear
         };
     }
 
@@ -305,13 +319,15 @@ public class GUI_Literaturverwaltung extends JFrame {
         List<String> types = new ArrayList<>();
         for (Literatur source : sourcesByNumber.values()) {
             String type = source.getClass().getSimpleName();
-            if (!types.contains(type)) types.add(type);
+            if (!types.contains(type))
+                types.add(type);
         }
         updatingSourceTypes = true;
         try {
             sourceTypeComboBox.removeAllItems();
             sourceTypeComboBox.addItem("Alle Quellentypen");
-            for (String type : types) sourceTypeComboBox.addItem(type);
+            for (String type : types)
+                sourceTypeComboBox.addItem(type);
             if (selectedType != null && types.contains(selectedType)) {
                 sourceTypeComboBox.setSelectedItem(selectedType);
             }
@@ -330,7 +346,8 @@ public class GUI_Literaturverwaltung extends JFrame {
 
     public void addTableRows(Literatur[] sources) {
         Objects.requireNonNull(sources, "sources");
-        for (Literatur source : sources) Objects.requireNonNull(source, "source");
+        for (Literatur source : sources)
+            Objects.requireNonNull(source, "source");
         for (Literatur source : sources) {
             sourcesByNumber.put(nextSourceNumber, source);
             nextSourceNumber++;

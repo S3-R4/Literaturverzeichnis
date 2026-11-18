@@ -10,6 +10,20 @@ public class Podcastfolgen extends Audiovisuell {
 	private int podcastFolge = 0;
 	private String podcastFolgenName = "";
 
+	@Override
+	public int getAnzahlAusgefuellterAttribute() {
+		int anzahl = super.getAnzahlAusgefuellterAttribute();
+		if (hatText(herausgebendeOrganisation)) anzahl++;
+		if (podcastFolge > 0) anzahl++;
+		if (hatText(podcastFolgenName)) anzahl++;
+		return anzahl;
+	}
+
+	@Override
+	public int getAnzahlRelevanterAttribute() {
+		return super.getAnzahlRelevanterAttribute() + 3;
+	}
+
 	public Podcastfolgen() {
 		setAutor(new ArrayList<>());
 		setBeitragsArt("Podcast-Folge");

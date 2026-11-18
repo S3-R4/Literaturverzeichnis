@@ -177,29 +177,29 @@ public class Sammelbandbeleg {
 					"Es müssen Beitragstitel, " + "Sammelbandtitel, Herausgeber und Verlag angegeben sein.");
 		}
 
-		String bandtitelMitAuflage = getSammelbandtitel() + ".";
-
+		List<String> banddetails = new ArrayList<>();
 		if (auflage.isPresent()) {
-			bandtitelMitAuflage += " " + getAuflage() + ". Aufl.";
+			banddetails.add(getAuflage() + ". Aufl.");
 		}
-
 		String seiten = getSeitenangabe();
-
-		String seitenTeil = "";
-
 		if (!seiten.isEmpty()) {
-			seitenTeil = ", S. " + seiten;
+			banddetails.add("S. " + seiten);
+		}
+		String bandtitel = getSammelbandtitel();
+		if (!banddetails.isEmpty()) {
+			bandtitel += " (" + String.join(", ", banddetails) + ")";
 		}
 
-		return getAutoren() + " (" + getErscheinungsjahr() + "): " + getBeitragstitel() + ". In: " + getHerausgeber()
-				+ " (Hrsg.): " + bandtitelMitAuflage + " " + getErscheinungsort() + ": " + getBuchverlag() + seitenTeil
-				+ ".";
+		String ort = getErscheinungsort();
+		String veroeffentlichungsort = ort.isEmpty() ? "" : ort + ": ";
+		return belegAutor() + " (" + belegJahr() + "). " + getBeitragstitel() + ". In " + getHerausgeber()
+				+ " (Hrsg.), " + bandtitel + ". " + veroeffentlichungsort + getBuchverlag() + ".";
 	}
 
 	// Erzeugt einen Kurzbeleg
 	public String getBelegKurz() {
 
-		String beleg = getAutoren() + ", " + getErscheinungsjahr();
+		String beleg = belegAutor() + ", " + belegJahr();
 		String seiten = getSeitenangabe();
 
 		if (seiten.isEmpty()) {
@@ -208,4 +208,12 @@ public class Sammelbandbeleg {
 
 		return "(" + beleg + ", S. " + seiten + ")";
 	}
+	private String belegAutor() {
+		return autoren.isEmpty() ? "o.A." : getAutoren();
+	}
+
+	private String belegJahr() {
+		return erscheinungsjahr.isEmpty() ? "o.J." : getErscheinungsjahr();
+	}
+
 }

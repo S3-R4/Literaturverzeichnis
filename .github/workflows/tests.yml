@@ -48,20 +48,20 @@ jobs:
                       selected.add(models[path])
                   elif path.startswith('src/model/Audiovisuell/'):
                       selected.add('audioVisuelleQuellen')
-                  elif len(parts) >= 4 and parts[:2] == ('src', 'test') and parts[2] in groups:
-                      selected.add(parts[2])
+                  elif len(parts) >= 5 and parts[:3] == ('src', 'test', 'testfolder') and parts[3] in groups:
+                      selected.add(parts[3])
                   else:
                       return {'all'}
               return selected
 
           assert select(['src/model/Buchbeleg.java']) == {'buch'}
-          assert select(['src/model/Website.java', 'src/test/buch/Test_Buch_Kurzbeleg.java']) == {'website', 'buch'}
+          assert select(['src/model/Website.java', 'src/test/testfolder/buch/Test_Buch_Kurzbeleg.java']) == {'website', 'buch'}
           assert select(['src/model/Seitenangabe.java']) == {'all'}
           assert select(['src/model/Literatur.java']) == {'all'}
           assert select(['src/Main.java']) == {'all'}
           assert select(['src/view/GUI.java']) == {'all'}
           assert select(['src/model/Audiovisuell/Youtube.java']) == {'audioVisuelleQuellen'}
-          assert select(['src/test/buch/Kurzbeleg.md', 'Artefakte/Buchbeleg_UML.png']) == set()
+          assert select(['src/test/testfolder/buch/Kurzbeleg.md', 'Artefakte/Buchbeleg_UML.png']) == set()
           assert select(['pom.xml']) == {'all'}
 
           before = os.environ['BEFORE']
@@ -75,7 +75,7 @@ jobs:
               # Missing history must never silently skip tests.
               selected = select(os.fsdecode(diff.stdout).split('\0')[:-1]) if diff.returncode == 0 else {'all'}
 
-          patterns = ','.join(f'test/{group}/**/Test*' for group in sorted(selected)) if selected != {'all'} else ''
+          patterns = ','.join(f'testfolder/{group}/Test*' for group in sorted(selected)) if selected != {'all'} else ''
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write(f"run={'true' if selected else 'false'}\n")
               output.write(f'patterns={patterns}\n')

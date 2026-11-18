@@ -54,18 +54,6 @@ public class GUI_Literaturverwaltung extends JFrame {
         contentSplitPane.setResizeWeight(1);
         mainPanel.add(contentSplitPane, BorderLayout.CENTER);
 
-        // TEST: remove these examples after reviewing table selection.
-        addTableRows(new Literatur[] {
-            new Buchbeleg(List.of("Kafka, Franz"), Optional.of(LocalDate.of(1915, 1, 1)),
-                    Optional.of("Die Verwandlung"), Optional.of("Kurt Wolff Verlag"),
-                    Optional.of(1), Optional.of("Leipzig"), Optional.of(1), Optional.of(72)),
-            new Buchbeleg(List.of("Goethe, Johann Wolfgang von"), Optional.of(LocalDate.of(1808, 1, 1)),
-                    Optional.of("Faust"), Optional.of("Cotta"), Optional.of(1),
-                    Optional.of("Tübingen"), Optional.of(1), Optional.of(200)),
-            new Website(List.of("Beispielautor"), "Beispielwebsite", Optional.of("Digitale Medien"),
-                    "https://example.org", LocalDate.of(2026, 11, 17),
-                    LocalDate.of(2024, 6, 1), "Artikel")
-        });
         setVisible(true);
         SwingUtilities.invokeLater(() -> contentSplitPane.setDividerLocation(0.65));
     }

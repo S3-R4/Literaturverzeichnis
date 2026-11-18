@@ -2,11 +2,17 @@
 package model;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 public class Website extends Literatur {
+private static final DateTimeFormatter VEROEFFENTLICHUNGSFORMAT =
+		DateTimeFormatter.ofPattern("yyyy, d. MMMM", Locale.GERMAN);
+private static final DateTimeFormatter ABRUFFORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
 private String websitename;
 private String url;
 private String textart;
@@ -71,7 +77,7 @@ if (autor == null || autor.isEmpty()) {
 
 // Veröffentlichung
 if (veroeffentlichungsdatum != null) {
-	textBaustein += "(" + veroeffentlichungsdatum + "). ";
+	textBaustein += "(" + veroeffentlichungsdatum.format(VEROEFFENTLICHUNGSFORMAT) + "). ";
 }
 
 // Textart
@@ -92,7 +98,7 @@ textBaustein += url + " ";
 
 // Aufrufdatum
 if (abrufdatum != null) {
-	textBaustein += "(" + abrufdatum + ").";
+	textBaustein += "(" + abrufdatum.format(ABRUFFORMAT) + ").";
 }
 
 return textBaustein;
@@ -111,7 +117,7 @@ public String generiereKurzbeleg() {
 
 	// Veröffentlichung
 	if (veroeffentlichungsdatum != null) {
-		textbaustein += "(" + veroeffentlichungsdatum + ")";
+		textbaustein += "(" + veroeffentlichungsdatum.format(VEROEFFENTLICHUNGSFORMAT) + ")";
 	}
 
 	return textbaustein;

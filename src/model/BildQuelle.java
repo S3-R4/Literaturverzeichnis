@@ -208,7 +208,7 @@ this.abrufdatum = LocalDate.parse(abrufdatum,java.time.format.DateTimeFormatter.
 return null;
 }
 
-public String getbeleg() {return getUrheber1() + getUrheber2() + getUrheber3()+ getUrheber4() + getMehrUrheber(MehrUrheber)+ getErscheinungsjahr() + getTitel() + getMedienart()+ getHerausgeber() + getAnbieter() + getAbrufdatum();
+public String getbeleg() {return getUrheber1() + getUrheber2() + getUrheber3()+ getUrheber4() + getMehrUrheber(MehrUrheber)+ getErscheinungsjahr() + getTitel() + getMedienart()+ getHerausgeber() + getAnbieter() + DatumFormatierung();
 }
 
 @Override

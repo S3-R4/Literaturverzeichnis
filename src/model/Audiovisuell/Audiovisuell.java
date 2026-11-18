@@ -13,6 +13,28 @@ public abstract class Audiovisuell extends Literatur {
 	protected String medium;
 	protected String url;
 
+	@Override
+	public int getAnzahlAusgefuellterAttribute() {
+		int anzahl = 0;
+		if (autor != null && autor.stream().anyMatch(Audiovisuell::hatText)) anzahl++;
+		if (hatText(titel)) anzahl++;
+		if (veroeffentlichungsdatum != null) anzahl++;
+		if (abrufdatum != null) anzahl++;
+		if (hatText(beitragsArt)) anzahl++;
+		if (hatText(medium)) anzahl++;
+		if (hatText(url)) anzahl++;
+		return anzahl;
+	}
+
+	@Override
+	public int getAnzahlRelevanterAttribute() {
+		return 7;
+	}
+
+	protected static boolean hatText(String text) {
+		return text != null && !text.isBlank();
+	}
+
 	public String getTitel() {
 		return titel;
 	}

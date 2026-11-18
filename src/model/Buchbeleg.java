@@ -12,7 +12,7 @@ private Optional<Integer> auflage;
 private Optional<String> erscheinungsort;
 private Seitenangabe seitenangabe;
 
-public Buchbeleg(List<String> autor, Optional<LocalDate> veroeffentlichungsdatum,Optional<String> titel, Optional<String> buchverlag,Optional<Integer> auflage, Optional<String> erscheinungsort,Optional<Integer> anfang, Optional<Integer> ende) {
+public Buchbeleg(List<String> autor, Optional<LocalDate> veroeffentlichungsdatum, Optional<String> titel, Optional<String> buchverlag,Optional<Integer> auflage, Optional<String> erscheinungsort,Optional<Integer> anfang, Optional<Integer> ende) {
 
 setAutoren(autor);
 setErscheinungsdatum(veroeffentlichungsdatum);

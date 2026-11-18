@@ -3,6 +3,7 @@ package model.data;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import model.Website;
 import model.Zeitungsartikel;
@@ -40,7 +41,7 @@ public class DataTest {
 		Website edited_website = new Website(
 		List.of("Rafa"),
 		"Edited damn website muhehehe",
-		"barbod is a REAL cutie patootie",
+		Optional.of("barbod is a REAL cutie patootie"),
 		"https://nonutnovemberisalie/true/day/20",
 		LocalDate.of(2026, 11, 9),
 		LocalDate.of(2026, 11, 1),

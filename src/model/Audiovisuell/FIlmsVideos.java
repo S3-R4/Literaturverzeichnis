@@ -5,6 +5,16 @@ import java.time.LocalDate;
 public class FIlmsVideos extends Audiovisuell {
 	private String produktionsfirma;
 
+	@Override
+	public int getAnzahlAusgefuellterAttribute() {
+		return super.getAnzahlAusgefuellterAttribute() + (hatText(produktionsfirma) ? 1 : 0);
+	}
+
+	@Override
+	public int getAnzahlRelevanterAttribute() {
+		return super.getAnzahlRelevanterAttribute() + 1;
+	}
+
 	// protected String beitragsArt;
 	// protected String medium;
 	// protected String url;

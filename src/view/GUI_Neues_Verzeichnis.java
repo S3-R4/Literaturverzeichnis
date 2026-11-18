@@ -78,7 +78,7 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 	}
 	
 	private void returnToStart() {
-		new GUI();
+		new GUI_Startfenster();
 		dispose();
 	}
 	

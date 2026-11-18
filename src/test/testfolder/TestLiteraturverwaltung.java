@@ -31,6 +31,7 @@ public class TestLiteraturverwaltung {
                 public void setVisible(boolean visible) { }
             };
             try {
+                window.resetTable();
                 JTable table = findComponent(window.getContentPane(), JTable.class);
                 JComboBox<?> categories = findComponent(window.getContentPane(), JComboBox.class);
                 assertNotNull(table);
@@ -58,6 +59,8 @@ public class TestLiteraturverwaltung {
                 assertEquals("Zebra", table.getValueAt(0, 1));
                 assertThrows(NullPointerException.class,
                         () -> window.addTableRows(new Literatur[] {older, null}));
+                assertEquals(2, table.getRowCount());
+                categories.setSelectedItem("Alle Quellentypen");
                 assertEquals(3, table.getRowCount());
 
                 table.setRowSelectionInterval(0, 0);
@@ -78,9 +81,10 @@ public class TestLiteraturverwaltung {
                 assertEquals(1, table.getValueAt(table.getSelectedRow(), 0));
                 window.addTableRow(website("Added", "A", 2024));
                 assertEquals(4, table.getValueAt(0, 0));
+                categories.setSelectedItem("Website");
                 assertEquals("Website", categories.getSelectedItem());
                 window.removeTableRow(0);
-                assertEquals(3, table.getRowCount());
+                assertEquals(2, table.getRowCount());
                 window.addTableRow(website("Another", "A", 2024));
                 assertEquals(5, table.getValueAt(0, 0));
 

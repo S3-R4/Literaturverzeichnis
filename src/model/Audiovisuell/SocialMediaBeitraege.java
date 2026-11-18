@@ -8,6 +8,19 @@ public class SocialMediaBeitraege extends Audiovisuell {
 	private String beschreibung;
 
 	@Override
+	public int getAnzahlAusgefuellterAttribute() {
+		int anzahl = super.getAnzahlAusgefuellterAttribute();
+		if (hatText(text)) anzahl++;
+		if (hatText(beschreibung)) anzahl++;
+		return anzahl;
+	}
+
+	@Override
+	public int getAnzahlRelevanterAttribute() {
+		return super.getAnzahlRelevanterAttribute() + 2;
+	}
+
+	@Override
 	public String generiereLangbeleg() {
 		return getAutorsString(autor) + ". " +
 				datumFormatierung(veroeffentlichungsdatum) + ". " +

@@ -8,6 +8,16 @@ public class PodcastGesamtwerk extends Audiovisuell {
 	private String herausgebendeOrganisation;
 
 	@Override
+	public int getAnzahlAusgefuellterAttribute() {
+		return super.getAnzahlAusgefuellterAttribute() + (hatText(herausgebendeOrganisation) ? 1 : 0);
+	}
+
+	@Override
+	public int getAnzahlRelevanterAttribute() {
+		return super.getAnzahlRelevanterAttribute() + 1;
+	}
+
+	@Override
 	public String generiereLangbeleg() {
 		return getAutorsString(autor) + ". " + datumFormatierung(veroeffentlichungsdatum) + ". [" + getTitel() + "]. "
 				+ getHerausgebendeOrganisation() + ". " + getUrl() + " "

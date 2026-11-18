@@ -20,7 +20,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import model.data.data_manager;
+import model.data.DataManager;
 
 public class GUI_Neues_Verzeichnis extends JFrame {
 	final String titel = "Neues Verzeichnis anlegen"; 
@@ -101,7 +101,7 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 			return;
 		}
 
-		data_manager manager = new data_manager();
+		DataManager manager = new DataManager();
 		manager.importJson(chosenFile);
 		new GUI_Literaturverwaltung(manager);
 		dispose();

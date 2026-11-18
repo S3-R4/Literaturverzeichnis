@@ -15,7 +15,8 @@ import java.util.Objects;
 import java.util.Optional;
 import model.Buchbeleg;
 import model.Website;
-import model.data.data_manager;
+import model.data.DataManager;
+import model.data.DataManager;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import model.Literatur;
@@ -31,7 +32,7 @@ public class GUI_Literaturverwaltung extends JFrame {
             Kriterium.AUTOR, Kriterium.JAHR
     };
 
-    private final data_manager manager;
+    private final DataManager manager;
     private DefaultTableModel tableModel;
     private JTable sourceTable;
     private JComboBox<String> sourceTypeComboBox;
@@ -43,10 +44,10 @@ public class GUI_Literaturverwaltung extends JFrame {
     private final LinkedHashMap<Integer, Literatur> sourcesByNumber = new LinkedHashMap<>();
 
     public GUI_Literaturverwaltung() {
-        this(new data_manager());
+        this(new DataManager());
     }
 
-    public GUI_Literaturverwaltung(data_manager manager) {
+    public GUI_Literaturverwaltung(DataManager manager) {
         this.manager = Objects.requireNonNull(manager, "manager");
         setTitle("Literaturverwaltung - Literaturverzeichnis");
         setSize(1200, 750);

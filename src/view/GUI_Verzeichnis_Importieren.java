@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -21,7 +22,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import java.nio.file.Path;
 
-import model.data.data_manager;
+import model.data.DataManager;
 
 public class GUI_Verzeichnis_Importieren extends JFrame {
 	final String titel = "Verzeichnis importieren";
@@ -94,14 +95,16 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
 	 * if user chose Literaturveruzeichnis to import -> open the Literaturverwaltung
 	 */
 	private void confirmSelection() {
-		if (chosenFile == null) {
-			JOptionPane.showMessageDialog(this, "Bitte zuerst eine JSON-Datei auswählen.");
-			return;
-		}
+    if (chosenFile == null) {JOptionPane.showMessageDialog(this, "Bitte zuerst eine JSON-Datei auswählen.");
+        return;
+    }
 
-		data_manager manager = new data_manager();
-		manager.importJson(chosenFile);
-		new GUI_Literaturverwaltung(manager);
-		dispose();
-	}
+    try {
+    	DataManager manager = new DataManager();
+        manager.importJson(chosenFile);
+        new GUI_Literaturverwaltung(manager);
+        dispose();
+    } catch (IOException e) { JOptionPane.showMessageDialog(this,"Die JSON-Datei konnte nicht importiert werden:\n" + e.getMessage(),"Import fehlgeschlagen",JOptionPane.ERROR_MESSAGE);
+    }
+}
 }

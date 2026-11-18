@@ -7,12 +7,12 @@ import java.util.Optional;
 
 import model.Website;
 import model.Zeitungsartikel;
-import model.data.data_manager;
+import model.data.DataManager;
 
 public class DataTest {
 	public static void main(String[] args) throws IOException {
 
-		data_manager manager = new data_manager();
+		DataManager manager = new DataManager();
 		String id = "19266f79-589f-434f-9e57-0b686336e2f6";
 		// Website website = new Website(
 		// List.of("Rafa"),

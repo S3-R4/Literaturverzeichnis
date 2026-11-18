@@ -18,7 +18,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import model.data.data_manager;
+import model.data.DataManager;
 
 /**
  * Saves a "snapshot" / copy of the current Verzeichnis on a new filepath, new changes will continue on the original filepath.
@@ -91,7 +91,7 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 			return;
 		}
 
-		data_manager manager = new data_manager();
+		DataManager manager = new DataManager();
 		try {
 			manager.exportJson(chosenFile);
 		} catch (Exception e) {

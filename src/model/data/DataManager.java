@@ -271,7 +271,7 @@ public class DataManager {
 public List<Literatur> readAllSources() throws IOException { //Reads JSON and returns is as a object
     ObjectNode root = loadData();
     List<Literatur> sources = new ArrayList<>();
-
+	idsBySource.clear();
     for (var category : root.properties()) {
         String type = category.getKey();
         JsonNode entries = category.getValue();

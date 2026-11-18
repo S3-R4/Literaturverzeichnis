@@ -273,7 +273,7 @@ public class GUI_Literaturverwaltung extends JFrame {
 
     private Object[] createTableRow(Literatur source, int number) {
         Objects.requireNonNull(source, "source");
-        List<String> authors = source.getAutor().orElse(List.of());
+        List<String> authors = source.getAutor();
         String authorText = String.join(", ", authors.stream()
                 .filter(author -> author != null && !author.isBlank()).toList());
         Integer publicationYear = source.getVeroeffentlichungsdatum()

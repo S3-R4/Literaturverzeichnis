@@ -1,4 +1,4 @@
-package testfolder.sammelband;
+package test.testfolder.sammelband;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,7 +15,8 @@ public class Test_Sammelband_Kurzbeleg {
 	@Test
 	public void testNormalerKurzbeleg() {
 
-		Sammelbandbeleg beleg = new Sammelbandbeleg(List.of("Müller"), Optional.of(LocalDate.of(2020, 1, 1)), Optional.of("Informatik"),
+		Sammelbandbeleg beleg = new Sammelbandbeleg(List.of("Müller"), Optional.of(LocalDate.of(2020, 1, 1)),
+				Optional.of("Informatik"),
 				List.of("Lahm"), Optional.of("Grundlagen"), Optional.of(2), Optional.of("Springer"),
 				Optional.of("Berlin"), Optional.of(19), Optional.of(31));
 
@@ -35,7 +36,8 @@ public class Test_Sammelband_Kurzbeleg {
 	@Test
 	public void testOhneSeitenangabe() {
 
-		Sammelbandbeleg beleg = new Sammelbandbeleg(List.of("Müller"), Optional.of(LocalDate.of(2020, 1, 1)), Optional.of("Informatik"),
+		Sammelbandbeleg beleg = new Sammelbandbeleg(List.of("Müller"), Optional.of(LocalDate.of(2020, 1, 1)),
+				Optional.of("Informatik"),
 				List.of("Lahm"), Optional.of("Grundlagen"), Optional.empty(), Optional.of("Springer"),
 				Optional.of("Berlin"), Optional.empty(), Optional.empty());
 

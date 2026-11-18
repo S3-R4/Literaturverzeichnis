@@ -1,5 +1,4 @@
-package testfolder.bild;
-
+package test.testfolder.bild;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -12,26 +11,40 @@ import model.BildQuelle;
 
 public class Test_Bildbeleg {
 
-	@Test 
+	@Test
 	public void test() {
-	BildQuelle bild01 = new BildQuelle("Müller T.","", "", "", false, Optional.of("Psychologische Grundlagen der Motivation"), Optional.of("Diagram"), Optional.of(LocalDate.of(2022, 1, 1)), Optional.of("Springer"), Optional.of("https://..."));
-	bild01.setAbrufdatum(Optional.of(LocalDate.of(2026, 2, 21)));
-	assertEquals(bild01.generiereLangbeleg(),"Müller T. (2022). Psychologische Grundlagen der Motivation[Diagram]. Springer. https://...[21.2.2026]."); //Full
+		BildQuelle bild01 = new BildQuelle("Müller T.", "", "", "", false,
+				Optional.of("Psychologische Grundlagen der Motivation"), Optional.of("Diagram"),
+				Optional.of(LocalDate.of(2022, 1, 1)), Optional.of("Springer"), Optional.of("https://..."));
+		bild01.setAbrufdatum(Optional.of(LocalDate.of(2026, 2, 21)));
+		assertEquals(bild01.generiereLangbeleg(),
+				"Müller T. (2022). Psychologische Grundlagen der Motivation[Diagram]. Springer. https://...[21.2.2026]."); // Full
 
-	BildQuelle bild02 = new BildQuelle("eigene Darstellung","","","",false, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()); //Empty
-	assertEquals(bild02.generiereKurzbeleg(),"(eigene Darstellung)");
+		BildQuelle bild02 = new BildQuelle("eigene Darstellung", "", "", "", false, Optional.empty(), Optional.empty(),
+				Optional.empty(), Optional.empty(), Optional.empty()); // Empty
+		assertEquals(bild02.generiereKurzbeleg(), "(eigene Darstellung)");
 
-	BildQuelle bild03 = new BildQuelle("Müller T.","Schmidt A.", "Weber K.", "Fischer L.", false, Optional.of("Motivation im Alltag"), Optional.of("Foto"), Optional.of(LocalDate.of(2024, 1, 1)), Optional.of("Springer"), Optional.of("https://example.com"));
-	bild03.setAbrufdatum(Optional.of(LocalDate.of(2026, 10, 10)));
-	assertEquals(bild03.getbeleg(),"Müller T., Schmidt A., Weber K., Fischer L. (2024). Motivation im Alltag[Foto]. Springer. https://example.com[10.10.2026]."); //More Urheber
-	
-	BildQuelle bild04 = new BildQuelle("Müller T.","Schmidt A.", "Weber K.", "Fischer L.", true, Optional.of("Motivation im Alltag"), Optional.of("Foto"), Optional.of(LocalDate.of(2024, 1, 1)), Optional.of("Springer"), Optional.of("https://example.com"));
-	bild04.setAbrufdatum(Optional.of(LocalDate.of(2026, 10, 10)));
-	assertEquals(bild04.getbeleg(),"Müller T., Schmidt A., Weber K., Fischer L. et al. (2024). Motivation im Alltag[Foto]. Springer. https://example.com[10.10.2026].");
-	
-	BildQuelle bild05 = new BildQuelle("","","","",false, Optional.of("test"), Optional.of("Foto"), Optional.of(LocalDate.of(2024, 1, 1)), Optional.of("Springer"), Optional.of("https://example.com")); //Kein Autor
-	bild05.setAbrufdatum(Optional.of(LocalDate.of(2026, 10, 10)));
-	assertEquals(bild05.getbeleg(),"Unbekannter Autor (2024). test[Foto]. Springer. https://example.com[10.10.2026].");
+		BildQuelle bild03 = new BildQuelle("Müller T.", "Schmidt A.", "Weber K.", "Fischer L.", false,
+				Optional.of("Motivation im Alltag"), Optional.of("Foto"), Optional.of(LocalDate.of(2024, 1, 1)),
+				Optional.of("Springer"), Optional.of("https://example.com"));
+		bild03.setAbrufdatum(Optional.of(LocalDate.of(2026, 10, 10)));
+		assertEquals(bild03.getbeleg(),
+				"Müller T., Schmidt A., Weber K., Fischer L. (2024). Motivation im Alltag[Foto]. Springer. https://example.com[10.10.2026]."); // More
+																																				// Urheber
 
-	}	
+		BildQuelle bild04 = new BildQuelle("Müller T.", "Schmidt A.", "Weber K.", "Fischer L.", true,
+				Optional.of("Motivation im Alltag"), Optional.of("Foto"), Optional.of(LocalDate.of(2024, 1, 1)),
+				Optional.of("Springer"), Optional.of("https://example.com"));
+		bild04.setAbrufdatum(Optional.of(LocalDate.of(2026, 10, 10)));
+		assertEquals(bild04.getbeleg(),
+				"Müller T., Schmidt A., Weber K., Fischer L. et al. (2024). Motivation im Alltag[Foto]. Springer. https://example.com[10.10.2026].");
+
+		BildQuelle bild05 = new BildQuelle("", "", "", "", false, Optional.of("test"), Optional.of("Foto"),
+				Optional.of(LocalDate.of(2024, 1, 1)), Optional.of("Springer"), Optional.of("https://example.com")); // Kein
+																														// Autor
+		bild05.setAbrufdatum(Optional.of(LocalDate.of(2026, 10, 10)));
+		assertEquals(bild05.getbeleg(),
+				"Unbekannter Autor (2024). test[Foto]. Springer. https://example.com[10.10.2026].");
+
+	}
 }

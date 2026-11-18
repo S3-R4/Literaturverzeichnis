@@ -1,4 +1,4 @@
-package testfolder;
+package test.testfolder;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -28,7 +28,8 @@ public class TestLiteraturverwaltung {
         SwingUtilities.invokeAndWait(() -> {
             GUI_Literaturverwaltung window = new GUI_Literaturverwaltung() {
                 @Override
-                public void setVisible(boolean visible) { }
+                public void setVisible(boolean visible) {
+                }
             };
             try {
                 JTable table = findComponent(window.getContentPane(), JTable.class);
@@ -48,7 +49,7 @@ public class TestLiteraturverwaltung {
                         Optional.of(LocalDate.of(2024, 1, 1)), Optional.of("Buch"),
                         Optional.empty(), Optional.empty(), Optional.empty(),
                         Optional.empty(), Optional.empty());
-                window.addTableRows(new Literatur[] {older, newer, book});
+                window.addTableRows(new Literatur[] { older, newer, book });
                 assertEquals(3, table.getRowCount());
                 assertEquals("Website", table.getValueAt(0, 2));
                 assertEquals("Buchbeleg", table.getValueAt(2, 2));
@@ -59,7 +60,7 @@ public class TestLiteraturverwaltung {
                 assertThrows(NullPointerException.class, () -> window.updateTableRow(0, null));
                 assertEquals("Zebra", table.getValueAt(0, 1));
                 assertThrows(NullPointerException.class,
-                        () -> window.addTableRows(new Literatur[] {older, null}));
+                        () -> window.addTableRows(new Literatur[] { older, null }));
                 assertEquals(2, table.getRowCount());
 
                 table.setRowSelectionInterval(0, 0);

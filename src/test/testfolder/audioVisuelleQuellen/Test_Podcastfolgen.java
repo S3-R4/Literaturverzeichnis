@@ -1,4 +1,4 @@
-package testfolder.audioVisuelleQuellen;
+package test.testfolder.audioVisuelleQuellen;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -27,7 +27,8 @@ class Test_Podcastfolgen {
 		assertInstanceOf(Audiovisuell.class, folge);
 		assertEquals("TestPodcast", folge.getTitel().orElseThrow());
 		assertEquals(List.of("Person, M.", "AnderePerson."), folge.getAutor());
-		assertEquals("Person, M. & AnderePerson. (2029, 1, Januar). Folge #40 - Test Folge - Die test folge!. [Podcast-Folge]. In: TestPodcast Podcast-Team. https://www.real-link-not-suspicious.com/fole#40 - testfolge (07.10.2329).",
+		assertEquals(
+				"Person, M. & AnderePerson. (2029, 1, Januar). Folge #40 - Test Folge - Die test folge!. [Podcast-Folge]. In: TestPodcast Podcast-Team. https://www.real-link-not-suspicious.com/fole#40 - testfolge (07.10.2329).",
 				folge.generiereLangbeleg());
 		assertEquals("Person, M. & AnderePerson. (2029, 1, Januar) Folge #40", folge.generiereKurzbeleg());
 	}

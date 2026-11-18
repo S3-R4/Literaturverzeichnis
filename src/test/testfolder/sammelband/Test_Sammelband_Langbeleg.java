@@ -1,4 +1,4 @@
-package testfolder.sammelband;
+package test.testfolder.sammelband;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -26,7 +26,8 @@ public class Test_Sammelband_Langbeleg {
 
 	@Test
 	public void testFehlenderAutor() {
-		Sammelbandbeleg beleg = new Sammelbandbeleg(List.of(), Optional.of(LocalDate.of(2020, 1, 1)), Optional.of("Informatik"),
+		Sammelbandbeleg beleg = new Sammelbandbeleg(List.of(), Optional.of(LocalDate.of(2020, 1, 1)),
+				Optional.of("Informatik"),
 				List.of("Lahm"), Optional.of("Grundlagen"), Optional.empty(), Optional.of("Springer"),
 				Optional.of("Berlin"), Optional.of(10), Optional.of(20));
 
@@ -35,7 +36,8 @@ public class Test_Sammelband_Langbeleg {
 
 	@Test
 	public void testFehlendeAuflage() {
-		Sammelbandbeleg beleg = new Sammelbandbeleg(List.of("Müller"), Optional.of(LocalDate.of(2020, 1, 1)), Optional.of("Informatik"),
+		Sammelbandbeleg beleg = new Sammelbandbeleg(List.of("Müller"), Optional.of(LocalDate.of(2020, 1, 1)),
+				Optional.of("Informatik"),
 				List.of("Lahm"), Optional.of("Grundlagen"), Optional.empty(), Optional.of("Springer"),
 				Optional.of("Berlin"), Optional.of(10), Optional.of(20));
 

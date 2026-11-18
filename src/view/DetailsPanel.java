@@ -445,7 +445,7 @@ final class DetailsPanel extends JPanel {
         actionPanel.removeAll();
         if (editing) {
             JButton cancel = new JButton("Abbrechen");
-            cancel.addActionListener(event -> cancelEditing());
+            cancel.addActionListener(event -> discardEditing());
             JButton accept = new JButton("Übernehmen");
             accept.addActionListener(event -> acceptEditing());
             accept.setEnabled(!creating || (creationTypeComboBox.getSelectedIndex() > 0
@@ -485,7 +485,7 @@ final class DetailsPanel extends JPanel {
             setEditing(false);
             showSource(currentSource);
         }
-        discardEditing();
+        cancelEditing();
     }
 
     boolean confirmCloseIfEditing() {
@@ -501,7 +501,7 @@ final class DetailsPanel extends JPanel {
             return !editing;
         }
         if (choice == 1) {
-            discardEditing();
+            cancelEditing();
             return true;
         }
         return false;

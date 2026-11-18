@@ -49,7 +49,7 @@ public class GUI_Literaturverwaltung extends JFrame {
     public GUI_Literaturverwaltung(data_manager manager) {
         this.manager = Objects.requireNonNull(manager, "manager");
         setTitle("Literaturverwaltung - Literaturverzeichnis");
-        setSize(600, 600);
+        setSize(1200, 750);
         setResizable(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setJMenuBar(createMenuBar());

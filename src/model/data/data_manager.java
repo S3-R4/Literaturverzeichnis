@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
+import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.NoSuchElementException;
@@ -216,5 +216,26 @@ public class data_manager {
 
 		this.quellenFile = path;
 		return true;
+	}
+	
+	//------------------------------------------------------------------------------------------
+	
+	/**
+	 * save the current Json as a copy on a new FilePath
+	 * @param path neuer Speicherort
+	 */
+	public void exportJson(Path path) throws IOException { //TODO: funktioniert irgenwie noch nicht
+		Objects.requireNonNull(path, "path");
+		
+		if (this.quellenFile == null) {
+			throw new IllegalStateException("No JSON file loaded");
+		}
+		
+		Path parent = path.getParent();
+		if (parent != null) {
+			Files.createDirectories(parent);
+		}
+		
+		Files.copy(this.quellenFile, path, StandardCopyOption.REPLACE_EXISTING);
 	}
 }

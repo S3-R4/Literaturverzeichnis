@@ -30,11 +30,8 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 	private final JLabel lblVerzeichnis = new JLabel(" <Verzeichnisname> ", SwingConstants.CENTER);
 
 	
-	public GUI_Verzeichnis_Exportieren() {
-		setTitle(titel);
-		setSize(550, 200);
-		setResizable(false);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	public GUI_Verzeichnis_Exportieren(JFrame parent) {
+		super(parent, "Verzeichnis exportieren", true);
 
 		GridBagLayout layout = new GridBagLayout();
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -42,16 +39,7 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 		gbc.anchor = GridBagConstraints.WEST;
 		setLayout(layout);
 
-		// --- Zeile 1: Verzeichnisname ---
-		gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0; gbc.fill = GridBagConstraints.NONE;
-		add(new JLabel("Verzeichnisname:"), gbc);
-
-		gbc.gridx = 1; gbc.weightx = 1.0; gbc.fill = GridBagConstraints.HORIZONTAL;
-		JTextField tfdVerzeichnisname = new JTextField(25);
-		tfdVerzeichnisname.setText("<Verzeichnisname>");
-		add(tfdVerzeichnisname, gbc);
-
-		// --- Zeile 2: Speicherort ---
+		// --- Zeile 1: Speicherort ---
 		gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0; gbc.fill = GridBagConstraints.NONE;
 		add(new JLabel("Speicherort:"), gbc);
 
@@ -66,7 +54,7 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 		pathPanel.add(btnSpreicherort, BorderLayout.EAST);
 		add(pathPanel, gbc);
 
-		// --- Zeile 3: Buttons ---
+		// --- Zeile 2: Buttons ---
 		gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2; gbc.weightx = 0; gbc.fill = GridBagConstraints.NONE;
 		gbc.anchor = GridBagConstraints.EAST;
 		JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
@@ -80,10 +68,11 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 		btnPanel.add(btnBestaetigen);
 
 		add(btnPanel, gbc);
-
-		setLocationRelativeTo(null);
-		setVisible(true);
-
+		
+		// Fenstergröße und Position anpassen
+        setSize(400, 140);
+        setResizable(false); // Optional: Verhindert Verziehen des Fensters
+        setLocationRelativeTo(parent); // Zentriert über dem Hauptfenster
 	}
 	
 	/**
@@ -96,14 +85,19 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 	/**
 	 * if user chose a location where to save the file -> save and 
 	 */
-	private void confirmSelection() { //TODO: implement Action later
+	private void confirmSelection() {
 		if (chosenFile == null) {
 			JOptionPane.showMessageDialog(this, "Bitte zuerst einen Speicherort auswählen.");
 			return;
 		}
 
 		data_manager manager = new data_manager();
-		//manager.createJson(chosenFile) //TODO: manager braucht speicher option
+		try {
+			manager.exportJson(chosenFile);
+		} catch (Exception e) {
+			new JOptionPane("Fehler beim erstellen der Kopie");
+		}
+		
 		
 		close();
 	}

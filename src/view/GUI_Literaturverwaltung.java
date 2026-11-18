@@ -83,7 +83,8 @@ public class GUI_Literaturverwaltung extends JFrame {
         JMenu dateiMenu = new JMenu("Datei");
         JMenuItem export = new JMenuItem("Export");
         export.addActionListener(e -> {
-        	
+        	GUI_Verzeichnis_Exportieren dialog = new GUI_Verzeichnis_Exportieren(this);
+        	dialog.setVisible(true);
         });
         dateiMenu.add(export);
         

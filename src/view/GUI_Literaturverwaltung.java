@@ -78,8 +78,27 @@ public class GUI_Literaturverwaltung extends JFrame {
 
     private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
-        menuBar.add(new JMenu("Datei"));
-        menuBar.add(new JMenu("Einstellungen"));
+        
+        // create datei menu with menu item and action
+        JMenu dateiMenu = new JMenu("Datei");
+        JMenuItem export = new JMenuItem("Export");
+        export.addActionListener(e -> {
+        	
+        });
+        dateiMenu.add(export);
+        
+        menuBar.add(dateiMenu);
+        
+        // create settings menu with menu item and action
+        JMenu settingsMenu = new JMenu("Einstellungen");
+        JMenuItem theme = new JMenuItem("Theme");
+        theme.addActionListener(e -> {
+        	GUI_Einstellungen dialog = new GUI_Einstellungen(this);
+    		dialog.setVisible(true);
+        });
+        settingsMenu.add(theme);
+        
+        menuBar.add(settingsMenu);
         return menuBar;
     }
 

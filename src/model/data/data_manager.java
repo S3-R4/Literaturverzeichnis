@@ -192,10 +192,20 @@ public class data_manager {
 
 	// ---------------------------------------------------------------------------------------
 	// import
-	public void importJson(Path path) {
-		Objects.requireNonNull(path, "path");
-		this.quellenFile = path;
-	}
+	
+	public void importJson(Path path) throws IOException {
+    Objects.requireNonNull(path, "path");
+    if (!Files.isRegularFile(path) || !Files.isReadable(path)) {throw new IOException("Die ausgewählte Datei kann nicht gelesen werden.");
+    }
+    if (Files.size(path) == 0) {throw new IOException("Die JSON-Datei ist leer.");
+    }
+    JsonNode data = mapper.readTree(path.toFile());
+    if (!(data instanceof ObjectNode)) {throw new IOException("Die JSON-Datei muss ein JSON-Objekt enthalten.");
+    }
+
+    // Only switch files after validation succeeds.
+    this.quellenFile = path;
+}
 
 	public boolean createJson(Path path) throws IOException {
 		Objects.requireNonNull(path, "path");

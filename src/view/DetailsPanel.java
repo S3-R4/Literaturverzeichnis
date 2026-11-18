@@ -459,11 +459,13 @@ final class DetailsPanel extends JPanel {
         actionPanel.repaint();
     }
 
-    public boolean hasUnsavedChanges() {
-        if (!editing)
+    private boolean hasUnsavedChanges() {
+        if (!editing) {
             return false;
-        if (creating && creationTypeComboBox.getSelectedIndex() > 0)
-            return false;
+        }
+        if (creating) {
+            return creationTypeComboBox.getSelectedIndex() > 0;
+        }
         for (Map.Entry<String, JTextField> entry : editFields.entrySet()) {
             String original = shownAttributes.getOrDefault(entry.getKey(), "");
             if (!Objects.equals(entry.getValue().getText(), original)) {
@@ -484,5 +486,24 @@ final class DetailsPanel extends JPanel {
             showSource(currentSource);
         }
         discardEditing();
+    }
+
+    boolean confirmCloseIfEditing() {
+        if (!hasUnsavedChanges()) {
+            return true;
+        }
+        Object[] options = { "Übernehmen", "Verwerfen", "Weiter bearbeiten" };
+        int choice = JOptionPane.showOptionDialog(this, "Sie haben Änderungen, die noch nicht übernommen wurden.",
+                "Ungespeicherte Änderungen", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options,
+                options[2]);
+        if (choice == 0) {
+            acceptEditing();
+            return !editing;
+        }
+        if (choice == 1) {
+            discardEditing();
+            return true;
+        }
+        return false;
     }
 }

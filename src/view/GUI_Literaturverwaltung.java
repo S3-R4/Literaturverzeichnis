@@ -70,7 +70,17 @@ public class GUI_Literaturverwaltung extends JFrame {
     private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(new JMenu("Datei"));
-        menuBar.add(new JMenu("Einstellungen"));
+        
+        // create menu with menu item and action
+        JMenu settingsMenu = new JMenu("Einstellungen");
+        JMenuItem settings = new JMenuItem("Theme");
+        settings.addActionListener(e -> {
+        	GUI_Einstellungen dialog = new GUI_Einstellungen(this);
+    		dialog.setVisible(true);
+        });
+        settingsMenu.add(settings);
+        
+        menuBar.add(settingsMenu);
         return menuBar;
     }
 

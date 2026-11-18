@@ -25,7 +25,9 @@ public class data_manager {
 			.build();
 
 	// -------------------------------------------------------------------------------------
-	// adds the entry to the json file
+	/**
+	 * adds the entry to the json file
+	 */
 	public String add_data(Literatur entry) throws IOException {
 		Objects.requireNonNull(entry, "entry");
 

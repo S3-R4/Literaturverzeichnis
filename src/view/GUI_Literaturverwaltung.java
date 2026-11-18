@@ -168,6 +168,10 @@ public class GUI_Literaturverwaltung extends JFrame {
         return detailsPanel;
     }
 
+    /**
+     * Add new Literatur to the table and saves it
+     * @param source
+     */
     private void addCreatedSource(Literatur source) {
         int number = nextSourceNumber;
         addTableRow(source);
@@ -181,6 +185,13 @@ public class GUI_Literaturverwaltung extends JFrame {
                 sourceTable.setRowSelectionInterval(row, row);
                 break;
             }
+        }
+        
+        //save the new Literatur
+        try {
+        	manager.add_data(source);
+        } catch (Exception e) {
+        	new JOptionPane("" + e);
         }
     }
 

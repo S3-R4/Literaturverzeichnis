@@ -22,9 +22,9 @@ public class TestTabellenSortierung {
         Website alt = quelle("Alt", LocalDate.of(2020, 1, 1));
         Website neu = quelle("Neu", LocalDate.of(2024, 1, 1));
         Website leer = quelle("Leer", null);
-        alt.setAutor(Optional.of(Arrays.asList(null, "", "Mueller")));
-        neu.setAutor(Optional.of(List.of("mueller")));
-        leer.setAutor(Optional.empty());
+        alt.setAutor(Arrays.asList(null, "", "Mueller"));
+        neu.setAutor(List.of("mueller"));
+        leer.setAutor(List.of());
         List<Literatur> eingabe = List.of(alt, leer, neu);
         assertEquals(List.of(neu, alt, leer), sortierer.sortiere(eingabe, List.of(
                 new SortierPrioritaet(Kriterium.AUTOR, Richtung.AUFSTEIGEND),

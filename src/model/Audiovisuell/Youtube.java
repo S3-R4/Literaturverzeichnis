@@ -28,15 +28,4 @@ public class Youtube extends Audiovisuell {
 		return datum.map(d -> "(" + d.getYear() + ")").orElse("");
 	}
 
-	@Override
-	public int getAnzahlAusgefuellterAttribute() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getAnzahlRelevanterAttribute() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 }

@@ -14,7 +14,7 @@ class Test_PodcastGesamtwerk {
 	@Test
 	void createsCitationAndStoresPublishingOrganization() {
 		PodcastGesamtwerk podcast = new PodcastGesamtwerk();
-		podcast.setAutor(Optional.of(List.of("Produzent")));
+		podcast.setAutor(List.of("Produzent"));
 		podcast.setVeroffentlichungsdatum(Optional.of(LocalDate.of(2023, 5, 6)));
 		podcast.setAbruffDatum(Optional.of(LocalDate.of(2026, 10, 19)));
 		podcast.setTitel(Optional.of("Podcast"));

@@ -14,7 +14,7 @@ class Test_SocialMediaBeitrag {
 	@Test
 	void createsCitationAndStoresTextAndDescription() {
 		SocialMediaBeitraege beitrag = new SocialMediaBeitraege();
-		beitrag.setAutor(Optional.of(List.of("Autor")));
+		beitrag.setAutor(List.of("Autor"));
 		beitrag.setVeroffentlichungsdatum(Optional.of(LocalDate.of(2025, 4, 5)));
 		beitrag.setAbruffDatum(Optional.of(LocalDate.of(2026, 10, 19)));
 		beitrag.setTitel(Optional.of("Beitrag"));

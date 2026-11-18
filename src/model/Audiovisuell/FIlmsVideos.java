@@ -9,6 +9,16 @@ public class FIlmsVideos extends Audiovisuell {
 
 
 	@Override
+	public int getAnzahlAusgefuellterAttribute() {
+		return super.getAnzahlAusgefuellterAttribute() + (hatText(produktionsfirma) ? 1 : 0);
+	}
+
+	@Override
+	public int getAnzahlRelevanterAttribute() {
+		return super.getAnzahlRelevanterAttribute() + 1;
+	}
+
+	@Override
 	public String generiereLangbeleg() {
 		if (getUrl().isPresent()) {
 			return getAutorsString(autor) + ". " +
@@ -44,18 +54,6 @@ public class FIlmsVideos extends Audiovisuell {
 	@Override
 	public String datumFormatierung(Optional<LocalDate> datum) {
 		return datum.map(d -> "(" + d.getYear() + ")").orElse("");
-	}
-
-	@Override
-	public int getAnzahlAusgefuellterAttribute() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getAnzahlRelevanterAttribute() {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 }

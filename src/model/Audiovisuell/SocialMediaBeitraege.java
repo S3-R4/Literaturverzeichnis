@@ -10,6 +10,19 @@ public class SocialMediaBeitraege extends Audiovisuell {
 	private Optional<String> beschreibung = Optional.empty();
 
 	@Override
+	public int getAnzahlAusgefuellterAttribute() {
+		int anzahl = super.getAnzahlAusgefuellterAttribute();
+		if (hatText(text)) anzahl++;
+		if (hatText(beschreibung)) anzahl++;
+		return anzahl;
+	}
+
+	@Override
+	public int getAnzahlRelevanterAttribute() {
+		return super.getAnzahlRelevanterAttribute() + 2;
+	}
+
+	@Override
 	public String generiereLangbeleg() {
 		return getAutorsString(autor) + ". " +
 				datumFormatierung(veroeffentlichungsdatum) + ". " +
@@ -48,15 +61,4 @@ public class SocialMediaBeitraege extends Audiovisuell {
 		this.beschreibung = Objects.requireNonNull(beschreibung, "beschreibung");
 	}
 
-	@Override
-	public int getAnzahlAusgefuellterAttribute() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getAnzahlRelevanterAttribute() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 }

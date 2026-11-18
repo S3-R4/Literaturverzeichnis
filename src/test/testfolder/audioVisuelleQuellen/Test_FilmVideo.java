@@ -14,7 +14,7 @@ class Test_FilmVideo {
 	@Test
 	void createsCitationWithUrl() {
 		FIlmsVideos film = new FIlmsVideos();
-		film.setAutor(Optional.of(List.of("Regie")));
+		film.setAutor(List.of("Regie"));
 		film.setVeroffentlichungsdatum(Optional.of(LocalDate.of(2024, 1, 1)));
 		film.setAbruffDatum(Optional.of(LocalDate.of(2024, 1, 2)));
 		film.setTitel(Optional.of("Film"));
@@ -30,7 +30,7 @@ class Test_FilmVideo {
 	@Test
 	void createsCitationWithoutUrl() {
 		FIlmsVideos film = new FIlmsVideos();
-		film.setAutor(Optional.of(List.of("Regie")));
+		film.setAutor(List.of("Regie"));
 		film.setVeroffentlichungsdatum(Optional.of(LocalDate.of(2024, 1, 1)));
 		film.setAbruffDatum(Optional.of(LocalDate.of(2024, 1, 2)));
 		film.setTitel(Optional.of("Film"));

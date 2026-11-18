@@ -14,7 +14,7 @@ class Test_Youtube {
 	@Test
 	void createsCitation() {
 		Youtube video = new Youtube();
-		video.setAutor(Optional.of(List.of("Kanal")));
+		video.setAutor(List.of("Kanal"));
 		video.setVeroffentlichungsdatum(Optional.of(LocalDate.of(2024, 1, 2)));
 		video.setAbruffDatum(Optional.of(LocalDate.of(2026, 10, 19)));
 		video.setTitel(Optional.of("Video"));

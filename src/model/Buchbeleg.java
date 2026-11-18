@@ -12,7 +12,7 @@ private Optional<Integer> auflage = Optional.empty();
 private Optional<String> erscheinungsort = Optional.empty();
 private Seitenangabe seitenangabe;
 
-public Buchbeleg(List<String> autor, Optional<LocalDate> veroeffentlichungsdatum,Optional<String> titel, Optional<String> buchverlag,Optional<Integer> auflage, Optional<String> erscheinungsort,Optional<Integer> anfang, Optional<Integer> ende) {
+public Buchbeleg(List<String> autor, Optional<LocalDate> veroeffentlichungsdatum, Optional<String> titel, Optional<String> buchverlag,Optional<Integer> auflage, Optional<String> erscheinungsort,Optional<Integer> anfang, Optional<Integer> ende) {
 
 setAutoren(autor);
 setErscheinungsdatum(veroeffentlichungsdatum);
@@ -32,7 +32,7 @@ public void setAutoren(List<String> autoren) {
 List<String> bereinigt = new ArrayList<>();
 
 if (autoren == null) {
-    setAutor(Optional.empty());
+    setAutor(bereinigt);
     return;
 }
 
@@ -41,7 +41,7 @@ if (autor != null && !autor.isBlank()) {
     bereinigt.add(autor.trim());
     }
 }
-setAutor(bereinigt.isEmpty() ? Optional.empty() : Optional.of(bereinigt));
+setAutor(bereinigt);
 }
 
 public void setErscheinungsdatum(Optional<LocalDate> erscheinungsdatum) {
@@ -79,7 +79,7 @@ this.seitenangabe = new Seitenangabe(anfang, ende);
 }
 
 public String getAutoren() {
-List<String> autoren = getAutor().orElse(List.of());
+List<String> autoren = getAutor();
 return autoren.isEmpty() ? "o.A." : formatiereAutoren(autoren);
 }
 
@@ -149,7 +149,7 @@ return String.join(" ",getAutoren(),"(" + getErscheinungsjahr() + "): " + titelM
 public int getAnzahlAusgefuellterAttribute() {
 int anzahl = 0;
 
-if (getAutor().orElse(List.of()).stream().anyMatch(a -> a != null && !a.isBlank())) {
+if (getAutor().stream().anyMatch(a -> a != null && !a.isBlank())) {
 anzahl++;
 }
 

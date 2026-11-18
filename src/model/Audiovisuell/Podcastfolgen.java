@@ -13,8 +13,21 @@ public class Podcastfolgen extends Audiovisuell {
 	private Optional<Integer> podcastFolge = Optional.empty();
 	private Optional<String> podcastFolgenName = Optional.empty();
 
+	@Override
+	public int getAnzahlAusgefuellterAttribute() {
+		int anzahl = super.getAnzahlAusgefuellterAttribute();
+		if (hatText(herausgebendeOrganisation)) anzahl++;
+		if (podcastFolge.filter(folge -> folge > 0).isPresent()) anzahl++;
+		if (hatText(podcastFolgenName)) anzahl++;
+		return anzahl;
+	}
+
+	@Override
+	public int getAnzahlRelevanterAttribute() {
+		return super.getAnzahlRelevanterAttribute() + 3;
+	}
+
 	public Podcastfolgen() {
-		setAutor(Optional.of(new ArrayList<>()));
 		setBeitragsArt(Optional.of("Podcast-Folge"));
 	}
 
@@ -35,13 +48,13 @@ public class Podcastfolgen extends Audiovisuell {
 	}
 
 	public void addProduzent(String produzent) {
-		List<String> produzenten = new ArrayList<>(getAutor().orElseGet(List::of));
+		List<String> produzenten = new ArrayList<>(getAutor());
 		produzenten.add(produzent);
-		setAutor(Optional.of(produzenten));
+		setAutor(produzenten);
 	}
 
 	public void removeProduzent(int index) {
-		getAutor().ifPresent(produzenten -> produzenten.remove(index));
+		getAutor().remove(index);
 	}
 
 	@Override
@@ -76,7 +89,7 @@ public class Podcastfolgen extends Audiovisuell {
 	}
 
 	private String generiereAutorenString() {
-		List<String> autoren = autor.orElseGet(List::of);
+		List<String> autoren = getAutor();
 		if (autoren.isEmpty()) {
 			return "";
 		}
@@ -96,15 +109,4 @@ public class Podcastfolgen extends Audiovisuell {
 		this.podcastFolgenName = Objects.requireNonNull(podcastFolgenName, "podcastFolgenName");
 	}
 
-	@Override
-	public int getAnzahlAusgefuellterAttribute() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getAnzahlRelevanterAttribute() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 }

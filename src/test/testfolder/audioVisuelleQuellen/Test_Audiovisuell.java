@@ -14,7 +14,7 @@ class Test_Audiovisuell {
 	private static class TestAudiovisuell extends Audiovisuell {
 		@Override
 		public String generiereKurzbeleg() {
-			return getAutor().orElseThrow().get(0);
+			return getAutor().get(0);
 		}
 
 		@Override
@@ -27,25 +27,16 @@ class Test_Audiovisuell {
 			return "(" + datum.orElseThrow().getYear() + ")";
 		}
 
-		@Override
-		public int getAnzahlAusgefuellterAttribute() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public int getAnzahlRelevanterAttribute() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
 	}
 
 	@Test
 	void storesAndReturnsAudiovisualMetadata() {
 		Audiovisuell quelle = new TestAudiovisuell();
+		assertEquals(0, quelle.getAnzahlAusgefuellterAttribute());
+		assertEquals(7, quelle.getAnzahlRelevanterAttribute());
 		LocalDate veroeffentlichungsdatum = LocalDate.of(2024, 1, 2);
 		LocalDate abrufdatum = LocalDate.of(2026, 10, 19);
-		quelle.setAutor(Optional.of(List.of("Produzent")));
+		quelle.setAutor(List.of("Produzent"));
 		quelle.setTitel(Optional.of("Titel"));
 		quelle.setVeroffentlichungsdatum(Optional.of(veroeffentlichungsdatum));
 		quelle.setAbruffDatum(Optional.of(abrufdatum));
@@ -53,7 +44,7 @@ class Test_Audiovisuell {
 		quelle.setMedium(Optional.of("Web"));
 		quelle.setUrl(Optional.of("https://example.test"));
 
-		assertEquals(List.of("Produzent"), quelle.getAutor().orElseThrow());
+		assertEquals(List.of("Produzent"), quelle.getAutor());
 		assertEquals("Titel", quelle.getTitel().orElseThrow());
 		assertEquals(veroeffentlichungsdatum, quelle.getVeroeffentlichungsdatum().orElseThrow());
 		assertEquals(abrufdatum, quelle.getAbruffDatum().orElseThrow());
@@ -62,5 +53,6 @@ class Test_Audiovisuell {
 		assertEquals("https://example.test", quelle.getUrl().orElseThrow());
 		assertEquals("Produzent", quelle.generiereKurzbeleg());
 		assertEquals("Titel", quelle.generiereLangbeleg());
+		assertEquals(7, quelle.getAnzahlAusgefuellterAttribute());
 	}
 }

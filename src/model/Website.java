@@ -9,6 +9,10 @@ import java.util.Locale;
 import java.util.Optional;
 
 public class Website extends Literatur {
+private static final DateTimeFormatter VEROEFFENTLICHUNGSFORMAT =
+		DateTimeFormatter.ofPattern("yyyy, d. MMMM", Locale.GERMAN);
+private static final DateTimeFormatter ABRUFFORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
 private String websitename;
 private String url;
 private String textart;
@@ -25,13 +29,13 @@ this.textart = textart;
 }
 
 public void setAutoren(List<String> autoren) {
-this.autor = Optional.of(new ArrayList<>());
+this.autor = new ArrayList<>();
 
 if (autoren == null) return;
 
 for (String autor : autoren) {
 	if (autor != null && !autor.isBlank()) {
-		this.autor.orElseThrow().add(autor.trim());
+		this.autor.add(autor.trim());
 	}
 }
 }
@@ -65,10 +69,10 @@ public String generiereLangbeleg() {
 String textBaustein;
 
 // Autor
-if (autor.orElseGet(List::of).isEmpty()) {
+if (autor.isEmpty()) {
 	textBaustein = "u. Autor ";
 } else {
-	textBaustein = String.join(", ", autor.orElseGet(List::of)) + " ";
+	textBaustein = String.join(", ", autor) + " ";
 }
 
 // Veröffentlichung
@@ -105,10 +109,10 @@ public String generiereKurzbeleg() {
 	String textbaustein;
 
 	// Autor
-	if (autor.orElseGet(List::of).isEmpty()) {
+	if (autor.isEmpty()) {
 		textbaustein = websitename + " ";
 	} else {
-		textbaustein = String.join(", ", autor.orElseGet(List::of)) + " ";
+		textbaustein = String.join(", ", autor) + " ";
 	}
 
 	// Veröffentlichung
@@ -123,7 +127,7 @@ public String generiereKurzbeleg() {
 public int getAnzahlAusgefuellterAttribute() {
 	int anzahl = 0;
 
-	if (autor.orElseGet(List::of).stream().anyMatch(a -> a != null && !a.isBlank())) {
+	if (autor.stream().anyMatch(a -> a != null && !a.isBlank())) {
 		anzahl++;
 	}
 
@@ -156,20 +160,10 @@ public int getAnzahlRelevanterAttribute() {
 }
 
 public String getVeroeffentlichungsDatum() {
-	// Definition des gewünschten Formats und der deutschen Sprache
-    DateTimeFormatter datumstransformator = DateTimeFormatter.ofPattern("yyyy, d. MMMM", Locale.GERMAN);
-    
-    // Formatierung anwenden
-    String transformiertesDatum = veroeffentlichungsdatum.map(d -> d.format(datumstransformator)).orElse("");
-	return transformiertesDatum;
+	return veroeffentlichungsdatum.map(VEROEFFENTLICHUNGSFORMAT::format).orElse("");
 }
 
 public String getAbrufDatum() {
-	// Definition des gewünschten Formats und der deutschen Sprache
-	DateTimeFormatter datumstransformator = DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.GERMAN);
-    
-    // Formatierung anwenden
-    String transformiertesDatum = abrufdatum.map(d -> d.format(datumstransformator)).orElse("");
-	return transformiertesDatum;
+	return abrufdatum.map(ABRUFFORMAT::format).orElse("");
 }
 }

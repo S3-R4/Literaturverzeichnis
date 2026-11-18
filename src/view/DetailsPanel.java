@@ -140,7 +140,7 @@ final class DetailsPanel extends JPanel {
 
     private LinkedHashMap<String, String> readAttributes(Literatur source) {
         LinkedHashMap<String, String> attributes = new LinkedHashMap<>();
-        String authors = String.join(", ", source.getAutor().orElse(List.of()).stream()
+        String authors = String.join(", ", source.getAutor().stream()
                 .filter(author -> author != null && !author.isBlank()).toList());
         attributes.put("Autor / Herausgeber", authors);
         attributes.put("Titel", source.getTitel().orElse(""));
@@ -296,7 +296,7 @@ final class DetailsPanel extends JPanel {
 
     private void beginEditing() {
         LinkedHashMap<String, String> values = new LinkedHashMap<>(shownAttributes);
-        List<String> authors = currentSource.getAutor().orElse(List.of());
+        List<String> authors = currentSource.getAutor();
         values.put("Autor / Herausgeber", String.join("; ", authors.stream()
                 .filter(author -> author != null && !author.isBlank()).toList()));
         if (currentSource instanceof Buchbeleg) {
@@ -363,7 +363,7 @@ final class DetailsPanel extends JPanel {
                 image.setHerausgeber(readText("Herausgeber"));
                 image.setAnbieter(readText("Anbieter"));
             } else {
-                source.setAutor(authors.isEmpty() ? Optional.empty() : Optional.of(authors));
+                source.setAutor(authors);
             }
             source.setTitel(readText("Titel"));
             source.setVeroeffentlichungsdatum(published);

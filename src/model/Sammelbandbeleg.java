@@ -50,7 +50,7 @@ public class Sammelbandbeleg extends Literatur {
 	}
 
 	public void setAutoren(List<String> autoren) {
-		this.autor = Optional.of(bereinigePersonen(autoren));
+		setAutor(bereinigePersonen(autoren));
 	}
 
 	public void setHerausgeber(List<String> herausgeber) {
@@ -148,13 +148,7 @@ public class Sammelbandbeleg extends Literatur {
 
 	@Override
 	public String generiereKurzbeleg() {
-		String beleg;
-		if (getErscheinungsjahr().isEmpty()) {
-			beleg = getAutoren() + ", o.J.";
-		} else {
-			beleg = getAutoren() + ", " + getErscheinungsjahr();
-		}
-		
+		String beleg = belegAutor() + ", " + belegJahr();
 		String seiten = getSeitenangabe();
 
 		if (seiten.isEmpty()) {
@@ -173,38 +167,27 @@ public class Sammelbandbeleg extends Literatur {
 					"Es müssen Beitragstitel, " + "Sammelbandtitel, Herausgeber und Verlag angegeben sein.");
 		}
 
-		String bandtitelMitAuflage = getSammelbandtitel() + " (";
-
+		List<String> banddetails = new ArrayList<>();
 		if (auflage.isPresent()) {
-			bandtitelMitAuflage += getAuflage() + ". Aufl.";
+			banddetails.add(getAuflage() + ". Aufl.");
 		}
-
 		String seiten = getSeitenangabe();
-
-		String seitenTeil = "";
-
 		if (!seiten.isEmpty()) {
-			seitenTeil = ", S. " + seiten;
+			banddetails.add("S. " + seiten);
 		}
-		
-		if (getAutoren().equals("")) {
-			return "o.A. (" + getErscheinungsjahr() + "). " + getBeitragstitel() + ". In " + getHerausgeber()
-			+ " (Hrsg.), " + bandtitelMitAuflage + seitenTeil + "). " + getErscheinungsort() + ": " + getBuchverlag()
-			+ ".";
+		String bandtitel = getSammelbandtitel();
+		if (!banddetails.isEmpty()) {
+			bandtitel += " (" + String.join(", ", banddetails) + ")";
 		}
-		
-		return getAutoren() + " (" + getErscheinungsjahr() + "). " + getBeitragstitel() + ". In " + getHerausgeber()
-				+ " (Hrsg.), " + bandtitelMitAuflage + seitenTeil + "). " + getErscheinungsort() + ": " + getBuchverlag()
-				+ ".";
+
+		String ort = getErscheinungsort();
+		String veroeffentlichungsort = ort.isEmpty() ? "" : ort + ": ";
+		return belegAutor() + " (" + belegJahr() + "). " + getBeitragstitel() + ". In " + getHerausgeber()
+				+ " (Hrsg.), " + bandtitel + ". " + veroeffentlichungsort + getBuchverlag() + ".";
 	}
 
 	private String getAutoren() {
-
-		if (autor.orElseGet(List::of).isEmpty()) {
-			return "";
-		}
-
-		return String.join(", ", autor.orElseGet(List::of));
+		return String.join(", ", getAutor());
 	}
 
 	@Override
@@ -218,4 +201,13 @@ public class Sammelbandbeleg extends Literatur {
 		// TODO Auto-generated method stub
 		return 0;
 	}
+	private String belegAutor() {
+		String autoren = getAutoren();
+		return autoren.isEmpty() ? "o.A." : autoren;
+	}
+
+	private String belegJahr() {
+		return veroeffentlichungsdatum.isEmpty() ? "o.J." : getErscheinungsjahr();
+	}
+
 }

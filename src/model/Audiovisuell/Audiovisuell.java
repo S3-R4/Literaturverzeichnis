@@ -14,16 +14,37 @@ public abstract class Audiovisuell extends Literatur {
     protected Optional<String> url = Optional.empty();
 
     @Override
-    public void setAutor(Optional<List<String>> autoren) {
-        this.autor = Objects.requireNonNull(autoren, "autoren").map(werte -> {
-            List<String> bereinigt = new ArrayList<>();
-            for (String wert : werte) {
-                if (wert != null && !wert.isBlank()) {
-                    bereinigt.add(wert.trim());
-                }
+    public void setAutor(List<String> autoren) {
+        Objects.requireNonNull(autoren, "autoren");
+        List<String> bereinigt = new ArrayList<>();
+        for (String wert : autoren) {
+            if (wert != null && !wert.isBlank()) {
+                bereinigt.add(wert.trim());
             }
-            return bereinigt;
-        });
+        }
+        super.setAutor(bereinigt);
+    }
+
+    @Override
+    public int getAnzahlAusgefuellterAttribute() {
+        int anzahl = 0;
+        if (autor.stream().anyMatch(name -> name != null && !name.isBlank())) anzahl++;
+        if (hatText(titel)) anzahl++;
+        if (veroeffentlichungsdatum.isPresent()) anzahl++;
+        if (abrufdatum.isPresent()) anzahl++;
+        if (hatText(beitragsArt)) anzahl++;
+        if (hatText(medium)) anzahl++;
+        if (hatText(url)) anzahl++;
+        return anzahl;
+    }
+
+    @Override
+    public int getAnzahlRelevanterAttribute() {
+        return 7;
+    }
+
+    protected static boolean hatText(Optional<String> text) {
+        return text.filter(wert -> !wert.isBlank()).isPresent();
     }
 
     // Bestehende Schreibweise als Alias zur geerbten Methode beibehalten.
@@ -65,7 +86,7 @@ public abstract class Audiovisuell extends Literatur {
 
     public abstract String datumFormatierung(Optional<LocalDate> datum);
 
-    public String getAutorsString(Optional<List<String>> autors) {
-        return autors.map(werte -> String.join(" ,", werte)).orElse("");
+    public String getAutorsString(List<String> autors) {
+        return String.join(" ,", autors);
     }
 }

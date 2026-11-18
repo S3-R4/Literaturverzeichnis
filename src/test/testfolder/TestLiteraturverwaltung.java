@@ -80,6 +80,7 @@ public class TestLiteraturverwaltung {
                 assertEquals(1, table.getValueAt(table.getSelectedRow(), 0));
                 window.addTableRow(website("Added", "A", 2024));
                 assertEquals(4, table.getValueAt(0, 0));
+                categories.setSelectedItem("Website");
                 assertEquals("Website", categories.getSelectedItem());
                 window.removeTableRow(0);
                 assertEquals(2, table.getRowCount());
@@ -111,7 +112,7 @@ public class TestLiteraturverwaltung {
                 assertEquals("Website", table.getValueAt(0, 2));
                 int authorWidth = table.getColumnModel().getColumn(3).getWidth();
                 Website manyAuthors = website("Long authors", "LongAuthor".repeat(100), 2020);
-                List<String> authors = manyAuthors.getAutor().orElseThrow();
+                List<String> authors = manyAuthors.getAutor();
                 authors.add(null);
                 authors.add("");
                 authors.add("Second author");

@@ -10,6 +10,16 @@ public class PodcastGesamtwerk extends Audiovisuell {
 	private Optional<String> herausgebendeOrganisation = Optional.empty();
 
 	@Override
+	public int getAnzahlAusgefuellterAttribute() {
+		return super.getAnzahlAusgefuellterAttribute() + (hatText(herausgebendeOrganisation) ? 1 : 0);
+	}
+
+	@Override
+	public int getAnzahlRelevanterAttribute() {
+		return super.getAnzahlRelevanterAttribute() + 1;
+	}
+
+	@Override
 	public String generiereLangbeleg() {
 		return getAutorsString(autor) + ". " + datumFormatierung(veroeffentlichungsdatum) + ". [" + getTitel().orElse("") + "]. "
 				+ getHerausgebendeOrganisation().orElse("") + ". " + getUrl().orElse("") + " "
@@ -34,15 +44,4 @@ public class PodcastGesamtwerk extends Audiovisuell {
 		this.herausgebendeOrganisation = Objects.requireNonNull(herausgebendeOrganisation, "herausgebendeOrganisation");
 	}
 
-	@Override
-	public int getAnzahlAusgefuellterAttribute() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getAnzahlRelevanterAttribute() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 }

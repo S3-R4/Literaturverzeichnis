@@ -34,4 +34,25 @@ for (int i = 1; i <= wort1.length(); i++) {
         }
     return matrix[wort1.length()][wort2.length()];
     }
+
+    public boolean suitsSearch(Literatur source, String search) {
+        String term = search.strip().toLowerCase(java.util.Locale.ROOT);
+        if (term.isEmpty()) return true;
+
+        String text = (source.getTitel().orElse("") + " "
+                + String.join(" ", source.getAutor()))
+                .toLowerCase(java.util.Locale.ROOT);
+
+        if (text.contains(term)) return true;
+
+        int maxDistance = term.length() < 4 ? 0 : 2;
+
+        for (String word : text.split("\\P{L}+")) {
+            if (berechneDistanz(term, word) <= maxDistance) {
+                return true;
+            }
+    }
+
+    return false;
+}
 }

@@ -19,6 +19,9 @@ import model.data.DataManager;
 import model.data.DataManager;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import model.FuzzySearch;
 import model.Literatur;
 import model.Sortierer;
 import model.Sortierer.Kriterium;
@@ -32,6 +35,10 @@ public class GUI_Literaturverwaltung extends JFrame {
             Kriterium.AUTOR, Kriterium.JAHR
     };
 
+    private final FuzzySearch fuzzySearch = new FuzzySearch();
+    private JTextField searchField;
+    private JButton searchButton;
+    private javax.swing.Timer searchTimer;
     private final DataManager manager;
     private DefaultTableModel tableModel;
     private JTable sourceTable;
@@ -67,6 +74,7 @@ public class GUI_Literaturverwaltung extends JFrame {
             @Override
             public void windowClosing(WindowEvent event) {
                 if (detailsPanel.confirmCloseIfEditing()) {
+                    searchTimer.stop();
                     dispose();
                 }
             }
@@ -156,10 +164,40 @@ public class GUI_Literaturverwaltung extends JFrame {
     private JPanel createSearchPanel() {
         JPanel searchPanel = new JPanel(new BorderLayout());
         JPanel searchControlsPanel = new JPanel(new BorderLayout());
-        JTextField searchField = new JTextField();
+        searchField = new JTextField();
+        searchTimer = new javax.swing.Timer(150, event -> {
+            if (searchField.isEnabled()) {
+                refreshTable();
+            }
+        });
+        searchTimer.setRepeats(false);
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent event) {
+                searchTimer.restart();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent event) {
+                searchTimer.restart();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent event) {
+                searchTimer.restart();
+            }
+        });
         searchField.getAccessibleContext().setAccessibleName("Quellen durchsuchen");
         searchControlsPanel.add(searchField, BorderLayout.CENTER);
-        JButton searchButton = new JButton("Suchen");
+        searchButton = new JButton("Suchen");
+        java.awt.event.ActionListener searchAction = event -> {
+            searchTimer.stop();
+            if (searchField.isEnabled()) {
+                refreshTable();
+            }
+        };
+        searchButton.addActionListener(searchAction);
+        searchField.addActionListener(searchAction);
         searchButton.setIcon(new ImageIcon("src/view/assets/magnifier.png"));
         searchControlsPanel.add(searchButton, BorderLayout.EAST);
         searchPanel.add(searchControlsPanel, BorderLayout.CENTER);
@@ -179,6 +217,13 @@ public class GUI_Literaturverwaltung extends JFrame {
                 source -> updateTableRow(sourceTable.getSelectedRow(), source),
                 this::addCreatedSource,
                 editing -> {
+                    searchField.setEnabled(!editing);
+                    searchButton.setEnabled(!editing);
+                    if (editing) {
+                        searchTimer.stop();
+                    } else {
+                        searchTimer.restart();
+                    }
                     createReferenceButton.setEnabled(!editing);
                     sourceTypeComboBox.setEnabled(!editing);
                     sourceTable.setEnabled(!editing);
@@ -312,11 +357,13 @@ public class GUI_Literaturverwaltung extends JFrame {
         Integer selectedNumber = selectedRow < 0 ? null
                 : (Integer) tableModel.getValueAt(selectedRow, 0);
         String filter = (String) sourceTypeComboBox.getSelectedItem();
+        String search = searchField.getText();
         List<Object[]> visibleRows = new ArrayList<>();
         for (var entry : sourcesByNumber.entrySet()) {
             Literatur source = entry.getValue();
-            if (filter == null || filter.equals("Alle Quellentypen")
-                    || filter.equals(source.getClass().getSimpleName())) {
+            if ((filter == null || filter.equals("Alle Quellentypen")
+                    || filter.equals(source.getClass().getSimpleName()))
+                    && fuzzySearch.suitsSearch(source, search)) {
                 visibleRows.add(createTableRow(source, entry.getKey()));
             }
         }

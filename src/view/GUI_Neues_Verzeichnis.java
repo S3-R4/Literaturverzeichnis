@@ -8,6 +8,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.io.IOException;
 import java.nio.file.Path;
 
 import javax.swing.JButton;
@@ -95,18 +96,22 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 	/*
 	 * if user chose a location to save the new file -> open the Literaturverwaltung
 	 */
-	private void confirmSelection() { //TODO: implement Action later
+	private void confirmSelection() {
 		if (chosenFile == null) {
 			JOptionPane.showMessageDialog(this, "Bitte zuerst eine JSON-Datei auswählen.");
 			return;
 		}
 
-		DataManager manager = new DataManager();
-		manager.importJson(chosenFile);
-		new GUI_Literaturverwaltung(manager);
-		dispose();
+		try {
+			DataManager manager = new DataManager();
+			chosenFile = Path.of(lblVerzeichnis.getText());
+			manager.createJson(chosenFile);
+			new GUI_Literaturverwaltung(manager);
+			dispose();
+   		} catch (IOException e) { JOptionPane.showMessageDialog(this,"Die JSON-Datei konnte nicht importiert werden:\n" + e.getMessage(),"Import fehlgeschlagen",JOptionPane.ERROR_MESSAGE);
+    }
 	}
-	
+
 	/*
 	 * craet a fileChooser to select a file to save the Quellenverzeichnis
 	 */
@@ -116,8 +121,7 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 		fileChooser.setFileFilter(new FileNameExtensionFilter("JSON-Dateien (*.json)", "json"));
 
 		if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-			chosenFile = fileChooser.getSelectedFile().toPath();
-			lblVerzeichnis.setText(chosenFile.getFileName().toString());
+			lblVerzeichnis.setText(fileChooser.getSelectedFile().toPath().toString());
 			lblVerzeichnis.setToolTipText(chosenFile.toString());
 		}
 	}

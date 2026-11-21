@@ -28,6 +28,9 @@ import model.Sortierer.Kriterium;
 import model.Sortierer.Richtung;
 import model.Sortierer.SortierPrioritaet;
 
+/**
+ * Displays the source table with search, sorting, filtering, and a details editor.
+ */
 public class GUI_Literaturverwaltung extends JFrame {
     private static final String[] COLUMN_NAMES = { "Nr.", "Titel", "Quellentyp", "Autor", "Jahr" };
     private static final Kriterium[] SORT_CRITERIA = {
@@ -50,10 +53,18 @@ public class GUI_Literaturverwaltung extends JFrame {
     private JButton createReferenceButton;
     private final LinkedHashMap<Integer, Literatur> sourcesByNumber = new LinkedHashMap<>();
 
+    /**
+     * Creates the GUI_Literaturverwaltung view and its controls.
+     */
     public GUI_Literaturverwaltung() {
         this(new DataManager());
     }
 
+    /**
+     * Creates the GUI_Literaturverwaltung view and its controls.
+     *
+     * @param manager data manager for the active bibliography
+     */
     public GUI_Literaturverwaltung(DataManager manager) {
         this.manager = Objects.requireNonNull(manager, "manager");
         setTitle("Literaturverwaltung - Literaturverzeichnis");
@@ -71,6 +82,11 @@ public class GUI_Literaturverwaltung extends JFrame {
         contentSplitPane.setResizeWeight(1);
         mainPanel.add(contentSplitPane, BorderLayout.CENTER);
         addWindowListener(new WindowAdapter() {
+            /**
+             * Checks unsaved edits before stopping the search timer and closing the window.
+             *
+             * @param event event that triggered the callback
+             */
             @Override
             public void windowClosing(WindowEvent event) {
                 if (detailsPanel.confirmCloseIfEditing()) {
@@ -85,6 +101,11 @@ public class GUI_Literaturverwaltung extends JFrame {
         SwingUtilities.invokeLater(() -> contentSplitPane.setDividerLocation(0.65));
     }
 
+    /**
+     * Builds the export and settings menus.
+     *
+     * @return the configured menu bar
+     */
     private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         
@@ -112,6 +133,11 @@ public class GUI_Literaturverwaltung extends JFrame {
         return menuBar;
     }
 
+    /**
+     * Builds the source list, search controls, and creation button.
+     *
+     * @return the source list panel
+     */
     private JPanel createListPanel() {
         JPanel listPanel = new JPanel(new BorderLayout());
         listPanel.add(createSearchPanel(), BorderLayout.NORTH);
@@ -123,9 +149,21 @@ public class GUI_Literaturverwaltung extends JFrame {
         return listPanel;
     }
 
+    /**
+     * Builds a read-only table with selection and header-sorting listeners.
+     *
+     * @return the configured source table
+     */
     private JTable createSourceTable() {
         tableModel = new DefaultTableModel(COLUMN_NAMES, 0) {
             @Override
+            /**
+             * Disables direct editing of table cells.
+             *
+             * @param row zero-based table row
+             * @param column zero-based table column
+             * @return false for every cell
+             */
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
@@ -143,6 +181,11 @@ public class GUI_Literaturverwaltung extends JFrame {
 
         table.getTableHeader().addMouseListener(new MouseAdapter() {
             @Override
+            /**
+             * Updates sorting after a single left click on a sortable table header.
+             *
+             * @param event event that triggered the callback
+             */
             public void mouseClicked(MouseEvent event) {
                 int column = table.columnAtPoint(event.getPoint());
                 if (table.isEnabled() && SwingUtilities.isLeftMouseButton(event) && event.getClickCount() == 1
@@ -160,7 +203,13 @@ public class GUI_Literaturverwaltung extends JFrame {
         });
         return table;
     }
-
+    /**
+     * Deletes the selected source after asking the user for confirmation.
+     * The source is removed from the JSON file using its unique ID
+     * and from the GUI table. If canceled, no changes are made.
+     *
+     * @param source the source to be deleted
+     */
     private void deleteSelectedSource(Literatur source) {
     if (source == null) {
         return;
@@ -182,7 +231,11 @@ public class GUI_Literaturverwaltung extends JFrame {
         JOptionPane.showMessageDialog(this,"Die Quelle konnte nicht gelöscht werden:\n" + e.getMessage(),"Fehler beim Löschen",JOptionPane.ERROR_MESSAGE);
     }
 }
-
+    /**
+     * Builds search and type filters with a 150 ms search debounce.
+     *
+     * @return the search controls
+     */
     private JPanel createSearchPanel() {
         JPanel searchPanel = new JPanel(new BorderLayout());
         JPanel searchControlsPanel = new JPanel(new BorderLayout());
@@ -195,16 +248,31 @@ public class GUI_Literaturverwaltung extends JFrame {
         searchTimer.setRepeats(false);
         searchField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
+            /**
+             * Restarts the search debounce timer after text insertion.
+             *
+             * @param event event that triggered the callback
+             */
             public void insertUpdate(DocumentEvent event) {
                 searchTimer.restart();
             }
 
             @Override
+            /**
+             * Restarts the search debounce timer after text removal.
+             *
+             * @param event event that triggered the callback
+             */
             public void removeUpdate(DocumentEvent event) {
                 searchTimer.restart();
             }
 
             @Override
+            /**
+             * Restarts the search debounce timer after document attribute changes.
+             *
+             * @param event event that triggered the callback
+             */
             public void changedUpdate(DocumentEvent event) {
                 searchTimer.restart();
             }
@@ -234,6 +302,11 @@ public class GUI_Literaturverwaltung extends JFrame {
         return searchPanel;
     }
 
+    /**
+     * Connects the details editor to table updates and editing-state controls.
+     *
+     * @return the details panel
+     */
     private JPanel createDetailsPanel() {
     detailsPanel = new DetailsPanel(
             source -> updateTableRow(sourceTable.getSelectedRow(), source),
@@ -257,9 +330,9 @@ public class GUI_Literaturverwaltung extends JFrame {
 }
 
     /**
-     * Add new Literatur to the table and saves it
-     * 
-     * @param source
+     * Adds and selects a new source in the table, then attempts to persist it.
+     *
+     * @param source bibliographic source
      */
     private void addCreatedSource(Literatur source) {
         int number = nextSourceNumber;
@@ -284,6 +357,9 @@ public class GUI_Literaturverwaltung extends JFrame {
         }
     }
 
+    /**
+     * Displays the selected table source or clears details when nothing is selected.
+     */
     private void showSelectedSource() {
         int selectedRow = sourceTable.getSelectedRow();
         Literatur source = selectedRow < 0 ? null
@@ -291,6 +367,12 @@ public class GUI_Literaturverwaltung extends JFrame {
         detailsPanel.showSource(source);
     }
 
+    /**
+     * Toggles a column direction, optionally clearing other sort priorities.
+     *
+     * @param column zero-based table column
+     * @param onlyThisColumn whether to clear other sort priorities
+     */
     private void updateSortPriority(int column, boolean onlyThisColumn) {
         Richtung direction = sortDirectionsByColumn.get(column) == Richtung.AUFSTEIGEND
                 ? Richtung.ABSTEIGEND
@@ -301,6 +383,9 @@ public class GUI_Literaturverwaltung extends JFrame {
         sortDirectionsByColumn.put(column, direction);
     }
 
+    /**
+     * Sorts visible rows while preserving stable source numbers and selection.
+     */
     private void sortTableRows() {
         if (sortDirectionsByColumn.isEmpty()) {
             return;
@@ -348,6 +433,9 @@ public class GUI_Literaturverwaltung extends JFrame {
         }
     }
 
+    /**
+     * Displays sort direction and priority in the table headers.
+     */
     private void updateSortIndicators() {
         for (int column = 0; column < tableModel.getColumnCount(); column++) {
             sourceTable.getColumnModel().getColumn(column).setHeaderValue(tableModel.getColumnName(column));
@@ -363,6 +451,13 @@ public class GUI_Literaturverwaltung extends JFrame {
         sourceTable.getTableHeader().repaint();
     }
 
+    /**
+     * Builds the number, title, type, author, and year cells for a source.
+     *
+     * @param source bibliographic source
+     * @param number stable source number
+     * @return the table row values
+     */
     private Object[] createTableRow(Literatur source, int number) {
         Objects.requireNonNull(source, "source");
         List<String> authors = source.getAutor();
@@ -376,6 +471,9 @@ public class GUI_Literaturverwaltung extends JFrame {
         };
     }
 
+    /**
+     * Rebuilds visible rows from the search and type filters, then restores sorting and selection.
+     */
     private void refreshTable() {
         int selectedRow = sourceTable.getSelectedRow();
         Integer selectedNumber = selectedRow < 0 ? null
@@ -406,6 +504,9 @@ public class GUI_Literaturverwaltung extends JFrame {
         }
     }
 
+    /**
+     * Refreshes available type filters while preserving a still-valid selection.
+     */
     private void updateSourceTypes() {
         String selectedType = (String) sourceTypeComboBox.getSelectedItem();
         List<String> types = new ArrayList<>();
@@ -428,6 +529,11 @@ public class GUI_Literaturverwaltung extends JFrame {
         }
     }
 
+    /**
+     * Adds a source to the in-memory table model and refreshes filters.
+     *
+     * @param source bibliographic source
+     */
     public void addTableRow(Literatur source) {
         Objects.requireNonNull(source, "source");
         sourcesByNumber.put(nextSourceNumber, source);
@@ -436,6 +542,11 @@ public class GUI_Literaturverwaltung extends JFrame {
         refreshTable();
     }
 
+    /**
+     * Adds sources to the in-memory table model and refreshes filters once.
+     *
+     * @param sources sources to display
+     */
     public void addTableRows(Literatur[] sources) {
         Objects.requireNonNull(sources, "sources");
         for (Literatur source : sources)
@@ -448,12 +559,23 @@ public class GUI_Literaturverwaltung extends JFrame {
         refreshTable();
     }
 
+    /**
+     * Removes a visible row from the in-memory source collection and refreshes the table.
+     *
+     * @param rowIndex zero-based visible row index
+     */
     public void removeTableRow(int rowIndex) {
         sourcesByNumber.remove((Integer) tableModel.getValueAt(rowIndex, 0));
         updateSourceTypes();
         refreshTable();
     }
 
+    /**
+     * Replaces the source at a visible row, retaining its source number.
+     *
+     * @param rowIndex zero-based visible row index
+     * @param source bibliographic source
+     */
     public void updateTableRow(int rowIndex, Literatur source) {
         Objects.requireNonNull(source, "source");
         int number = (Integer) tableModel.getValueAt(rowIndex, 0);
@@ -463,6 +585,9 @@ public class GUI_Literaturverwaltung extends JFrame {
         showSelectedSource();
     }
 
+    /**
+     * Clears the in-memory sources and restarts source numbering.
+     */
     public void resetTable() {
         sourcesByNumber.clear();
         nextSourceNumber = 1;

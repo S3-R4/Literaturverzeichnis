@@ -6,9 +6,15 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 
+/**
+ * Displays the start window for creating or importing a bibliography.
+ */
 public class GUI_Startfenster extends JFrame {
     final String maintitle = "Literaturverzeichnis";
 
+    /**
+     * Creates the GUI_Startfenster view and its controls.
+     */
     public GUI_Startfenster() {
         setTitle(maintitle);
         setSize(600, 280);
@@ -39,11 +45,17 @@ public class GUI_Startfenster extends JFrame {
         setVisible(true);
     }
     
+    /**
+     * Opens the bibliography creation window and closes the start window.
+     */
     private void openVerzeichnisAnlegen() {
     	new GUI_Neues_Verzeichnis();
     	dispose();
     }
     
+    /**
+     * Opens the bibliography import window and closes the start window.
+     */
     private void openVerzeichnisImportieren() {
     	new GUI_Verzeichnis_Importieren();
     	dispose();

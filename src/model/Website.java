@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+/**
+ * Represents a web source with publication and retrieval dates.
+ */
 public class Website extends Literatur {
 private static final DateTimeFormatter VEROEFFENTLICHUNGSFORMAT =
 		DateTimeFormatter.ofPattern("yyyy, d. MMMM", Locale.GERMAN);
@@ -17,6 +20,17 @@ private String websitename;
 private String url;
 private String textart;
 
+/**
+ * Creates a Website instance with the supplied metadata.
+ *
+ * @param autor author list
+ * @param websitename website name
+ * @param titel title
+ * @param url URL
+ * @param abrufdatum retrieval date
+ * @param veroeffentlichungsdatum publication date
+ * @param textart text category
+ */
 public Website(List<String> autor, String websitename, Optional<String> titel,String url, LocalDate abrufdatum,LocalDate veroeffentlichungsdatum, String textart) {
 
 setAutoren(autor);
@@ -28,6 +42,11 @@ this.veroeffentlichungsdatum = Optional.ofNullable(veroeffentlichungsdatum);
 this.textart = textart;
 }
 
+/**
+ * Sets the author list.
+ *
+ * @param autoren author list
+ */
 public void setAutoren(List<String> autoren) {
 this.autor = new ArrayList<>();
 
@@ -40,30 +59,65 @@ for (String autor : autoren) {
 }
 }
 
+/**
+ * Sets the website name.
+ *
+ * @param websitename website name
+ */
 public void setWebsitename(String websitename) {
 this.websitename = websitename == null ? "" : websitename.trim();
 }
 
+/**
+ * Sets the URL.
+ *
+ * @param url URL
+ */
 public void setUrl(String url) {
 this.url = url == null ? "" : url.trim();
 }
 
+/**
+ * Sets the title.
+ *
+ * @param titel title
+ */
 public void setTitel(Optional<String> titel) {
 this.titel = java.util.Objects.requireNonNull(titel).filter(v -> !v.isBlank()).map(String::trim);
 }
 
+/**
+ * Returns the website name.
+ *
+ * @return the website name
+ */
 public String getWebsitename() {
 return websitename;
 }
 
+/**
+ * Returns the URL.
+ *
+ * @return the URL
+ */
 public String getUrl() {
 return url;
 }
 
+/**
+ * Returns the text category.
+ *
+ * @return the text category
+ */
 public String getTextart() {
 return textart;
 }
 
+/**
+ * Formats a full bibliographic citation for this source.
+ *
+ * @return the full citation
+ */
 @Override
 public String generiereLangbeleg() {
 String textBaustein;
@@ -105,6 +159,11 @@ return textBaustein;
 }
 
 @Override
+/**
+ * Formats a short citation for this source.
+ *
+ * @return the short citation
+ */
 public String generiereKurzbeleg() {
 	String textbaustein;
 
@@ -124,6 +183,11 @@ public String generiereKurzbeleg() {
 }
 
 @Override
+/**
+ * Counts populated attributes used to measure source completeness.
+ *
+ * @return the number of populated relevant attributes
+ */
 public int getAnzahlAusgefuellterAttribute() {
 	int anzahl = 0;
 
@@ -155,14 +219,29 @@ public int getAnzahlAusgefuellterAttribute() {
 }
 
 @Override
+/**
+ * Returns the number of attributes considered for source completeness.
+ *
+ * @return the total number of relevant attributes
+ */
 public int getAnzahlRelevanterAttribute() {
 	return 6;
 }
 
+/**
+ * Returns the publication date.
+ *
+ * @return the publication date
+ */
 public String getVeroeffentlichungsDatum() {
 	return veroeffentlichungsdatum.map(VEROEFFENTLICHUNGSFORMAT::format).orElse("");
 }
 
+/**
+ * Returns the retrieval date.
+ *
+ * @return the retrieval date
+ */
 public String getAbrufDatum() {
 	return abrufdatum.map(ABRUFFORMAT::format).orElse("");
 }

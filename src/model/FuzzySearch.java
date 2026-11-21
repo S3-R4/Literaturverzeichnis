@@ -1,12 +1,26 @@
 package model;
 
+/**
+ * Matches source titles and authors using substrings and Levenshtein distance.
+ */
 public class FuzzySearch {
 
+/**
+ * Creates a FuzzySearch instance.
+ */
 public FuzzySearch() {
 
 }
 
 //Levenshtein-Distanz
+/**
+ * Computes the Levenshtein distance after converting both texts to lowercase.
+ *
+ * @param wort1 first text
+ * @param wort2 second text
+ * @return the minimum number of single-character edits
+ * @throws IllegalArgumentException if either text is null
+ */
 public int berechneDistanz(String wort1, String wort2) {
 if (wort1 == null || wort2 == null) {
 throw new IllegalArgumentException("Die Texte dürfen nicht null sein.");
@@ -35,6 +49,13 @@ for (int i = 1; i <= wort1.length(); i++) {
     return matrix[wort1.length()][wort2.length()];
     }
 
+    /**
+     * Matches an empty query, a substring, or a word within two edits for queries of at least four characters.
+     *
+     * @param source bibliographic source
+     * @param search search text
+     * @return whether the title or authors match the query
+     */
     public boolean suitsSearch(Literatur source, String search) {
         String term = search.strip().toLowerCase(java.util.Locale.ROOT);
         if (term.isEmpty()) return true;

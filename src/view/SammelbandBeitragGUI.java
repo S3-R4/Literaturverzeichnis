@@ -11,6 +11,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Collects edited-volume contribution metadata and displays a full citation.
+ */
 public class SammelbandBeitragGUI extends JFrame {
 	private JTextField txtAutoren;
 	private JTextField txtErscheinungsjahr;
@@ -24,6 +27,9 @@ public class SammelbandBeitragGUI extends JFrame {
 	private JTextField txtEnde;
 	private JTextArea txtResultat;
 
+	/**
+	 * Creates the SammelbandBeitragGUI view and its controls.
+	 */
 	public SammelbandBeitragGUI() {
 
 		setTitle("Sammelband-Beitrag Zitations-Generator");
@@ -59,6 +65,13 @@ public class SammelbandBeitragGUI extends JFrame {
 		add(panelAusgabe, BorderLayout.SOUTH);
 	}
 
+	/**
+	 * Adds a labeled text field to the input panel.
+	 *
+	 * @param panel panel receiving the input field
+	 * @param beschriftung field label
+	 * @return the new text field
+	 */
 	private JTextField feld(JPanel panel, String beschriftung) {
 		panel.add(new JLabel(beschriftung));
 		JTextField textfeld = new JTextField();
@@ -66,18 +79,39 @@ public class SammelbandBeitragGUI extends JFrame {
 		return textfeld;
 	}
 
+	/**
+	 * Trims nonblank text and treats blank input as absent.
+	 *
+	 * @param text text
+	 * @return the optional text
+	 */
 	private Optional<String> optionalText(String text) {
 		return text.isBlank() ? Optional.empty() : Optional.of(text.trim());
 	}
 
+	/**
+	 * Parses nonblank text as an integer.
+	 *
+	 * @param text text
+	 * @return the optional integer
+	 */
 	private Optional<Integer> optionalZahl(String text) {
 		return text.isBlank() ? Optional.empty() : Optional.of(Integer.parseInt(text.trim()));
 	}
 
+	/**
+	 * Splits comma-separated names without trimming them.
+	 *
+	 * @param text text
+	 * @return the split names
+	 */
 	private List<String> liste(String text) {
 		return Arrays.asList(text.split(","));
 	}
 
+	/**
+	 * Builds an edited-volume citation from form values and displays input errors.
+	 */
 	private void generiereBeleg() {
 
 		try {
@@ -102,6 +136,11 @@ public class SammelbandBeitragGUI extends JFrame {
 		}
 	}
 
+	/**
+	 * Opens the contribution form on the Swing event dispatch thread.
+	 *
+	 * @param args command-line arguments; unused
+	 */
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> new SammelbandBeitragGUI().setVisible(true));
 	}

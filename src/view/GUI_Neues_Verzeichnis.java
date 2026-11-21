@@ -1,15 +1,13 @@
 package view;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Locale;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -18,7 +16,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import model.data.DataManager;
@@ -26,7 +23,8 @@ import model.data.DataManager;
 public class GUI_Neues_Verzeichnis extends JFrame {
 	final String titel = "Neues Verzeichnis anlegen"; 
 	private Path chosenFile;
-	private final JLabel lblVerzeichnis = new JLabel(" <Verzeichnisname> ", SwingConstants.CENTER);
+	private final JTextField tfdVerzeichnisname = new JTextField(25);
+	private final JTextField tfdDateipfad = new JTextField("<Dateipfad>");
 
 	
 	public GUI_Neues_Verzeichnis() {
@@ -46,8 +44,6 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 		add(new JLabel("Verzeichnisname:"), gbc);
 
 		gbc.gridx = 1; gbc.weightx = 1.0; gbc.fill = GridBagConstraints.HORIZONTAL;
-		JTextField tfdVerzeichnisname = new JTextField(25);
-		tfdVerzeichnisname.setText("<Verzeichnisname>");
 		add(tfdVerzeichnisname, gbc);
 
 		// --- Zeile 2: Speicherort ---
@@ -56,7 +52,6 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 
 		gbc.gridx = 1; gbc.weightx = 1.0; gbc.fill = GridBagConstraints.HORIZONTAL;
 		JPanel pathPanel = new JPanel(new BorderLayout(5, 0));
-		JTextField tfdDateipfad = new JTextField("<Dateipfad>");
 		tfdDateipfad.setEditable(false);
 		pathPanel.add(tfdDateipfad, BorderLayout.CENTER);
 
@@ -98,18 +93,24 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 	 */
 	private void confirmSelection() {
 		if (chosenFile == null) {
-			JOptionPane.showMessageDialog(this, "Bitte zuerst eine JSON-Datei auswählen.");
+			JOptionPane.showMessageDialog(this, "Bitte zuerst einen Speicherort auswählen.");
 			return;
 		}
 
 		try {
 			DataManager manager = new DataManager();
-			chosenFile = Path.of(lblVerzeichnis.getText());
-			manager.createJson(chosenFile);
+			chosenFile = chosenFile.resolveSibling(jsonFileName());
+			showSelectedPath();
+			if (!manager.createJson(chosenFile)) {
+				JOptionPane.showMessageDialog(this, "Die Datei existiert bereits. Bitte einen anderen Namen wählen.");
+				return;
+			}
 			new GUI_Literaturverwaltung(manager);
 			dispose();
-   		} catch (IOException e) { JOptionPane.showMessageDialog(this,"Die JSON-Datei konnte nicht importiert werden:\n" + e.getMessage(),"Import fehlgeschlagen",JOptionPane.ERROR_MESSAGE);
-    }
+		} catch (IOException | IllegalArgumentException e) {
+			JOptionPane.showMessageDialog(this, "Die JSON-Datei konnte nicht erstellt werden:\n" + e.getMessage(),
+					"Erstellen fehlgeschlagen", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
 	/*
@@ -120,9 +121,43 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 		fileChooser.setAcceptAllFileFilterUsed(false);
 		fileChooser.setFileFilter(new FileNameExtensionFilter("JSON-Dateien (*.json)", "json"));
 
-		if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-			lblVerzeichnis.setText(fileChooser.getSelectedFile().toPath().toString());
-			lblVerzeichnis.setToolTipText(chosenFile.toString());
+		try {
+			if (!tfdVerzeichnisname.getText().isBlank()) {
+				Path name = jsonFileName();
+				fileChooser.setSelectedFile((chosenFile == null ? name : chosenFile.resolveSibling(name)).toFile());
+			} else if (chosenFile != null) {
+				fileChooser.setSelectedFile(chosenFile.toFile());
+			}
+		} catch (IllegalArgumentException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Ungültiger Dateiname", JOptionPane.ERROR_MESSAGE);
+			return;
 		}
+
+		if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+			chosenFile = fileChooser.getSelectedFile().toPath().toAbsolutePath();
+			String name = chosenFile.getFileName().toString();
+			if (!name.toLowerCase(Locale.ROOT).endsWith(".json")) {
+				chosenFile = chosenFile.resolveSibling(name + ".json");
+			}
+			tfdVerzeichnisname.setText(chosenFile.getFileName().toString());
+			showSelectedPath();
+		}
+	}
+
+	private Path jsonFileName() {
+		String name = tfdVerzeichnisname.getText().trim();
+		if (name.isEmpty() || name.equals(".") || name.equals("..")
+				|| name.contains("/") || name.contains("\\")) {
+			throw new IllegalArgumentException("Bitte einen gültigen Dateinamen ohne Ordnerpfad eingeben.");
+		}
+		if (!name.toLowerCase(Locale.ROOT).endsWith(".json")) {
+			name += ".json";
+		}
+		return Path.of(name);
+	}
+
+	private void showSelectedPath() {
+		tfdDateipfad.setText(chosenFile.toString());
+		tfdDateipfad.setToolTipText(chosenFile.toString());
 	}
 }

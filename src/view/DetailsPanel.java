@@ -156,7 +156,8 @@ final class DetailsPanel extends JPanel {
 		}
 		currentSource = source;
 		deleteButton.setEnabled(source != null);
-		editButton.setEnabled(source instanceof Buchbeleg || source instanceof Website);
+		editButton.setEnabled(source instanceof Buchbeleg || source instanceof Website
+				|| source instanceof BildQuelle || source instanceof Zeitungsartikel || source instanceof Audiovisuell);
 		if (source == null) {
 			showDetails("", "", Map.of());
 			return;

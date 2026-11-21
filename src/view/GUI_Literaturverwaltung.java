@@ -161,6 +161,28 @@ public class GUI_Literaturverwaltung extends JFrame {
         return table;
     }
 
+    private void deleteSelectedSource(Literatur source) {
+    if (source == null) {
+        return;
+    }
+    int confirmation = JOptionPane.showConfirmDialog(this,"Möchten Sie diese Quelle wirklich löschen?\n\n"+ source.getTitel().orElse("Ohne Titel"),"Quelle löschen",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
+    if (confirmation != JOptionPane.YES_OPTION) {
+        return;
+    }
+    try {
+        String id = manager.getId(source);
+        if (id == null || !manager.delete_data_by_id(id)) {JOptionPane.showMessageDialog(this,"Die Quelle konnte nicht gefunden werden.","Fehler beim Löschen",JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        sourcesByNumber.values().removeIf(entry -> entry == source);
+        updateSourceTypes();
+        refreshTable();
+        detailsPanel.showSource(null);
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this,"Die Quelle konnte nicht gelöscht werden:\n" + e.getMessage(),"Fehler beim Löschen",JOptionPane.ERROR_MESSAGE);
+    }
+}
+
     private JPanel createSearchPanel() {
         JPanel searchPanel = new JPanel(new BorderLayout());
         JPanel searchControlsPanel = new JPanel(new BorderLayout());
@@ -213,24 +235,26 @@ public class GUI_Literaturverwaltung extends JFrame {
     }
 
     private JPanel createDetailsPanel() {
-        detailsPanel = new DetailsPanel(
-                source -> updateTableRow(sourceTable.getSelectedRow(), source),
-                this::addCreatedSource,
-                editing -> {
-                    searchField.setEnabled(!editing);
-                    searchButton.setEnabled(!editing);
-                    if (editing) {
-                        searchTimer.stop();
-                    } else {
-                        searchTimer.restart();
-                    }
-                    createReferenceButton.setEnabled(!editing);
-                    sourceTypeComboBox.setEnabled(!editing);
-                    sourceTable.setEnabled(!editing);
-                    sourceTable.getTableHeader().setEnabled(!editing);
-                });
-        return detailsPanel;
-    }
+    detailsPanel = new DetailsPanel(
+            source -> updateTableRow(sourceTable.getSelectedRow(), source),
+            this::addCreatedSource,
+            editing -> {
+                searchField.setEnabled(!editing);
+                searchButton.setEnabled(!editing);
+                if (editing) {
+                    searchTimer.stop();
+                } else {
+                    searchTimer.restart();
+                }
+                createReferenceButton.setEnabled(!editing);
+                sourceTypeComboBox.setEnabled(!editing);
+                sourceTable.setEnabled(!editing);
+                sourceTable.getTableHeader().setEnabled(!editing);
+            },
+            this::deleteSelectedSource
+    );
+    return detailsPanel;
+}
 
     /**
      * Add new Literatur to the table and saves it

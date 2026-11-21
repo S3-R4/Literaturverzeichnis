@@ -17,13 +17,14 @@ import model.Audiovisuell.*;
 import javax.swing.*;
 import java.util.Objects;
 
+
 final class DetailsPanel extends JPanel {
     private final JPanel attributesPanel = new JPanel();
     private final JScrollPane attributesScrollPane = new JScrollPane(attributesPanel);
     private final JTextArea citationPreview = new JTextArea(3, 20);
     private final JLabel sourceTitle = new JLabel();
     private final JLabel sourceType = new JLabel();
-
+    private final Consumer<Literatur> deleteSource;
     private final Consumer<Literatur> saveChanges;
     private final Consumer<Literatur> addSource;
     private final JPanel sourceTypePanel = new JPanel(new BorderLayout());
@@ -38,17 +39,19 @@ final class DetailsPanel extends JPanel {
     private final JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
     private final JLabel inputError = new JLabel();
     private final JButton editButton = new JButton("Bearbeiten");
+    private final JButton deleteButton = new JButton("Löschen");
     private final LinkedHashMap<String, JTextField> editFields = new LinkedHashMap<>();
     private Map<String, String> shownAttributes = Map.of();
     private Literatur currentSource;
     private boolean editing;
 
     DetailsPanel(Consumer<Literatur> saveChanges, Consumer<Literatur> addSource,
-            Consumer<Boolean> editingChanged) {
+            Consumer<Boolean> editingChanged, Consumer<Literatur> deleteSource) {
         super(new BorderLayout(0, 16));
         this.saveChanges = saveChanges;
         this.addSource = addSource;
         this.editingChanged = editingChanged;
+        this.deleteSource = deleteSource;
         setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         setBackground(new Color(0xE6E6E6));
         setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
@@ -108,6 +111,11 @@ final class DetailsPanel extends JPanel {
         inputError.setFont(getFont().deriveFont(11f));
         editButton.setEnabled(false);
         editButton.addActionListener(event -> beginEditing());
+        deleteButton.addActionListener(event -> {
+            if (currentSource != null) {
+                deleteSource.accept(currentSource);
+            }
+        });
         JPanel controls = new JPanel(new BorderLayout(0, 5));
         controls.setOpaque(false);
         controls.add(actionPanel, BorderLayout.NORTH);
@@ -453,6 +461,7 @@ final class DetailsPanel extends JPanel {
             actionPanel.add(cancel);
             actionPanel.add(accept);
         } else {
+            actionPanel.add(deleteButton);
             actionPanel.add(editButton);
         }
         actionPanel.revalidate();

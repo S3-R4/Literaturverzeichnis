@@ -4,6 +4,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.util.function.Consumer;
 
 import javax.swing.*;
 
@@ -15,14 +16,15 @@ public class GUI_Einstellungen extends JDialog{
     private JComboBox<String> designerComboBox;
     private JButton abbrechenButton;
     private JButton bestaetigenButton;
-
+    private final Consumer<String> themeChanged;
     /**
      * Creates the GUI_Einstellungen view and its controls.
      *
      * @param parent owner window
      */
-    public GUI_Einstellungen(JFrame parent) {
+    public GUI_Einstellungen(JFrame parent, Consumer<String> themeChanged, String currentTheme) {
         super(parent, "Einstellungen", true);
+        this.themeChanged = themeChanged;
         
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -37,12 +39,15 @@ public class GUI_Einstellungen extends JDialog{
         gbc.weightx = 0.25; 
         add(designerLabel, gbc);
 
-        designerComboBox = new JComboBox<>();
+        designerComboBox = new JComboBox<>(new String[] {
+        "Hell", "Dunkel"
+        });
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 0.75;
         add(designerComboBox, gbc);
-
+        designerComboBox.setSelectedItem(currentTheme);
+        
         // --- ZEILE 2: Buttons in der rechten Haelfte ---
         
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 10, 0));
@@ -92,7 +97,9 @@ public class GUI_Einstellungen extends JDialog{
     /**
      * Closes the dialog; applying the selected theme is not yet implemented.
      */
-    private void bestaetigenAction() { //TODO: implement code
+    private void bestaetigenAction() { 
+        String selectedTheme = (String) designerComboBox.getSelectedItem();
+        themeChanged.accept(selectedTheme);
     	dispose();
     }
 }

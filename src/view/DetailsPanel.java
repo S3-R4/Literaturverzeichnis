@@ -114,7 +114,7 @@ final class DetailsPanel extends JPanel {
         citationPanel.setOpaque(false);
         JLabel caption = new JLabel("Kurzbeleg");
         caption.setFont(getFont().deriveFont(11f));
-        caption.setForeground(Color.DARK_GRAY);
+        caption.setForeground(getForeground());
         actionPanel.setOpaque(false);
         inputError.setForeground(new Color(0xA00000));
         inputError.setFont(getFont().deriveFont(11f));
@@ -273,7 +273,7 @@ final class DetailsPanel extends JPanel {
                 BorderFactory.createEmptyBorder(0, 0, 7, 0)));
         JLabel nameLabel = new JLabel(name);
         nameLabel.setFont(getFont().deriveFont(11f));
-        nameLabel.setForeground(Color.DARK_GRAY);
+        nameLabel.setForeground(getForeground());
         String text = value == null || value.isBlank() ? "—" : value;
         String escapedText = text.replace("&", "&amp;")
                 .replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>");

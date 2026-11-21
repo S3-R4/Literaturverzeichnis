@@ -52,6 +52,7 @@ public class GUI_Literaturverwaltung extends JFrame {
     private DetailsPanel detailsPanel;
     private JButton createReferenceButton;
     private final LinkedHashMap<Integer, Literatur> sourcesByNumber = new LinkedHashMap<>();
+    private String currentTheme = "Hell";
 
     /**
      * Creates the GUI_Literaturverwaltung view and its controls.
@@ -124,8 +125,8 @@ public class GUI_Literaturverwaltung extends JFrame {
         JMenu settingsMenu = new JMenu("Einstellungen");
         JMenuItem theme = new JMenuItem("Theme");
         theme.addActionListener(e -> {
-        	GUI_Einstellungen dialog = new GUI_Einstellungen(this);
-    		dialog.setVisible(true);
+        	GUI_Einstellungen dialog = new GUI_Einstellungen(this, this::changeTheme, currentTheme);
+            dialog.setVisible(true);
         });
         settingsMenu.add(theme);
         
@@ -593,5 +594,46 @@ public class GUI_Literaturverwaltung extends JFrame {
         nextSourceNumber = 1;
         updateSourceTypes();
         refreshTable();
+    }
+    /**
+     * Updates the colors of a component and all its child components.
+     */
+    private void applyTheme(Component component, Color background,
+        Color foreground, Color inputBackground) {
+
+    component.setForeground(foreground);
+
+    if (component instanceof JTextField || component instanceof JTextArea|| component instanceof JComboBox<?>) {
+        component.setBackground(inputBackground);
+    } else {
+        component.setBackground(background);
+    }
+    if (component instanceof JTable table) {
+        table.setGridColor(foreground);
+        table.getTableHeader().setBackground(background);
+        table.getTableHeader().setForeground(foreground);
+    }
+    if (component instanceof Container container) {
+        for (Component child : container.getComponents()) {
+            applyTheme(child, background, foreground, inputBackground);
+        }
+    }
+    }
+    /**
+     * Applies the selected theme to the existing interface.
+     *
+     * @param theme selected theme ("Hell" or "Dunkel")
+     */
+    private void changeTheme(String theme) {
+    currentTheme = theme;
+    boolean dark = "Dunkel".equals(theme);
+    Color background = dark ? new Color(0x2B2B2B) : Color.WHITE;
+    Color foreground = dark ? new Color(0xF0F0F0) : Color.BLACK;
+    Color inputBackground = dark ? new Color(0x424242) : Color.WHITE;
+
+    applyTheme(getContentPane(), background, foreground, inputBackground);
+    applyTheme(getJMenuBar(), background, foreground, inputBackground);
+
+    repaint();
     }
 }

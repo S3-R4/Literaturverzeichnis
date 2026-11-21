@@ -2,36 +2,15 @@ package model.data;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.time.LocalDate;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 
-import model.BildQuelle;
-import model.Buchbeleg;
-import model.Literatur;
-import model.Sammelbandbeleg;
-import model.Website;
-import model.Zeitungsartikel;
-import model.Audiovisuell.Audiovisuell;
-import model.Audiovisuell.FIlmsVideos;
-import model.Audiovisuell.PodcastGesamtwerk;
-import model.Audiovisuell.Podcastfolgen;
-import model.Audiovisuell.SocialMediaBeitraege;
-import model.Audiovisuell.Youtube;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
+import model.*;
+import model.Audiovisuell.*;
+import tools.jackson.databind.*;
 import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ArrayNode;
-import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.*;
 
 public class DataManager {
 
@@ -41,7 +20,7 @@ public class DataManager {
 	private final ObjectMapper mapper = JsonMapper.builder()
 			.changeDefaultVisibility(visibility -> visibility.withFieldVisibility(JsonAutoDetect.Visibility.ANY))
 			.build();
-
+    
 	// -------------------------------------------------------------------------------------
 	/**
 	 * adds the entry to the json file
@@ -268,7 +247,7 @@ public class DataManager {
 		Files.copy(this.quellenFile, path, StandardCopyOption.REPLACE_EXISTING);
 	}
 	
-public List<Literatur> readAllSources() throws IOException { //Reads JSON and returns is as a object
+public List<Literatur> readAllSources() throws IOException { //Reads JSON and returns it as a object
     ObjectNode root = loadData();
     List<Literatur> sources = new ArrayList<>();
 	idsBySource.clear();
@@ -289,9 +268,9 @@ public List<Literatur> readAllSources() throws IOException { //Reads JSON and re
                 Literatur source = convertEntry(type, object);
 				String id = readString(object.get("id"));
 
-			if (id.isBlank()) {
-    			throw new IOException("Ein Eintrag in " + type + " hat keine ID.");
-}
+                if (id.isBlank()) {
+                    throw new IOException("Ein Eintrag in " + type + " hat keine ID.");
+                }
 				idsBySource.put(source, id);
 				sources.add(source);
             } catch (RuntimeException e) {
@@ -304,86 +283,86 @@ public List<Literatur> readAllSources() throws IOException { //Reads JSON and re
 
     return sources;
 }
+    private Literatur convertEntry(String type, ObjectNode entry) { //Reads the JSON for name category and decides which class to create
+        List<String> authors = readStringList(entry.get("autor"));
+        Optional<LocalDate> published = readDate(entry.get("veroeffentlichungsdatum"));
+        Optional<LocalDate> retrieved = readDate(entry.get("abrufdatum"));
+        Optional<String> title = readText(entry.get("titel"));
+        
+        return switch (type) {
+            case "Buchbeleg" -> {
+                    JsonNode pages = entry.get("seitenangabe");
+                    yield new Buchbeleg(authors,published,title,readText(entry.get("buchverlag")),readInteger(entry.get("auflage")),readText(entry.get("erscheinungsort")),readInteger(pages == null ? null : pages.get("anfang")),readInteger(pages == null ? null : pages.get("ende")));
+                }
 
-private Literatur convertEntry(String type, ObjectNode entry) { //Reads the JSON for name category and decides which class to create
-List<String> authors = readStringList(entry.get("autor"));
-Optional<LocalDate> published = readDate(entry.get("veroeffentlichungsdatum"));
-Optional<LocalDate> retrieved = readDate(entry.get("abrufdatum"));
-Optional<String> title = readText(entry.get("titel"));
-return switch (type) {
-case "Buchbeleg" -> {
-		JsonNode pages = entry.get("seitenangabe");
-		yield new Buchbeleg(authors,published,title,readText(entry.get("buchverlag")),readInteger(entry.get("auflage")),readText(entry.get("erscheinungsort")),readInteger(pages == null ? null : pages.get("anfang")),readInteger(pages == null ? null : pages.get("ende")));
-	}
+                case "Sammelbandbeleg" -> {
+                    JsonNode pages = entry.get("seitenangabe");
+                    yield new Sammelbandbeleg(authors,published,title,readStringList(entry.get("herausgeber")),readText(entry.get("sammelbandtitel")),readInteger(entry.get("auflage")),readText(entry.get("verlag")),readText(entry.get("erscheinungsort")),readInteger(pages == null ? null : pages.get("anfang")),readInteger(pages == null ? null : pages.get("ende")));
+                }
 
-	case "Sammelbandbeleg" -> {
-		JsonNode pages = entry.get("seitenangabe");
-		yield new Sammelbandbeleg(authors,published,title,readStringList(entry.get("herausgeber")),readText(entry.get("sammelbandtitel")),readInteger(entry.get("auflage")),readText(entry.get("verlag")),readText(entry.get("erscheinungsort")),readInteger(pages == null ? null : pages.get("anfang")),readInteger(pages == null ? null : pages.get("ende")));
-	}
+                case "Website" -> new Website(authors,readString(entry.get("websitename")),title,readString(entry.get("url")),retrieved.orElse(null),published.orElse(null),readString(entry.get("textart")));
 
-	case "Website" -> new Website(authors,readString(entry.get("websitename")),title,readString(entry.get("url")),retrieved.orElse(null),published.orElse(null),readString(entry.get("textart")));
+                case "Zeitungsartikel" -> new Zeitungsartikel(published.orElse(null),title.orElse(""),readString(entry.get("zeitung")),readString(entry.get("seitenzahl")),readString(entry.get("url")),authors);
 
-	case "Zeitungsartikel" -> new Zeitungsartikel(published.orElse(null),title.orElse(""),readString(entry.get("zeitung")),readString(entry.get("seitenzahl")),readString(entry.get("url")),authors);
+                case "BildQuelle" -> {
+                BildQuelle image = new BildQuelle();
+                image.setUrheber1(authorAt(authors, 0));
+                image.setUrheber2(authorAt(authors, 1));
+                image.setUrheber3(authorAt(authors, 2));
+                image.setUrheber4(authorAt(authors, 3));
+                image.setMehrUrheber(readBoolean(entry.get("MehrUrheber")));
+                image.setTitel(title);
+                image.setMedienart(readText(entry.get("Medienart")));
+                image.setVeroeffentlichungsdatum(published);
+                image.setAbrufdatum(retrieved);
+                image.setHerausgeber(readText(entry.get("Herausgeber")));
+                image.setAnbieter(readText(entry.get("Anbieter")));
+                yield image;
+                }
 
-	case "BildQuelle" -> {
-	BildQuelle image = new BildQuelle();
-	image.setUrheber1(authorAt(authors, 0));
-	image.setUrheber2(authorAt(authors, 1));
-	image.setUrheber3(authorAt(authors, 2));
-	image.setUrheber4(authorAt(authors, 3));
-	image.setMehrUrheber(readBoolean(entry.get("MehrUrheber")));
-	image.setTitel(title);
-	image.setMedienart(readText(entry.get("Medienart")));
-	image.setVeroeffentlichungsdatum(published);
-	image.setAbrufdatum(retrieved);
-	image.setHerausgeber(readText(entry.get("Herausgeber")));
-	image.setAnbieter(readText(entry.get("Anbieter")));
-	yield image;
-	}
+                case "FIlmsVideos" -> {
+                FIlmsVideos film = new FIlmsVideos();
+                fillAudiovisual(film, authors, title, published, retrieved, entry);
+                film.setProduktionsfirma(readText(entry.get("produktionsfirma")));
+                yield film;
+                }
 
-	case "FIlmsVideos" -> {
-	FIlmsVideos film = new FIlmsVideos();
-	fillAudiovisual(film, authors, title, published, retrieved, entry);
-	film.setProduktionsfirma(readText(entry.get("produktionsfirma")));
-	yield film;
-	}
+                case "Youtube" -> {
+                Youtube youtube = new Youtube();
+                fillAudiovisual(youtube, authors, title, published, retrieved, entry);
+                yield youtube;
+                }
 
-	case "Youtube" -> {
-	Youtube youtube = new Youtube();
-	fillAudiovisual(youtube, authors, title, published, retrieved, entry);
-	yield youtube;
-	}
+                case "PodcastGesamtwerk" -> {
+                PodcastGesamtwerk podcast = new PodcastGesamtwerk();
+                fillAudiovisual(podcast, authors, title, published, retrieved, entry);
+                podcast.setHerausgebendeOrganisation(
+                    readText(entry.get("herausgebendeOrganisation"))
+                );
+                yield podcast;
+                }
 
-	case "PodcastGesamtwerk" -> {
-	PodcastGesamtwerk podcast = new PodcastGesamtwerk();
-	fillAudiovisual(podcast, authors, title, published, retrieved, entry);
-	podcast.setHerausgebendeOrganisation(
-		readText(entry.get("herausgebendeOrganisation"))
-	);
-	yield podcast;
-	}
+                case "Podcastfolgen" -> {
+                Podcastfolgen episode = new Podcastfolgen();
+                fillAudiovisual(episode, authors, title, published, retrieved, entry);
+                episode.setHerausgebendeOrganisation(readText(entry.get("herausgebendeOrganisation"))
+                );
+                episode.setPodcastFolge(readInteger(entry.get("podcastFolge")));
+                episode.setPodcastFolgenName(readText(entry.get("podcastFolgenName")));
+                yield episode;
+                }
 
-	case "Podcastfolgen" -> {
-	Podcastfolgen episode = new Podcastfolgen();
-	fillAudiovisual(episode, authors, title, published, retrieved, entry);
-	episode.setHerausgebendeOrganisation(readText(entry.get("herausgebendeOrganisation"))
-	);
-	episode.setPodcastFolge(readInteger(entry.get("podcastFolge")));
-	episode.setPodcastFolgenName(readText(entry.get("podcastFolgenName")));
-	yield episode;
-	}
+                case "SocialMediaBeitraege" -> {
+                SocialMediaBeitraege post = new SocialMediaBeitraege();
+                fillAudiovisual(post, authors, title, published, retrieved, entry);
+                post.setText(readText(entry.get("text")));
+                post.setBeschreibung(readText(entry.get("beschreibung")));
+                yield post;
+                }
 
-	case "SocialMediaBeitraege" -> {
-	SocialMediaBeitraege post = new SocialMediaBeitraege();
-	fillAudiovisual(post, authors, title, published, retrieved, entry);
-	post.setText(readText(entry.get("text")));
-	post.setBeschreibung(readText(entry.get("beschreibung")));
-	yield post;
-	}
-
-	default -> throw new IllegalArgumentException("Unbekannter Quellentyp: " + type);
-};
-}
+                default -> throw new IllegalArgumentException("Unbekannter Quellentyp: " + type);
+            };
+    }
 
 private void fillAudiovisual(Audiovisuell source,List<String> authors,Optional<String> title,Optional<LocalDate> published,Optional<LocalDate> retrieved,ObjectNode entry) {
     source.setAutor(authors);

@@ -1,28 +1,16 @@
 package view;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.io.IOException;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
+import java.util.List;
 import java.nio.file.Path;
 
 import model.data.DataManager;
+import model.Literatur;
 
 public class GUI_Verzeichnis_Importieren extends JFrame {
 	final String titel = "Verzeichnis importieren";
@@ -72,7 +60,7 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
 	 * craet a fileChooser to select a file to save the Quellenverzeichnis
 	 */
 	private void openFileChooser() {
-		JFileChooser fileChooser = new JFileChooser();
+		JFileChooser fileChooser = new JFileChooser("/home/s3r4/Documents/Svault/Okul/IT/Projekt/Literaturverzeichnis/data/quellenData.json"); //NOTE: REMOVE AFTER TESTING!!!
 		fileChooser.setAcceptAllFileFilterUsed(false);
 		fileChooser.setFileFilter(new FileNameExtensionFilter("JSON-Dateien (*.json)", "json"));
 
@@ -102,7 +90,9 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
     try {
     	DataManager manager = new DataManager();
         manager.importJson(chosenFile);
-        new GUI_Literaturverwaltung(manager);
+        List<Literatur> sources = manager.readAllSources();
+        GUI_Literaturverwaltung window = new GUI_Literaturverwaltung(manager);
+        window.addTableRows(sources.toArray(Literatur[]::new));
         dispose();
     } catch (IOException e) { JOptionPane.showMessageDialog(this,"Die JSON-Datei konnte nicht importiert werden:\n" + e.getMessage(),"Import fehlgeschlagen",JOptionPane.ERROR_MESSAGE);
     }

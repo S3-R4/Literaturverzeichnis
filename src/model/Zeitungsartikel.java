@@ -6,6 +6,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Stores newspaper article metadata and formats article citations.
+ */
 public class Zeitungsartikel extends Literatur {
 
 	String zeitung;
@@ -13,14 +16,14 @@ public class Zeitungsartikel extends Literatur {
 	String url;
 
 	/**
-	 * Erstellt neue Quelle f�r einen Zeitungsartikel
-	 * 
-	 * @param autor
-	 * @param datum
-	 * @param titel
-	 * @param zeitung
-	 * @param seitenzahl
-	 * @param url
+	 * Creates a Zeitungsartikel instance with the supplied metadata.
+	 *
+	 * @param veroeffentlichungsdatum publication date
+	 * @param titel title
+	 * @param zeitung newspaper name
+	 * @param seitenzahl page information
+	 * @param url URL
+	 * @param autor author list
 	 */
 	public Zeitungsartikel(LocalDate veroeffentlichungsdatum, String titel, String zeitung, String seitenzahl,
 			String url, List<String> autor) {
@@ -32,6 +35,11 @@ public class Zeitungsartikel extends Literatur {
 		setUrl(url);
 	}
 
+	/**
+	 * Returns the date.
+	 *
+	 * @return the date
+	 */
 	public String getDatum() {
 		// Definition des gewünschten Formats und der deutschen Sprache
         DateTimeFormatter datumstransformator = DateTimeFormatter.ofPattern("yyyy, d.MMMM", Locale.GERMAN);
@@ -41,42 +49,92 @@ public class Zeitungsartikel extends Literatur {
 		return transformiertesDatum;
 	}
 
+	/**
+	 * Sets the date.
+	 *
+	 * @param datum date
+	 */
 	public void setDatum(java.time.LocalDate datum) {
 		this.veroeffentlichungsdatum = Optional.ofNullable(datum);
 	}
 
+	/**
+	 * Returns the title.
+	 *
+	 * @return the title
+	 */
 	public Optional<String> getTitel() {
 		return titel;
 	}
 
+	/**
+	 * Sets the title.
+	 *
+	 * @param titel title
+	 */
 	public void setTitel(Optional<String> titel) {
 		this.titel = java.util.Objects.requireNonNull(titel);
 	}
 
+	/**
+	 * Returns the newspaper name.
+	 *
+	 * @return the newspaper name
+	 */
 	public String getZeitung() {
 		return zeitung;
 	}
 
+	/**
+	 * Sets the newspaper name.
+	 *
+	 * @param zeitung newspaper name
+	 */
 	public void setZeitung(String zeitung) {
 		this.zeitung = zeitung;
 	}
 
+	/**
+	 * Returns the page information.
+	 *
+	 * @return the page information
+	 */
 	public String getSeitenzahl() {
 		return seitenzahl;
 	}
 
+	/**
+	 * Sets the page information.
+	 *
+	 * @param seitenzahl page information
+	 */
 	public void setSeitenzahl(String seitenzahl) {
 		this.seitenzahl = seitenzahl;
 	}
 
+	/**
+	 * Returns the URL.
+	 *
+	 * @return the URL
+	 */
 	public String getUrl() {
 		return url;
 	}
 
+	/**
+	 * Sets the URL.
+	 *
+	 * @param url URL
+	 */
 	public void setUrl(String url) {
 		this.url = url;
 	}
 
+	/**
+	 * Abbreviates authors for short citations, falling back to the newspaper or title.
+	 *
+	 * @return the short author label
+	 */
 	private String getAutorAsStringKurz() {
 		String s = "";
 
@@ -103,6 +161,11 @@ public class Zeitungsartikel extends Literatur {
 		return s;
 	}
 
+	/**
+	 * Formats up to three authors, falling back to the newspaper or title.
+	 *
+	 * @return the full author label
+	 */
 	private String getAutorAsStringLang() {
 		String s = "";
 		switch (getAutor().size()) {
@@ -130,6 +193,11 @@ public class Zeitungsartikel extends Literatur {
 		return s;
 	}
 
+	/**
+	 * Formats a short citation for this source.
+	 *
+	 * @return the short citation
+	 */
 	@Override
 	public String generiereKurzbeleg() {
 		String b = "(";
@@ -146,6 +214,11 @@ public class Zeitungsartikel extends Literatur {
 	}
 
 	@Override
+	/**
+	 * Formats a full bibliographic citation for this source.
+	 *
+	 * @return the full citation
+	 */
 	public String generiereLangbeleg() {
 		String b = "";
 
@@ -170,6 +243,11 @@ public class Zeitungsartikel extends Literatur {
 		return b;
 	}
 @Override
+/**
+ * Counts populated attributes used to measure source completeness.
+ *
+ * @return the number of populated relevant attributes
+ */
 public int getAnzahlAusgefuellterAttribute() {
 int anzahl = 0;
 
@@ -184,6 +262,11 @@ return anzahl;
 }
 
 @Override
+/**
+ * Returns the number of attributes considered for source completeness.
+ *
+ * @return the total number of relevant attributes
+ */
 public int getAnzahlRelevanterAttribute() {
 return 6;
 }

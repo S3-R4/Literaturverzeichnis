@@ -32,6 +32,12 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 	private final JTextField tfdDateipfad = new JTextField("<Dateipfad>");
 	private final DataManager manager;
 	
+	/**
+	 * Creates the GUI_Verzeichnis_Exportieren view and its controls.
+	 *
+	 * @param parent owner window
+	 * @param manager data manager for the active bibliography
+	 */
 	public GUI_Verzeichnis_Exportieren(JFrame parent, DataManager manager) {
 		super(parent, "Verzeichnis exportieren", true);
 		this.manager = Objects.requireNonNull(manager, "manager");
@@ -78,14 +84,14 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 	}
 	
 	/**
-	 * close the dialog
+	 * Closes the export dialog.
 	 */
 	private void close() {
 		dispose();
 	}
 	
 	/**
-	 * if user chose a location where to save the file -> save and 
+	 * Processes the selected file and reports validation or file-operation errors.
 	 */
 	private void confirmSelection() {
 		if (chosenFile == null) {
@@ -111,7 +117,7 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 	}
 	
 	/**
-	 * create a fileChooser to select a file to save the Quellenverzeichnis
+	 * Opens a JSON file chooser and displays the selected path.
 	 */
 	private void openFileChooser() {
 		JFileChooser fileChooser = new JFileChooser();

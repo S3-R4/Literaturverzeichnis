@@ -20,6 +20,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import model.data.DataManager;
 
+/**
+ * Creates a bibliography JSON file from a selected name and location.
+ */
 public class GUI_Neues_Verzeichnis extends JFrame {
 	final String titel = "Neues Verzeichnis anlegen"; 
 	private Path chosenFile;
@@ -27,6 +30,9 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 	private final JTextField tfdDateipfad = new JTextField("<Dateipfad>");
 
 	
+	/**
+	 * Creates the GUI_Neues_Verzeichnis view and its controls.
+	 */
 	public GUI_Neues_Verzeichnis() {
 		setTitle(titel);
 		setSize(550, 200);
@@ -83,6 +89,9 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 	/*
 	 * Open the start window
 	 */
+	/**
+	 * Opens the start window and closes this window.
+	 */
 	private void returnToStart() {
 		new GUI_Startfenster();
 		dispose();
@@ -90,6 +99,9 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 	
 	/*
 	 * if user chose a location to save the new file -> open the Literaturverwaltung
+	 */
+	/**
+	 * Processes the selected file and reports validation or file-operation errors.
 	 */
 	private void confirmSelection() {
 		if (chosenFile == null) {
@@ -115,6 +127,9 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 
 	/*
 	 * craet a fileChooser to select a file to save the Quellenverzeichnis
+	 */
+	/**
+	 * Opens a JSON file chooser and displays the selected path.
 	 */
 	private void openFileChooser() {
 		JFileChooser fileChooser = new JFileChooser();
@@ -144,6 +159,11 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 		}
 	}
 
+	/**
+	 * Validates a filename without directory components and adds the JSON extension if needed.
+	 *
+	 * @return the normalized filename
+	 */
 	private Path jsonFileName() {
 		String name = tfdVerzeichnisname.getText().trim();
 		if (name.isEmpty() || name.equals(".") || name.equals("..")
@@ -156,6 +176,9 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 		return Path.of(name);
 	}
 
+	/**
+	 * Updates the path field and tooltip from the selected file.
+	 */
 	private void showSelectedPath() {
 		tfdDateipfad.setText(chosenFile.toString());
 		tfdDateipfad.setToolTipText(chosenFile.toString());

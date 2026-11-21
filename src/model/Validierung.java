@@ -8,11 +8,23 @@ import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.Optional;
 
+/**
+ * Validates textual input and returns optional error messages.
+ */
 public class Validierung {
+    /**
+     * Creates a Validierung instance.
+     */
     public Validierung() {
 
     }
 
+    /**
+     * Checks that the input is an integer year from 1000 through 2027.
+     *
+     * @param jahr year
+     * @return an error message, or an empty optional when valid
+     */
     public static Optional<String> pruefeJahr(Optional<String> jahr) {
         if (jahr == null || jahr.isEmpty() || jahr.get().trim().isBlank()) {
             return Optional.of(Fehlermeldungen.getJahrFehler());
@@ -32,6 +44,12 @@ public class Validierung {
         return Optional.empty();
     }
 
+    /**
+     * Strictly validates a calendar date in d.M.uuuu format.
+     *
+     * @param datum date
+     * @return an error message, or an empty optional when valid
+     */
     public static Optional<String> pruefeDatum(Optional<String> datum) {
         if (datum == null || datum.isEmpty() || datum.get().isBlank()) {
             return Optional.of(Fehlermeldungen.getDatumFehler());
@@ -49,6 +67,12 @@ public class Validierung {
         }
     }
 
+    /**
+     * Checks that text is present and nonblank.
+     *
+     * @param text text
+     * @return an error message, or an empty optional when valid
+     */
     public static Optional<String> pruefeText(Optional<String> text) {
         if (text == null || text.isEmpty() || text.get().isBlank()) {
             return Optional.of(Fehlermeldungen.getTextFehler());
@@ -57,6 +81,12 @@ public class Validierung {
         return Optional.empty();
     }
 
+    /**
+     * Checks for an HTTP or HTTPS URI with a host.
+     *
+     * @param url URL
+     * @return an error message, or an empty optional when valid
+     */
     public static Optional<String> pruefeURL(Optional<String> url) {
         if (url == null || url.isEmpty() || url.get().isBlank()) {
             return Optional.of(Fehlermeldungen.getURLFehler());

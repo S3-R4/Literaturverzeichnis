@@ -44,6 +44,7 @@ final class DetailsPanel extends JPanel {
 	private final Consumer<Boolean> editingChanged;
 	private final JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
 	private final JLabel inputError = new JLabel();
+	private final JButton deleteButton = new JButton("Löschen");
 	private final JButton editButton = new JButton("Bearbeiten");
 	private final LinkedHashMap<String, JTextField> editFields = new LinkedHashMap<>();
 	private Map<String, String> shownAttributes = Map.of();
@@ -59,7 +60,7 @@ final class DetailsPanel extends JPanel {
 	 * @param editingChanged callback notified when editing mode changes
 	 */
 	DetailsPanel(Consumer<Literatur> saveChanges, Consumer<Literatur> addSource,
-			Consumer<Boolean> editingChanged) {
+			Consumer<Boolean> editingChanged, Consumer<Literatur> deleteSource) {
 		super(new BorderLayout(0, 16));
 		this.saveChanges = saveChanges;
 		this.addSource = addSource;
@@ -120,6 +121,8 @@ final class DetailsPanel extends JPanel {
 		actionPanel.setOpaque(false);
 		inputError.setForeground(new Color(0xA00000));
 		inputError.setFont(getFont().deriveFont(11f));
+		deleteButton.setEnabled(false);
+		deleteButton.addActionListener(event -> deleteSource.accept(currentSource));
 		editButton.setEnabled(false);
 		editButton.addActionListener(event -> beginEditing());
 		JPanel controls = new JPanel(new BorderLayout(0, 5));
@@ -144,11 +147,12 @@ final class DetailsPanel extends JPanel {
 	 *
 	 * @param source bibliographic source
 	 */
-	void showShortCitation(Literatur source) {
+	void showSource(Literatur source) {
 		if (editing) {
 			return;
 		}
 		currentSource = source;
+		deleteButton.setEnabled(source != null);
 		editButton.setEnabled(source instanceof Buchbeleg || source instanceof Website);
 		if (source == null) {
 			showDetails("", "", Map.of());
@@ -241,9 +245,9 @@ final class DetailsPanel extends JPanel {
 	/**
 	 * Rebuilds the attribute display and citation preview from the supplied values.
 	 *
-	 * @param title         source title
-	 * @param type          source type name
-	 * @param attributes    ordered attribute labels and values
+	 * @param title      source title
+	 * @param type       source type name
+	 * @param attributes ordered attribute labels and values
 	 */
 	void showDetails(String title, String type, Map<String, String> attributes) {
 		shownAttributes = attributes;
@@ -398,7 +402,7 @@ final class DetailsPanel extends JPanel {
 		creating = false;
 		creationDraft.clear();
 		setEditing(false);
-		showShortCitation(currentSource);
+		showSource(currentSource);
 	}
 
 	/**
@@ -422,7 +426,7 @@ final class DetailsPanel extends JPanel {
 		} else {
 			saveChanges.accept(replacement);
 		}
-		showShortCitation(replacement);
+		showSource(replacement);
 	}
 
 	/**
@@ -572,6 +576,7 @@ final class DetailsPanel extends JPanel {
 			actionPanel.add(cancel);
 			actionPanel.add(accept);
 		} else {
+			actionPanel.add(deleteButton);
 			actionPanel.add(editButton);
 		}
 		actionPanel.revalidate();
@@ -610,7 +615,7 @@ final class DetailsPanel extends JPanel {
 				return;
 			}
 			setEditing(false);
-			showShortCitation(currentSource);
+			showSource(currentSource);
 		}
 		cancelEditing();
 	}

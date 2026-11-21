@@ -16,6 +16,7 @@ import model.Zeitungsartikel;
 import model.Audiovisuell.*;
 import javax.swing.*;
 import java.util.Objects;
+import java.net.URI;
 
 /**
  * Displays source details and manages creation and editing through callbacks.
@@ -278,6 +279,18 @@ final class DetailsPanel extends JPanel {
         String escapedText = text.replace("&", "&amp;")
                 .replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>");
         JLabel valueLabel = new JLabel("<html>" + escapedText + "</html>");
+
+        if (name.equals("URL") && !text.equals("—")) {
+        valueLabel.setForeground(Color.BLUE);
+        valueLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        valueLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                openUrl(text);
+            }
+        });
+    }
         valueLabel.setFont(getFont());
         valueLabel.setToolTipText(text);
         fieldPanel.add(nameLabel, BorderLayout.NORTH);
@@ -299,6 +312,27 @@ final class DetailsPanel extends JPanel {
         fieldPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, fieldPanel.getPreferredSize().height));
         attributesPanel.add(fieldPanel);
         attributesPanel.add(Box.createVerticalStrut(12));
+    }
+    /**
+     * Opens a valid HTTP or HTTPS address in the default browser.
+     *
+     * @param url address to open
+     */
+    private void openUrl(String url) {
+        try {
+            URI uri = new URI(url.trim());
+            String scheme = uri.getScheme();
+
+            if (scheme == null || (!scheme.equalsIgnoreCase("http") && !scheme.equalsIgnoreCase("https")) || uri.getHost() == null) { throw new IllegalArgumentException("Ungültige Webadresse.");
+            }
+            if (!Desktop.isDesktopSupported() || !Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                throw new UnsupportedOperationException("Browser kann nicht geöffnet werden.");
+            }
+            Desktop.getDesktop().browse(uri);
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,"Die Webadresse konnte nicht geöffnet werden.\n"+ "Bitte überprüfen Sie die Adresse.\n\n" + e.getMessage(),"Fehler beim Öffnen",JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     /**

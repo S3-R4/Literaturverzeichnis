@@ -1,6 +1,9 @@
 package view;
 
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.net.URI;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
@@ -310,12 +313,42 @@ final class DetailsPanel extends JPanel {
 			editFields.put(name, input);
 			fieldPanel.add(input, BorderLayout.CENTER);
 		} else {
+			if ("URL".equals(name) && value != null && !value.isBlank()) {
+				valueLabel.setForeground(Color.BLUE);
+				valueLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+				valueLabel.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent event) {
+						if (SwingUtilities.isLeftMouseButton(event) && event.getClickCount() == 1) {
+							openUrl(value);
+						}
+					}
+				});
+			}
 			fieldPanel.add(valueLabel, BorderLayout.CENTER);
 		}
 		fieldPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		fieldPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, fieldPanel.getPreferredSize().height));
 		attributesPanel.add(fieldPanel);
 		attributesPanel.add(Box.createVerticalStrut(12));
+	}
+
+	private void openUrl(String url) {
+		try {
+			URI uri = new URI(url.trim());
+			String scheme = uri.getScheme();
+			if (!("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) || uri.getHost() == null) {
+				throw new IllegalArgumentException("Ungültige Webadresse.");
+			}
+			if (!Desktop.isDesktopSupported() || !Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+				throw new UnsupportedOperationException("Browser kann nicht geöffnet werden.");
+			}
+			Desktop.getDesktop().browse(uri);
+		} catch (Exception error) {
+			JOptionPane.showMessageDialog(this,
+					"Die Webadresse konnte nicht geöffnet werden.\nBitte überprüfen Sie die Adresse.\n\n" + error.getMessage(),
+					"Fehler beim Öffnen", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
 	/**

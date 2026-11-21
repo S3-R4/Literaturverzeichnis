@@ -69,8 +69,8 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
 	 * Opens a JSON file chooser and displays the selected path.
 	 */
 	private void openFileChooser() {
-		JFileChooser fileChooser = new JFileChooser("/home/s3r4/Documents/Svault/Okul/IT/Projekt/Literaturverzeichnis/data/quellenData.json"); //NOTE: REMOVE AFTER TESTING!!!
-		fileChooser.setAcceptAllFileFilterUsed(false);
+		JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setAcceptAllFileFilterUsed(false);
 		fileChooser.setFileFilter(new FileNameExtensionFilter("JSON-Dateien (*.json)", "json"));
 
 		if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {

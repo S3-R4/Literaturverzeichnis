@@ -6,6 +6,9 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.nio.file.Path;
+import java.nio.file.Files;
+import java.util.Locale;
+import java.util.Objects;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -15,7 +18,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import model.data.DataManager;
@@ -27,11 +29,12 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 	
 	final String titel = "Verzeichnis exportieren"; 
 	private Path chosenFile;
-	private final JLabel lblVerzeichnis = new JLabel(" <Verzeichnisname> ", SwingConstants.CENTER);
-
+	private final JTextField tfdDateipfad = new JTextField("<Dateipfad>");
+	private final DataManager manager;
 	
-	public GUI_Verzeichnis_Exportieren(JFrame parent) {
+	public GUI_Verzeichnis_Exportieren(JFrame parent, DataManager manager) {
 		super(parent, "Verzeichnis exportieren", true);
+		this.manager = Objects.requireNonNull(manager, "manager");
 
 		GridBagLayout layout = new GridBagLayout();
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -45,7 +48,6 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 
 		gbc.gridx = 1; gbc.weightx = 1.0; gbc.fill = GridBagConstraints.HORIZONTAL;
 		JPanel pathPanel = new JPanel(new BorderLayout(5, 0));
-		JTextField tfdDateipfad = new JTextField("<Dateipfad>");
 		tfdDateipfad.setEditable(false);
 		pathPanel.add(tfdDateipfad, BorderLayout.CENTER);
 
@@ -90,12 +92,18 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 			JOptionPane.showMessageDialog(this, "Bitte zuerst einen Speicherort auswählen.");
 			return;
 		}
-
-		DataManager manager = new DataManager();
+		if (Files.exists(chosenFile) && JOptionPane.showConfirmDialog(this,
+				"Die Datei existiert bereits. Überschreiben?", "Export",
+				JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+			return;
+		}
 		try {
-			manager.exportJson(chosenFile);
+			this.manager.exportJson(chosenFile);
 		} catch (Exception e) {
-			new JOptionPane("Fehler beim erstellen der Kopie");
+			JOptionPane.showMessageDialog(this,
+					"Fehler beim Erstellen der Kopie:\n" + e.getMessage(),
+					"Export fehlgeschlagen", JOptionPane.ERROR_MESSAGE);
+			return;
 		}
 		
 		
@@ -110,10 +118,13 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 		fileChooser.setAcceptAllFileFilterUsed(false);
 		fileChooser.setFileFilter(new FileNameExtensionFilter("JSON-Dateien (*.json)", "json"));
 
-		if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-			chosenFile = fileChooser.getSelectedFile().toPath();
-			lblVerzeichnis.setText(chosenFile.getFileName().toString());
-			lblVerzeichnis.setToolTipText(chosenFile.toString());
+		if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+			chosenFile = fileChooser.getSelectedFile().toPath().toAbsolutePath();
+			if (!chosenFile.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".json")) {
+				chosenFile = chosenFile.resolveSibling(chosenFile.getFileName() + ".json");
+			}
+			tfdDateipfad.setText(chosenFile.toString());
+			tfdDateipfad.setToolTipText(chosenFile.toString());
 		}
 	}
 }

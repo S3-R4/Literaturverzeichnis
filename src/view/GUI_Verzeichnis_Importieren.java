@@ -12,11 +12,17 @@ import java.nio.file.Path;
 import model.data.DataManager;
 import model.Literatur;
 
+/**
+ * Selects an existing bibliography JSON file and opens its management window.
+ */
 public class GUI_Verzeichnis_Importieren extends JFrame {
 	final String titel = "Verzeichnis importieren";
 	private Path chosenFile;
 	private final JLabel lblVerzeichnis = new JLabel(" <Verzeichnisname> ", SwingConstants.CENTER);
 
+	/**
+	 * Creates the GUI_Verzeichnis_Importieren view and its controls.
+	 */
 	public GUI_Verzeichnis_Importieren() {
 		setTitle(titel);
 		setResizable(false);
@@ -59,6 +65,9 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
 	/*
 	 * craet a fileChooser to select a file to save the Quellenverzeichnis
 	 */
+	/**
+	 * Opens a JSON file chooser and displays the selected path.
+	 */
 	private void openFileChooser() {
 		JFileChooser fileChooser = new JFileChooser("/home/s3r4/Documents/Svault/Okul/IT/Projekt/Literaturverzeichnis/data/quellenData.json"); //NOTE: REMOVE AFTER TESTING!!!
 		fileChooser.setAcceptAllFileFilterUsed(false);
@@ -74,6 +83,9 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
 	/*
 	 * Open the start window
 	 */
+	/**
+	 * Opens the start window and closes this window.
+	 */
 	private void returnToStart() {
 		new GUI_Startfenster();
 		dispose();
@@ -81,6 +93,9 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
 
 	/*
 	 * if user chose Literaturveruzeichnis to import -> open the Literaturverwaltung
+	 */
+	/**
+	 * Processes the selected file and reports validation or file-operation errors.
 	 */
 	private void confirmSelection() {
     if (chosenFile == null) {JOptionPane.showMessageDialog(this, "Bitte zuerst eine JSON-Datei auswählen.");

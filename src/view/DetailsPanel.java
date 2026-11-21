@@ -17,13 +17,16 @@ import model.Audiovisuell.*;
 import javax.swing.*;
 import java.util.Objects;
 
+/**
+ * Displays source details and manages creation and editing through callbacks.
+ */
 final class DetailsPanel extends JPanel {
     private final JPanel attributesPanel = new JPanel();
     private final JScrollPane attributesScrollPane = new JScrollPane(attributesPanel);
     private final JTextArea citationPreview = new JTextArea(3, 20);
     private final JLabel sourceTitle = new JLabel();
     private final JLabel sourceType = new JLabel();
-
+    private final Consumer<Literatur> deleteSource;
     private final Consumer<Literatur> saveChanges;
     private final Consumer<Literatur> addSource;
     private final JPanel sourceTypePanel = new JPanel(new BorderLayout());
@@ -38,17 +41,26 @@ final class DetailsPanel extends JPanel {
     private final JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
     private final JLabel inputError = new JLabel();
     private final JButton editButton = new JButton("Bearbeiten");
+    private final JButton deleteButton = new JButton("Löschen");
     private final LinkedHashMap<String, JTextField> editFields = new LinkedHashMap<>();
     private Map<String, String> shownAttributes = Map.of();
     private Literatur currentSource;
     private boolean editing;
 
+    /**
+     * Creates the DetailsPanel view and its controls.
+     *
+     * @param saveChanges callback receiving an edited source
+     * @param addSource callback receiving a new source
+     * @param editingChanged callback notified when editing mode changes
+     */
     DetailsPanel(Consumer<Literatur> saveChanges, Consumer<Literatur> addSource,
-            Consumer<Boolean> editingChanged) {
+            Consumer<Boolean> editingChanged, Consumer<Literatur> deleteSource) {
         super(new BorderLayout(0, 16));
         this.saveChanges = saveChanges;
         this.addSource = addSource;
         this.editingChanged = editingChanged;
+        this.deleteSource = deleteSource;
         setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         setBackground(new Color(0xE6E6E6));
         setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
@@ -108,6 +120,11 @@ final class DetailsPanel extends JPanel {
         inputError.setFont(getFont().deriveFont(11f));
         editButton.setEnabled(false);
         editButton.addActionListener(event -> beginEditing());
+        deleteButton.addActionListener(event -> {
+            if (currentSource != null) {
+                deleteSource.accept(currentSource);
+            }
+        });
         JPanel controls = new JPanel(new BorderLayout(0, 5));
         controls.setOpaque(false);
         controls.add(actionPanel, BorderLayout.NORTH);
@@ -120,6 +137,11 @@ final class DetailsPanel extends JPanel {
         showDetails("", "", Map.of(), "");
     }
 
+    /**
+     * Displays a source unless editing is active; null clears the details.
+     *
+     * @param source bibliographic source
+     */
     void showSource(Literatur source) {
         if (editing) {
             return;
@@ -140,6 +162,12 @@ final class DetailsPanel extends JPanel {
         showDetails(source.getTitel().orElse(""), source.getClass().getSimpleName(), attributes, shortCitation);
     }
 
+    /**
+     * Collects display labels and values supported for the source type.
+     *
+     * @param source bibliographic source
+     * @return the ordered display attributes
+     */
     private LinkedHashMap<String, String> readAttributes(Literatur source) {
         LinkedHashMap<String, String> attributes = new LinkedHashMap<>();
         String authors = String.join(", ", source.getAutor().stream()
@@ -185,10 +213,24 @@ final class DetailsPanel extends JPanel {
         return attributes;
     }
 
+    /**
+     * Formats an optional date as ISO local-date text.
+     *
+     * @param date date
+     * @return the date text, or an empty string
+     */
     private String formatDate(Optional<LocalDate> date) {
         return date.map(LocalDate::toString).orElse("");
     }
 
+    /**
+     * Rebuilds the attribute display and citation preview from the supplied values.
+     *
+     * @param title source title
+     * @param type source type name
+     * @param attributes ordered attribute labels and values
+     * @param shortCitation short citation preview
+     */
     void showDetails(String title, String type, Map<String, String> attributes, String shortCitation) {
         shownAttributes = attributes;
         sourceTitle.setText(title);
@@ -217,6 +259,12 @@ final class DetailsPanel extends JPanel {
         attributesScrollPane.getViewport().setViewPosition(new Point(0, 0));
     }
 
+    /**
+     * Adds an attribute row as a label or editable field for the current mode.
+     *
+     * @param name name
+     * @param value attribute value
+     */
     private void addAttribute(String name, String value) {
         JPanel fieldPanel = new JPanel(new BorderLayout(0, 4));
         fieldPanel.setOpaque(false);
@@ -253,6 +301,9 @@ final class DetailsPanel extends JPanel {
         attributesPanel.add(Box.createVerticalStrut(12));
     }
 
+    /**
+     * Starts a new source draft unless an edit is already active.
+     */
     void beginCreation() {
         if (editing)
             return;
@@ -263,6 +314,9 @@ final class DetailsPanel extends JPanel {
         showCreationFields();
     }
 
+    /**
+     * Preserves draft values and rebuilds fields for the selected source type.
+     */
     private void showCreationFields() {
         for (Map.Entry<String, JTextField> entry : editFields.entrySet()) {
             creationDraft.put(entry.getKey(), entry.getValue().getText());
@@ -283,6 +337,12 @@ final class DetailsPanel extends JPanel {
         updateActions();
     }
 
+    /**
+     * Creates an empty source for a supported source type.
+     *
+     * @param type source type name
+     * @return the new source
+     */
     private Literatur createBlankSource(String type) {
         return switch (type) {
             case "Buchbeleg" -> new Buchbeleg(List.of(), Optional.empty(), Optional.empty(),
@@ -299,6 +359,9 @@ final class DetailsPanel extends JPanel {
         };
     }
 
+    /**
+     * Loads editable values for the current source and enables editing mode.
+     */
     private void beginEditing() {
         LinkedHashMap<String, String> values = new LinkedHashMap<>(shownAttributes);
         List<String> authors = currentSource.getAutor();
@@ -315,6 +378,9 @@ final class DetailsPanel extends JPanel {
         showDetails(sourceTitle.getText(), sourceType.getText(), values, citationPreview.getText());
     }
 
+    /**
+     * Discards the draft and restores the current source display.
+     */
     private void cancelEditing() {
         creating = false;
         creationDraft.clear();
@@ -322,6 +388,9 @@ final class DetailsPanel extends JPanel {
         showSource(currentSource);
     }
 
+    /**
+     * Validates form values and invokes the creation or update callback.
+     */
     private void acceptEditing() {
         Literatur replacement;
         try {
@@ -343,6 +412,11 @@ final class DetailsPanel extends JPanel {
         showSource(replacement);
     }
 
+    /**
+     * Builds a replacement source from the current form values.
+     *
+     * @return the source represented by the form
+     */
     private Literatur readFormSource() {
         List<String> authors = new ArrayList<>();
         for (String author : inputText("Autor / Herausgeber").split(";")) {
@@ -410,20 +484,44 @@ final class DetailsPanel extends JPanel {
         return book;
     }
 
+    /**
+     * Reads and trims the field with the given attribute label.
+     *
+     * @param name name
+     * @return the trimmed input
+     */
     private String inputText(String name) {
         return editFields.get(name).getText().trim();
     }
 
+    /**
+     * Reads an optional trimmed text value from the named form field.
+     *
+     * @param name name
+     * @return the optional field value
+     */
     private Optional<String> readText(String name) {
         String text = inputText(name);
         return text.isEmpty() ? Optional.empty() : Optional.of(text);
     }
 
+    /**
+     * Reads an optional ISO local date from the named form field.
+     *
+     * @param name name
+     * @return the optional field value
+     */
     private Optional<LocalDate> readDate(String name) {
         String text = inputText(name);
         return text.isEmpty() ? Optional.empty() : Optional.of(LocalDate.parse(text));
     }
 
+    /**
+     * Parses optional integer input and reports invalid numeric text.
+     *
+     * @param text text
+     * @return the optional integer
+     */
     private Optional<Integer> readNumber(String text) {
         if (text.isBlank())
             return Optional.empty();
@@ -434,6 +532,11 @@ final class DetailsPanel extends JPanel {
         }
     }
 
+    /**
+     * Updates editing mode, notifies the owner, and refreshes available actions.
+     *
+     * @param editing whether editing mode is active
+     */
     private void setEditing(boolean editing) {
         this.editing = editing;
         inputError.setText("");
@@ -441,6 +544,9 @@ final class DetailsPanel extends JPanel {
         updateActions();
     }
 
+    /**
+     * Rebuilds the buttons for viewing, editing, or creating a source.
+     */
     private void updateActions() {
         actionPanel.removeAll();
         if (editing) {
@@ -453,12 +559,18 @@ final class DetailsPanel extends JPanel {
             actionPanel.add(cancel);
             actionPanel.add(accept);
         } else {
+            actionPanel.add(deleteButton);
             actionPanel.add(editButton);
         }
         actionPanel.revalidate();
         actionPanel.repaint();
     }
 
+    /**
+     * Checks for a selected creation type or edits differing from displayed values.
+     *
+     * @return whether the current draft has unsaved changes
+     */
     private boolean hasUnsavedChanges() {
         if (!editing) {
             return false;
@@ -475,6 +587,9 @@ final class DetailsPanel extends JPanel {
         return false;
     }
 
+    /**
+     * Asks before discarding changed values and restores viewing mode if accepted.
+     */
     public void discardEditing() {
         if (hasUnsavedChanges()) {
             int choice = JOptionPane.showConfirmDialog(this, "Es gibt ungespeicherte Änderungen. Wirklich verwerfen?",
@@ -488,6 +603,11 @@ final class DetailsPanel extends JPanel {
         cancelEditing();
     }
 
+    /**
+     * Offers to apply or discard unsaved changes before closing.
+     *
+     * @return whether closing may proceed
+     */
     boolean confirmCloseIfEditing() {
         if (!hasUnsavedChanges()) {
             return true;

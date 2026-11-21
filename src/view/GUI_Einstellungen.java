@@ -7,12 +7,20 @@ import java.awt.Insets;
 
 import javax.swing.*;
 
+/**
+ * Displays the settings dialog; applying a theme is not yet implemented.
+ */
 public class GUI_Einstellungen extends JDialog{
 
     private JComboBox<String> designerComboBox;
     private JButton abbrechenButton;
     private JButton bestaetigenButton;
 
+    /**
+     * Creates the GUI_Einstellungen view and its controls.
+     *
+     * @param parent owner window
+     */
     public GUI_Einstellungen(JFrame parent) {
         super(parent, "Einstellungen", true);
         
@@ -74,10 +82,16 @@ public class GUI_Einstellungen extends JDialog{
         setLocationRelativeTo(parent); // Zentriert über dem Hauptfenster
     }
     
+    /**
+     * Closes the settings dialog.
+     */
     private void abbrechenAction() {
     	dispose();
     }
     
+    /**
+     * Closes the dialog; applying the selected theme is not yet implemented.
+     */
     private void bestaetigenAction() { //TODO: implement code
     	dispose();
     }

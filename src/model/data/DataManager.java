@@ -12,6 +12,9 @@ import tools.jackson.databind.*;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.*;
 
+/**
+ * Persists sources in JSON categories and tracks identifiers by object identity.
+ */
 public class DataManager {
 
 	private Path quellenFile = Path.of("data", "quellenDataStandard.json");
@@ -23,7 +26,11 @@ public class DataManager {
     
 	// -------------------------------------------------------------------------------------
 	/**
-	 * adds the entry to the json file
+	 * Saves a source under its type with a new UUID and records its object identity.
+	 *
+	 * @param entry source entry
+	 * @return the assigned persistent identifier
+	 * @throws IOException if the file cannot be read or written, or its structure is invalid
 	 */
 	public String add_data(Literatur entry) throws IOException {
 		Objects.requireNonNull(entry, "entry");
@@ -46,16 +53,37 @@ public class DataManager {
 	// ------------------------------------------------------------------------------------
 	// reading
 	// this func reads all entries
+	/**
+	 * Reads the selected JSON data as formatted text.
+	 *
+	 * @return the formatted JSON data
+	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 */
 	public String read_data() throws IOException {
 		return prettyJson(loadData());
 	}
 
 	// reads all entries of a given type
+	/**
+	 * Reads the selected JSON data as formatted text.
+	 *
+	 * @param datatype source category name
+	 * @return the formatted JSON data
+	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 */
 	public String read_data(String datatype) throws IOException {
 		return prettyJson(entriesOfType(loadData(), datatype));
 	}
 
 	// reads the entry of the given ID
+	/**
+	 * Finds a stored source by identifier across all categories.
+	 *
+	 * @param id persistent source identifier
+	 * @return the matching entry as formatted JSON
+	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 * @throws NoSuchElementException if no entry has the requested identifier
+	 */
 	public String read_data_by_id(String id) throws IOException {
 		Objects.requireNonNull(id, "id");
 
@@ -73,6 +101,14 @@ public class DataManager {
 				"No entries with ID" + id);
 	}
 
+	/**
+	 * Reads a category array, returning an empty array for a missing category.
+	 *
+	 * @param root JSON root object
+	 * @param type source type name
+	 * @return the category entries
+	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 */
 	private ArrayNode entriesOfType(ObjectNode root, String type) throws IOException {
 		JsonNode entries = root.get(type);
 
@@ -85,12 +121,25 @@ public class DataManager {
 		throw new IOException("The cathegory " + type + " must have a list");
 	}
 
+	/**
+	 * Serializes a JSON value with indentation.
+	 *
+	 * @param data JSON value to format
+	 * @return the formatted JSON text
+	 */
 	private String prettyJson(JsonNode data) {
 		return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
 	}
 
 	// --------------------------------------------------------------------------------------
 	// deletations based on id
+	/**
+	 * Removes the first entry with the identifier and saves the file.
+	 *
+	 * @param id persistent source identifier
+	 * @return whether an entry was found and removed
+	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 */
 	public boolean delete_data_by_id(String id) throws IOException {
 		Objects.requireNonNull(id, "id");
 
@@ -116,6 +165,14 @@ public class DataManager {
 
 	// --------------------------------------------------------------------------------------
 	// edit
+	/**
+	 * Replaces a stored source while retaining its identifier, moving categories if needed.
+	 *
+	 * @param id persistent source identifier
+	 * @param updatedEntry replacement source
+	 * @return whether the identifier was found and updated
+	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 */
 	public boolean edit_entry(String id, Literatur updatedEntry) throws IOException {
 		Objects.requireNonNull(id, "id");
 		Objects.requireNonNull(updatedEntry, "updatedEntry");
@@ -167,6 +224,12 @@ public class DataManager {
 	// ---------------------------------------------------------------------------------------
 	// Loads the JSON data, or returns an empty object if the file is missing or
 	// empty.
+	/**
+	 * Loads the active JSON object, using an empty object for a missing or empty file.
+	 *
+	 * @return the bibliography root object
+	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 */
 	private ObjectNode loadData() throws IOException {
 		if (Files.notExists(quellenFile) || Files.size(quellenFile) == 0)
 			return mapper.createObjectNode();
@@ -178,6 +241,13 @@ public class DataManager {
 		throw new IOException("the JSON file has to contain a root object" + quellenFile);
 	}
 
+	/**
+	 * Locates the first entry whose identifier matches the target.
+	 *
+	 * @param entries category entries
+	 * @param idTarget identifier to locate
+	 * @return the matching index, or -1 when absent
+	 */
 	private int findIndex(ArrayNode entries, JsonNode idTarget) {
 		for (int i = 0; i < entries.size(); i++) {
 			if (idTarget.equals(entries.get(i).path("id"))) {
@@ -191,6 +261,12 @@ public class DataManager {
 	// ---------------------------------------------------------------------------------------
 	// import
 	
+	/**
+	 * Validates a nonempty JSON object file and makes it the active bibliography.
+	 *
+	 * @param path file path
+	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 */
 	public void importJson(Path path) throws IOException {
     Objects.requireNonNull(path, "path");
     if (!Files.isRegularFile(path) || !Files.isReadable(path)) {throw new IOException("Die ausgewählte Datei kann nicht gelesen werden.");
@@ -205,6 +281,13 @@ public class DataManager {
     this.quellenFile = path;
 }
 
+	/**
+	 * Creates an empty JSON object file without overwriting an existing file and activates it.
+	 *
+	 * @param path file path
+	 * @return true if created; false if the path already exists
+	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 */
 	public boolean createJson(Path path) throws IOException {
 		Objects.requireNonNull(path, "path");
 
@@ -229,8 +312,10 @@ public class DataManager {
 	//------------------------------------------------------------------------------------------
 	
 	/**
-	 * save the current Json as a copy on a new FilePath
-	 * @param path neuer Speicherort
+	 * Copies the active JSON file to the destination, replacing an existing file.
+	 *
+	 * @param path file path
+	 * @throws IOException if the file cannot be read or written, or its structure is invalid
 	 */
 	public void exportJson(Path path) throws IOException { //TODO: funktioniert irgenwie noch nicht
 		Objects.requireNonNull(path, "path");
@@ -247,7 +332,14 @@ public class DataManager {
 		Files.copy(this.quellenFile, path, StandardCopyOption.REPLACE_EXISTING);
 	}
 	
-public List<Literatur> readAllSources() throws IOException { //Reads JSON and returns it as a object
+
+/**
+ * Reconstructs all stored sources and rebuilds their identity-to-ID mapping.
+ *
+ * @return the reconstructed source list
+ * @throws IOException if the file cannot be read or written, or its structure is invalid
+ */
+public List<Literatur> readAllSources() throws IOException { //Reads JSON and returns is as a object
     ObjectNode root = loadData();
     List<Literatur> sources = new ArrayList<>();
 	idsBySource.clear();
@@ -283,23 +375,24 @@ public List<Literatur> readAllSources() throws IOException { //Reads JSON and re
 
     return sources;
 }
-    private Literatur convertEntry(String type, ObjectNode entry) { //Reads the JSON for name category and decides which class to create
-        List<String> authors = readStringList(entry.get("autor"));
-        Optional<LocalDate> published = readDate(entry.get("veroeffentlichungsdatum"));
-        Optional<LocalDate> retrieved = readDate(entry.get("abrufdatum"));
-        Optional<String> title = readText(entry.get("titel"));
-        
-        return switch (type) {
-            case "Buchbeleg" -> {
-                    JsonNode pages = entry.get("seitenangabe");
-                    yield new Buchbeleg(authors,published,title,readText(entry.get("buchverlag")),readInteger(entry.get("auflage")),readText(entry.get("erscheinungsort")),readInteger(pages == null ? null : pages.get("anfang")),readInteger(pages == null ? null : pages.get("ende")));
-                }
 
-                case "Sammelbandbeleg" -> {
-                    JsonNode pages = entry.get("seitenangabe");
-                    yield new Sammelbandbeleg(authors,published,title,readStringList(entry.get("herausgeber")),readText(entry.get("sammelbandtitel")),readInteger(entry.get("auflage")),readText(entry.get("verlag")),readText(entry.get("erscheinungsort")),readInteger(pages == null ? null : pages.get("anfang")),readInteger(pages == null ? null : pages.get("ende")));
-                }
-
+/**
+ * Reconstructs the concrete source type from its stored JSON fields.
+ *
+ * @param type source type name
+ * @param entry source entry
+ * @return the reconstructed source
+ */
+private Literatur convertEntry(String type, ObjectNode entry) { //Reads the JSON for name category and decides which class to create
+List<String> authors = readStringList(entry.get("autor"));
+Optional<LocalDate> published = readDate(entry.get("veroeffentlichungsdatum"));
+Optional<LocalDate> retrieved = readDate(entry.get("abrufdatum"));
+Optional<String> title = readText(entry.get("titel"));
+return switch (type) {
+case "Buchbeleg" -> {
+		JsonNode pages = entry.get("seitenangabe");
+		yield new Buchbeleg(authors,published,title,readText(entry.get("buchverlag")),readInteger(entry.get("auflage")),readText(entry.get("erscheinungsort")),readInteger(pages == null ? null : pages.get("anfang")),readInteger(pages == null ? null : pages.get("ende")));
+	}
                 case "Website" -> new Website(authors,readString(entry.get("websitename")),title,readString(entry.get("url")),retrieved.orElse(null),published.orElse(null),readString(entry.get("textart")));
 
                 case "Zeitungsartikel" -> new Zeitungsartikel(published.orElse(null),title.orElse(""),readString(entry.get("zeitung")),readString(entry.get("seitenzahl")),readString(entry.get("url")),authors);
@@ -364,6 +457,16 @@ public List<Literatur> readAllSources() throws IOException { //Reads JSON and re
             };
     }
 
+/**
+ * Restores common audiovisual metadata from a JSON entry.
+ *
+ * @param source bibliographic source
+ * @param authors author list
+ * @param title source title
+ * @param published publication date
+ * @param retrieved retrieval date
+ * @param entry source entry
+ */
 private void fillAudiovisual(Audiovisuell source,List<String> authors,Optional<String> title,Optional<LocalDate> published,Optional<LocalDate> retrieved,ObjectNode entry) {
     source.setAutor(authors);
     source.setTitel(title);
@@ -374,6 +477,12 @@ private void fillAudiovisual(Audiovisuell source,List<String> authors,Optional<S
     source.setUrl(readText(entry.get("url")));
 }
 
+/**
+ * Reads non-null array values as strings, ignoring non-array input.
+ *
+ * @param node JSON value to read
+ * @return the collected strings
+ */
 private List<String> readStringList(JsonNode node) {
     List<String> values = new ArrayList<>();
 
@@ -388,19 +497,44 @@ private List<String> readStringList(JsonNode node) {
     return values;
 }
 
+/**
+ * Reads an author by index with an empty fallback beyond the list.
+ *
+ * @param authors author list
+ * @param index zero-based index
+ * @return the author or an empty string
+ */
 private String authorAt(List<String> authors, int index) {
     return index < authors.size() ? authors.get(index) : "";
 }
 
+/**
+ * Converts a JSON value to text, treating missing and null values as empty.
+ *
+ * @param node JSON value to read
+ * @return the text value
+ */
 private String readString(JsonNode node) {
 return node == null || node.isNull() ? "" : node.asText();
 }
 
+/**
+ * Trims a JSON text value and treats empty text as absent.
+ *
+ * @param node JSON value to read
+ * @return the optional text
+ */
 private Optional<String> readText(JsonNode node) {
 String value = readString(node).trim();
 return value.isEmpty() ? Optional.empty() : Optional.of(value);
 }
 
+/**
+ * Reads a numeric JSON value as an integer, allowing missing or null values.
+ *
+ * @param node JSON value to read
+ * @return the optional integer
+ */
 private Optional<Integer> readInteger(JsonNode node) {
     if (node == null || node.isNull()) {
     return Optional.empty();
@@ -413,6 +547,12 @@ private Optional<Integer> readInteger(JsonNode node) {
     return Optional.of(node.intValue());
 }
 
+/**
+ * Parses a JSON date as ISO local-date text, allowing missing or blank values.
+ *
+ * @param node JSON value to read
+ * @return the optional date
+ */
 private Optional<LocalDate> readDate(JsonNode node) {
     if (node == null || node.isNull() || node.asText().isBlank()) {
     return Optional.empty();
@@ -421,9 +561,21 @@ private Optional<LocalDate> readDate(JsonNode node) {
     return Optional.of(LocalDate.parse(node.asText()));
 }
 
+/**
+ * Reads a JSON boolean with false as the fallback.
+ *
+ * @param node JSON value to read
+ * @return the boolean value
+ */
 private boolean readBoolean(JsonNode node) {
     return node != null && !node.isNull() && node.asBoolean(false);
 }
+/**
+ * Looks up the identifier recorded for this exact source object.
+ *
+ * @param source bibliographic source
+ * @return the identifier, or null if the object is not tracked
+ */
 public String getId(Literatur source) {
     return idsBySource.get(source);
 }

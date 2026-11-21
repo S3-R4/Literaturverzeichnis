@@ -6,8 +6,14 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Sorts copies of source lists by ordered criteria, placing missing values last.
+ */
 public class Sortierer {
 
+    /**
+     * Identifies the bibliographic attribute used for sorting.
+     */
     public enum Kriterium {
         TITEL,
         QUELLENTYP,
@@ -15,17 +21,36 @@ public class Sortierer {
         JAHR
     }
 
+    /**
+     * Specifies ascending or descending sort order.
+     */
     public enum Richtung {
         AUFSTEIGEND,
         ABSTEIGEND
     }
 
+    /**
+     * Combines a sort criterion with its direction.
+     *
+     * @param kriterium attribute to compare
+     * @param richtung sort direction
+     */
     public record SortierPrioritaet(Kriterium kriterium, Richtung richtung) {
     }
 
+    /**
+     * Creates a Sortierer instance.
+     */
     public Sortierer() {
     }
 
+    /**
+     * Returns a stably sorted copy using the supplied criteria in order.
+     *
+     * @param quellen sources to sort
+     * @param prioritaeten sort criteria in priority order
+     * @return the sorted copy; the input list is unchanged
+     */
     public List<Literatur> sortiere(List<Literatur> quellen, List<SortierPrioritaet> prioritaeten) {
         List<Literatur> sortierteListe = new ArrayList<>(quellen);
 
@@ -39,6 +64,12 @@ public class Sortierer {
         return sortierteListe;
     }
 
+    /**
+     * Builds a comparator for one criterion with missing values ordered last.
+     *
+     * @param prioritaet sort criterion and direction
+     * @return the comparator for the requested direction
+     */
     private Comparator<Literatur> erstelleComparator(SortierPrioritaet prioritaet) {
         return (a, b) -> {
             int vergleich = 0;
@@ -72,6 +103,12 @@ public class Sortierer {
         };
     }
 
+    /**
+     * Finds the first nonblank author in a possibly null list.
+     *
+     * @param autoren author list
+     * @return the first usable author, or null
+     */
     private String ersterAutor(List<String> autoren) {
         if (autoren == null) {
             return null;
@@ -80,6 +117,14 @@ public class Sortierer {
         return autoren.stream().filter(a -> a != null && !a.isBlank()).findFirst().orElse(null);
     }
 
+    /**
+     * Compares text ignoring case, always placing null or blank values last.
+     *
+     * @param a first value
+     * @param b second value
+     * @param richtung sort direction
+     * @return a negative, zero, or positive comparison result
+     */
     private int vergleicheText(
             String a, String b, Richtung richtung) {
 
@@ -100,6 +145,14 @@ public class Sortierer {
                 : -vergleich;
     }
 
+    /**
+     * Compares dates in the requested direction, always placing null dates last.
+     *
+     * @param a first value
+     * @param b second value
+     * @param richtung sort direction
+     * @return a negative, zero, or positive comparison result
+     */
     private int vergleicheDatum(
             LocalDate a, LocalDate b, Richtung richtung) {
 

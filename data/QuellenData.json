@@ -1,0 +1,16 @@
+{
+  "Youtube" : [ {
+    "abrufdatum" : "2026-11-21",
+    "abruffDatum" : "2026-11-21",
+    "anzahlAusgefuellterAttribute" : 7,
+    "anzahlRelevanterAttribute" : 7,
+    "autor" : [ "Rafael" ],
+    "beitragsArt" : "Video",
+    "erfassungsstand" : "7/7 Attribute eingetragen",
+    "medium" : "Youtube",
+    "titel" : "Test",
+    "url" : "www.youtube.com",
+    "veroeffentlichungsdatum" : "2025-12-03",
+    "id" : "ac0af37a-88b6-45dc-80c2-56e98dc1cf34"
+  } ]
+}

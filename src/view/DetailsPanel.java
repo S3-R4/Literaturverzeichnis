@@ -54,6 +54,8 @@ final class DetailsPanel extends JPanel {
 	private Literatur currentSource;
 	private boolean editing;
 	private Controller controller = new Controller();
+	private JLabel activeToast;
+	private Timer activeToastTimer;
 
 	/**
 	 * Creates the DetailsPanel view and its controls.
@@ -133,7 +135,11 @@ final class DetailsPanel extends JPanel {
 		controls.add(actionPanel, BorderLayout.NORTH);
 		controls.add(inputError, BorderLayout.CENTER);
 		JPanel citationHeader = new JPanel(new BorderLayout(8, 0));
-		copyCitationButton.addActionListener(event -> controller.copyToClipboard(citationPreview.getText()));
+		copyCitationButton.addActionListener(event -> {
+			controller.copyToClipboard(citationPreview.getText());
+			showNotificationToast(copyCitationButton, "Wurde in Zwischenablage kopiert!");
+		});
+
 		citationHeader.setOpaque(false);
 		citationHeader.add(citationType, BorderLayout.WEST);
 		citationHeader.add(copyCitationButton, BorderLayout.EAST);
@@ -347,7 +353,8 @@ final class DetailsPanel extends JPanel {
 			Desktop.getDesktop().browse(uri);
 		} catch (Exception error) {
 			JOptionPane.showMessageDialog(this,
-					"Die Webadresse konnte nicht geöffnet werden.\nBitte überprüfen Sie die Adresse.\n\n" + error.getMessage(),
+					"Die Webadresse konnte nicht geöffnet werden.\nBitte überprüfen Sie die Adresse.\n\n"
+							+ error.getMessage(),
 					"Fehler beim Öffnen", JOptionPane.ERROR_MESSAGE);
 		}
 	}
@@ -677,4 +684,73 @@ final class DetailsPanel extends JPanel {
 		}
 		return false;
 	}
+
+	/**
+	 * Displays a temporary toast notification above the specified component.
+	 *
+	 * @param anchor  the component above which the toast should be positioned
+	 * @param message the notification text to display
+	 */
+	public void showNotificationToast(JComponent anchor, String message) {
+		JRootPane rootPane = SwingUtilities.getRootPane(anchor);
+		if (rootPane == null)
+			return;
+		JLayeredPane layeredPane = rootPane.getLayeredPane();
+
+		// if there's an old toast -> stop timer + delete label
+		if (activeToastTimer != null) {
+			activeToastTimer.stop();
+		}
+		if (activeToast != null) {
+			layeredPane.remove(activeToast);
+			layeredPane.repaint();
+		}
+
+		// extracts standard colors from active swing theme
+		Color tempBg = UIManager.getColor("ToolTip.background");
+		Color tempFg = UIManager.getColor("ToolTip.foreground");
+		final Color baseBg = (tempBg != null) ? tempBg : new Color(0xF7F8FA);
+		final Color baseFg = (tempFg != null) ? tempFg : Color.DARK_GRAY;
+
+		// Creates new toast (ohne Outline, nur Innenabstand)
+		JLabel toast = new JLabel(message);
+		toast.setFont(anchor.getFont().deriveFont(11f));
+		toast.setOpaque(true);
+		toast.setBackground(baseBg);
+		toast.setForeground(baseFg);
+		toast.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+		toast.setSize(toast.getPreferredSize());
+
+		Point pos = SwingUtilities.convertPoint(anchor.getParent(), anchor.getLocation(), layeredPane);
+		int x = Math.min(
+				pos.x + (anchor.getWidth() - toast.getWidth()) / 2,
+				layeredPane.getWidth() - toast.getWidth() - 10);
+		int y = pos.y - toast.getHeight() - 6;
+		toast.setLocation(Math.max(10, x), Math.max(10, y));
+
+		layeredPane.add(toast, JLayeredPane.POPUP_LAYER);
+		activeToast = toast;
+
+		// Fade-Timer (16 ms = ~60 fps, 32 steps)
+		Timer fadeTimer = new Timer(16, null);
+		fadeTimer.setInitialDelay(800);
+		fadeTimer.addActionListener(e -> {
+			int alpha = toast.getBackground().getAlpha() - 8;
+			if (alpha <= 0) {
+				fadeTimer.stop();
+				layeredPane.remove(toast);
+				layeredPane.repaint();
+				if (activeToast == toast) {
+					activeToast = null;
+				}
+			} else {
+				toast.setBackground(new Color(baseBg.getRed(), baseBg.getGreen(), baseBg.getBlue(), alpha));
+				toast.setForeground(new Color(baseFg.getRed(), baseFg.getGreen(), baseFg.getBlue(), alpha));
+				layeredPane.repaint();
+			}
+		});
+		activeToastTimer = fadeTimer;
+		fadeTimer.start();
+	}
+
 }

@@ -87,10 +87,7 @@ public class GUI_Literaturverwaltung extends JFrame {
 			 */
 			@Override
 			public void windowClosing(WindowEvent event) {
-				if (detailsPanel.confirmCloseIfEditing()) {
-					searchTimer.stop();
-					dispose();
-				}
+				requestClose(false);
 			}
 
 		});
@@ -114,7 +111,16 @@ public class GUI_Literaturverwaltung extends JFrame {
 			GUI_Verzeichnis_Exportieren dialog = new GUI_Verzeichnis_Exportieren(this, manager);
 			dialog.setVisible(true);
 		});
+
+		JMenuItem speichernItem = new JMenuItem("Speichern");
+		speichernItem.addActionListener(e -> saveBibliography());
+
+		JMenuItem exitItem = new JMenuItem("Exit");
+		exitItem.addActionListener(e -> requestClose(true));
+
 		dateiMenu.add(export);
+		dateiMenu.add(speichernItem);
+		dateiMenu.add(exitItem);
 
 		menuBar.add(dateiMenu);
 
@@ -129,6 +135,50 @@ public class GUI_Literaturverwaltung extends JFrame {
 
 		menuBar.add(settingsMenu);
 		return menuBar;
+	}
+
+	/** Saves the bibliography and reports failures without closing the window. */
+	private boolean saveBibliography() {
+		if (!detailsPanel.confirmCloseIfEditing()) {
+			return false;
+		}
+		try {
+			manager.save();
+			return true;
+		} catch (Exception error) {
+			JOptionPane.showMessageDialog(this,
+					"Die Änderungen konnten nicht gespeichert werden:\n" + error.getMessage(),
+					"Fehler beim Speichern", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+	}
+
+	/** Offers to save, discard or cancel before leaving the bibliography. */
+	private void requestClose(boolean returnToStart) {
+		Object[] options = { "Speichern", "Nicht speichern", "Abbrechen" };
+		int choice = JOptionPane.showOptionDialog(this,
+				"Möchten Sie Ihre Änderungen vor dem Schließen speichern?",
+				"Änderungen speichern", JOptionPane.YES_NO_CANCEL_OPTION,
+				JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
+		if (choice != 0 && choice != 1) {
+			return;
+		}
+		if (choice == 0 && !saveBibliography()) {
+			return;
+		}
+		try {
+			manager.deleteWorkingFile();
+		} catch (Exception error) {
+			JOptionPane.showMessageDialog(this,
+					"Die Arbeitsdatei konnte nicht gelöscht werden:\n" + error.getMessage(),
+					"Fehler beim Schließen", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		searchTimer.stop();
+		if (returnToStart) {
+			new GUI_Startfenster();
+		}
+		dispose();
 	}
 
 	/**
@@ -200,6 +250,30 @@ public class GUI_Literaturverwaltung extends JFrame {
 			}
 		});
 		return table;
+	}
+
+	/** Persists an edit before replacing the source shown in the table. */
+	private boolean editSelectedSource(Literatur replacement) {
+		int row = sourceTable.getSelectedRow();
+		if (row < 0) {
+			return false;
+		}
+		Literatur original = sourcesByNumber.get((Integer) tableModel.getValueAt(row, 0));
+		try {
+			String id = manager.getId(original);
+			if (id == null || !manager.edit_entry(id, replacement)) {
+				JOptionPane.showMessageDialog(this, "Die Quelle konnte nicht gefunden werden.",
+						"Fehler beim Bearbeiten", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+			updateTableRow(row, replacement);
+			return true;
+		} catch (Exception error) {
+			JOptionPane.showMessageDialog(this,
+					"Die Quelle konnte nicht geändert werden:\n" + error.getMessage(),
+					"Fehler beim Bearbeiten", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
 	}
 
 	/**
@@ -314,7 +388,7 @@ public class GUI_Literaturverwaltung extends JFrame {
 	 */
 	private JPanel createDetailsPanel() {
 		detailsPanel = new DetailsPanel(
-				source -> updateTableRow(sourceTable.getSelectedRow(), source),
+				this::editSelectedSource,
 				this::addCreatedSource,
 				editing -> {
 					searchField.setEnabled(!editing);

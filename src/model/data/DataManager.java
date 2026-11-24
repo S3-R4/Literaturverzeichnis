@@ -17,7 +17,11 @@ import tools.jackson.databind.node.*;
  */
 public class DataManager {
 
-	private Path quellenFile = Path.of("data", "quellenDataStandard.json");
+	private Path originalQuellenFile = Path.of("data", "quellenDataStandard.json");
+	private Path workingQuellenFile = Path.of(originalQuellenFile.toString() + ".swp");
+
+	private boolean workingFileInitialized;
+
 	private final Map<Literatur, String> idsBySource = new IdentityHashMap<>();
 
 	private final ObjectMapper mapper = JsonMapper.builder()
@@ -44,8 +48,7 @@ public class DataManager {
 
 		root.withArrayProperty(quellenTyp).add(newEntry);
 
-		Files.createDirectories(quellenFile.getParent());
-		mapper.writerWithDefaultPrettyPrinter().writeValue(quellenFile.toFile(), root);
+		mapper.writerWithDefaultPrettyPrinter().writeValue(workingQuellenFile.toFile(), root);
 		idsBySource.put(entry, id);
 		return id;
 	}
@@ -155,7 +158,8 @@ public class DataManager {
 			if (index >= 0) {
 				entries.remove(index);
 				mapper.writerWithDefaultPrettyPrinter()
-						.writeValue(quellenFile.toFile(), root);
+						.writeValue(workingQuellenFile.toFile(), root);
+				idsBySource.entrySet().removeIf(entry -> id.equals(entry.getValue()));
 				return true;
 			}
 		}
@@ -216,7 +220,9 @@ public class DataManager {
 		}
 
 		mapper.writerWithDefaultPrettyPrinter()
-				.writeValue(quellenFile.toFile(), root);
+				.writeValue(workingQuellenFile.toFile(), root);
+		idsBySource.entrySet().removeIf(entry -> id.equals(entry.getValue()));
+		idsBySource.put(updatedEntry, id);
 
 		return true;
 	}
@@ -231,14 +237,15 @@ public class DataManager {
 	 * @throws IOException if the file cannot be read or written, or its structure is invalid
 	 */
 	private ObjectNode loadData() throws IOException {
-		if (Files.notExists(quellenFile) || Files.size(quellenFile) == 0)
+		ensureWorkingFile();
+		if (Files.size(workingQuellenFile) == 0)
 			return mapper.createObjectNode();
 
-		JsonNode data = mapper.readTree(quellenFile.toFile());
+		JsonNode data = mapper.readTree(workingQuellenFile.toFile());
 
 		if (data instanceof ObjectNode root)
 			return root;
-		throw new IOException("the JSON file has to contain a root object" + quellenFile);
+		throw new IOException("the JSON file has to contain a root object" + workingQuellenFile);
 	}
 
 	/**
@@ -278,7 +285,7 @@ public class DataManager {
     }
 
     // Only switch files after validation succeeds.
-    this.quellenFile = path;
+    activateFile(path);
 }
 
 	/**
@@ -305,7 +312,7 @@ public class DataManager {
 			return false;
 		}
 
-		this.quellenFile = path;
+		activateFile(path);
 		return true;
 	}
 	
@@ -317,19 +324,17 @@ public class DataManager {
 	 * @param path file path
 	 * @throws IOException if the file cannot be read or written, or its structure is invalid
 	 */
-	public void exportJson(Path path) throws IOException { //TODO: funktioniert irgenwie noch nicht
+	public void exportJson(Path path) throws IOException {
 		Objects.requireNonNull(path, "path");
 		
-		if (this.quellenFile == null) {
-			throw new IllegalStateException("No JSON file loaded");
-		}
+		ensureWorkingFile();
 		
 		Path parent = path.getParent();
 		if (parent != null) {
 			Files.createDirectories(parent);
 		}
 		
-		Files.copy(this.quellenFile, path, StandardCopyOption.REPLACE_EXISTING);
+		Files.copy(this.workingQuellenFile, path, StandardCopyOption.REPLACE_EXISTING);
 	}
 	
 
@@ -580,4 +585,50 @@ public String getId(Literatur source) {
     return idsBySource.get(source);
 }
 
+/** Creates the working copy before the default bibliography is first used. */
+private void ensureWorkingFile() throws IOException {
+    if (workingFileInitialized) {
+        return;
+    }
+    Path parent = workingQuellenFile.getParent();
+    if (parent != null) {
+        Files.createDirectories(parent);
+    }
+    if (Files.exists(originalQuellenFile)) {
+        Files.copy(originalQuellenFile, workingQuellenFile, StandardCopyOption.REPLACE_EXISTING);
+    } else {
+        Files.writeString(workingQuellenFile, "{}");
+    }
+    workingFileInitialized = true;
+}
+
+/** Activates a bibliography only after its working copy is ready. */
+private void activateFile(Path path) throws IOException {
+    Path workingPath = Path.of(path.toString() + ".swp");
+    Files.copy(path, workingPath, StandardCopyOption.REPLACE_EXISTING);
+    originalQuellenFile = path;
+    workingQuellenFile = workingPath;
+    workingFileInitialized = true;
+    idsBySource.clear();
+}
+
+/** Discards the working copy without changing the original bibliography. */
+public void deleteWorkingFile() throws IOException {
+    Files.deleteIfExists(workingQuellenFile);
+    workingFileInitialized = false;
+    idsBySource.clear();
+}
+
+/** Commits the working copy to the original bibliography. */
+public void save() throws IOException{
+    ensureWorkingFile();
+	Path temp = Path.of(workingQuellenFile.toString() + ".tmp");
+	Files.copy(workingQuellenFile, temp, StandardCopyOption.REPLACE_EXISTING);
+	try {
+        Files.move(temp, originalQuellenFile, StandardCopyOption.ATOMIC_MOVE,
+                StandardCopyOption.REPLACE_EXISTING);
+    } catch (AtomicMoveNotSupportedException e) {
+        Files.move(temp, originalQuellenFile, StandardCopyOption.REPLACE_EXISTING);
+    }
+}
 }

@@ -275,6 +275,28 @@ public class DataManager {
 	 * @throws IOException if the file cannot be read or written, or its structure is invalid
 	 */
 	public void importJson(Path path) throws IOException {
+        validateJson(path);
+        activateFile(path);
+    }
+
+    public static Path workingPathFor(Path path) {
+        return path.resolveSibling(path.getFileName() + ".swp");
+    }
+
+    public void recoverJson(Path path) throws IOException {
+        Path workingPath = workingPathFor(path);
+        validateJson(workingPath);
+        selectFiles(path, workingPath);
+    }
+
+    public void discardRecoveryAndImport(Path path) throws IOException {
+        validateJson(path);
+        Path workingPath = workingPathFor(path);
+        Files.copy(path, workingPath, StandardCopyOption.REPLACE_EXISTING);
+        selectFiles(path, workingPath);
+    }
+
+    private void validateJson(Path path) throws IOException {
     Objects.requireNonNull(path, "path");
     if (!Files.isRegularFile(path) || !Files.isReadable(path)) {throw new IOException("Die ausgewählte Datei kann nicht gelesen werden.");
     }
@@ -284,8 +306,7 @@ public class DataManager {
     if (!(data instanceof ObjectNode)) {throw new IOException("Die JSON-Datei muss ein JSON-Objekt enthalten.");
     }
 
-    // Only switch files after validation succeeds.
-    activateFile(path);
+
 }
 
 	/**
@@ -594,18 +615,26 @@ private void ensureWorkingFile() throws IOException {
     if (parent != null) {
         Files.createDirectories(parent);
     }
+    if (Files.exists(workingQuellenFile)) {
+        recoverJson(originalQuellenFile);
+        return;
+    }
     if (Files.exists(originalQuellenFile)) {
-        Files.copy(originalQuellenFile, workingQuellenFile, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(originalQuellenFile, workingQuellenFile);
     } else {
-        Files.writeString(workingQuellenFile, "{}");
+        Files.writeString(workingQuellenFile, "{}", StandardOpenOption.CREATE_NEW);
     }
     workingFileInitialized = true;
 }
 
 /** Activates a bibliography only after its working copy is ready. */
 private void activateFile(Path path) throws IOException {
-    Path workingPath = Path.of(path.toString() + ".swp");
-    Files.copy(path, workingPath, StandardCopyOption.REPLACE_EXISTING);
+    Path workingPath = workingPathFor(path);
+    Files.copy(path, workingPath);
+    selectFiles(path, workingPath);
+}
+
+private void selectFiles(Path path, Path workingPath) {
     originalQuellenFile = path;
     workingQuellenFile = workingPath;
     workingFileInitialized = true;

@@ -104,12 +104,29 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
 
     try {
     	DataManager manager = new DataManager();
-        manager.importJson(chosenFile);
+        if (java.nio.file.Files.exists(DataManager.workingPathFor(chosenFile))) {
+            String[] options = { "Wiederherstellen", "Änderungen verwerfen", "Abbrechen" };
+            int choice = JOptionPane.showOptionDialog(this,
+                    "Für " + chosenFile.getFileName() + " wurde eine Arbeitskopie gefunden.\n"
+                    + "Das Programm wurde möglicherweise unerwartet beendet.\n"
+                    + "Möchten Sie die Änderungen wiederherstellen?",
+                    "Arbeitskopie gefunden", JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+            if (choice == 0) {
+                manager.recoverJson(chosenFile);
+            } else if (choice == 1) {
+                manager.discardRecoveryAndImport(chosenFile);
+            } else {
+                return;
+            }
+        } else {
+            manager.importJson(chosenFile);
+        }
         List<Literatur> sources = manager.readAllSources();
         GUI_Literaturverwaltung window = new GUI_Literaturverwaltung(manager);
         window.addTableRows(sources.toArray(Literatur[]::new));
         dispose();
-    } catch (IOException e) { JOptionPane.showMessageDialog(this,"Die JSON-Datei konnte nicht importiert werden:\n" + e.getMessage(),"Import fehlgeschlagen",JOptionPane.ERROR_MESSAGE);
+    } catch (IOException | RuntimeException e) { JOptionPane.showMessageDialog(this,"Die JSON-Datei konnte nicht importiert werden:\n" + e.getMessage(),"Import fehlgeschlagen",JOptionPane.ERROR_MESSAGE);
     }
 }
 }

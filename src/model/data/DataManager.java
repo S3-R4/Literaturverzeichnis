@@ -2,258 +2,246 @@ package model.data;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import java.io.IOException;
-import java.nio.file.*;
-import java.time.LocalDate;
-import java.util.*;
-
-import model.*;
-import model.Audiovisuell.*;
-import tools.jackson.databind.*;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.UUID;
+import model.Literatur;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.*;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
- * Persists sources in JSON categories and tracks identifiers by object identity.
+ * Manages entries in the active bibliography and tracks their persistent IDs
+ * by Java object identity.
  */
 public class DataManager {
 
-	private Path originalQuellenFile = Path.of("data", "quellenDataStandard.json");
-	private Path workingQuellenFile = Path.of(originalQuellenFile.toString() + ".swp");
-
-	private boolean workingFileInitialized;
-
-	private final Map<Literatur, String> idsBySource = new IdentityHashMap<>();
-
+	/**
+	 * Jackson mapper configured to serialize the fields of source objects.
+	 */
 	private final ObjectMapper mapper = JsonMapper.builder()
 			.changeDefaultVisibility(visibility -> visibility.withFieldVisibility(JsonAutoDetect.Visibility.ANY))
 			.build();
-    
-	// -------------------------------------------------------------------------------------
 	/**
-	 * Saves a source under its type with a new UUID and records its object identity.
+	 * File operations for the active bibliography.
+	 */
+	private final BibliographyFiles files = new BibliographyFiles(mapper);
+	/**
+	 * Converter between source objects and stored JSON entries.
+	 */
+	private final SourceJsonMapper sourceJson = new SourceJsonMapper(mapper);
+	/**
+	 * Persistent IDs indexed by the identity of each loaded source instance.
+	 */
+	private final Map<Literatur, String> idsBySource = new IdentityHashMap<>();
+
+	// -------------------------------------------------------------------------------------
+	// Entry changes
+
+	/**
+	 * Adds a source to the working copy under its type and assigns it a new ID.
 	 *
-	 * @param entry source entry
-	 * @return the assigned persistent identifier
-	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 * @param entry source to add
+	 * @return the assigned persistent ID
+	 * @throws IOException if the working copy cannot be read or written
 	 */
 	public String add_data(Literatur entry) throws IOException {
 		Objects.requireNonNull(entry, "entry");
-
-		String quellenTyp = entry.getClass().getSimpleName();
-		ObjectNode root = loadData();
+		ObjectNode root = files.read();
 
 		String id = UUID.randomUUID().toString();
-		ObjectNode newEntry = mapper.valueToTree(entry);
-		newEntry.put("id", id);
+		ObjectNode newEntry = sourceJson.toJson(entry, id);
+		root.withArrayProperty(entry.getClass().getSimpleName()).add(newEntry);
 
-		root.withArrayProperty(quellenTyp).add(newEntry);
-
-		mapper.writerWithDefaultPrettyPrinter().writeValue(workingQuellenFile.toFile(), root);
+		files.write(root);
 		idsBySource.put(entry, id);
 		return id;
 	}
 
-	// ------------------------------------------------------------------------------------
-	// reading
-	// this func reads all entries
 	/**
-	 * Reads the selected JSON data as formatted text.
+	 * Removes the first source with the given ID from the working copy.
 	 *
-	 * @return the formatted JSON data
-	 * @throws IOException if the file cannot be read or written, or its structure is invalid
-	 */
-	public String read_data() throws IOException {
-		return prettyJson(loadData());
-	}
-
-	// reads all entries of a given type
-	/**
-	 * Reads the selected JSON data as formatted text.
-	 *
-	 * @param datatype source category name
-	 * @return the formatted JSON data
-	 * @throws IOException if the file cannot be read or written, or its structure is invalid
-	 */
-	public String read_data(String datatype) throws IOException {
-		return prettyJson(entriesOfType(loadData(), datatype));
-	}
-
-	// reads the entry of the given ID
-	/**
-	 * Finds a stored source by identifier across all categories.
-	 *
-	 * @param id persistent source identifier
-	 * @return the matching entry as formatted JSON
-	 * @throws IOException if the file cannot be read or written, or its structure is invalid
-	 * @throws NoSuchElementException if no entry has the requested identifier
-	 */
-	public String read_data_by_id(String id) throws IOException {
-		Objects.requireNonNull(id, "id");
-
-		ObjectNode root = loadData();
-		JsonNode idTarget = mapper.valueToTree(id);
-
-		for (JsonNode category : root.values()) {
-			if (!(category instanceof ArrayNode entries))
-				continue;
-			int index = findIndex(entries, idTarget);
-			if (index >= 0)
-				return prettyJson(entries.get(index));
-		}
-		throw new NoSuchElementException(
-				"No entries with ID" + id);
-	}
-
-	/**
-	 * Reads a category array, returning an empty array for a missing category.
-	 *
-	 * @param root JSON root object
-	 * @param type source type name
-	 * @return the category entries
-	 * @throws IOException if the file cannot be read or written, or its structure is invalid
-	 */
-	private ArrayNode entriesOfType(ObjectNode root, String type) throws IOException {
-		JsonNode entries = root.get(type);
-
-		if (entries == null)
-			return mapper.createArrayNode();
-
-		if (entries instanceof ArrayNode list)
-			return list;
-
-		throw new IOException("The cathegory " + type + " must have a list");
-	}
-
-	/**
-	 * Serializes a JSON value with indentation.
-	 *
-	 * @param data JSON value to format
-	 * @return the formatted JSON text
-	 */
-	private String prettyJson(JsonNode data) {
-		return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
-	}
-
-	// --------------------------------------------------------------------------------------
-	// deletations based on id
-	/**
-	 * Removes the first entry with the identifier and saves the file.
-	 *
-	 * @param id persistent source identifier
-	 * @return whether an entry was found and removed
-	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 * @param id persistent source ID
+	 * @return whether a source was found and removed
+	 * @throws IOException if the working copy cannot be read or written
 	 */
 	public boolean delete_data_by_id(String id) throws IOException {
 		Objects.requireNonNull(id, "id");
-
-		ObjectNode root = loadData();
+		ObjectNode root = files.read();
 		JsonNode idTarget = mapper.valueToTree(id);
 
 		for (JsonNode category : root.values()) {
 			if (!(category instanceof ArrayNode entries)) {
 				continue;
 			}
-
 			int index = findIndex(entries, idTarget);
 			if (index >= 0) {
 				entries.remove(index);
-				mapper.writerWithDefaultPrettyPrinter()
-						.writeValue(workingQuellenFile.toFile(), root);
+				files.write(root);
 				idsBySource.entrySet().removeIf(entry -> id.equals(entry.getValue()));
 				return true;
 			}
 		}
-
 		return false;
 	}
 
-	// --------------------------------------------------------------------------------------
-	// edit
 	/**
-	 * Replaces a stored source while retaining its identifier, moving categories if needed.
+	 * Replaces a source in the working copy, preserving its ID. If its type changes,
+	 * the entry moves to the end of its new category.
 	 *
-	 * @param id persistent source identifier
+	 * @param id persistent source ID
 	 * @param updatedEntry replacement source
-	 * @return whether the identifier was found and updated
-	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 * @return whether a source was found and replaced
+	 * @throws IOException if the working copy cannot be read or written
 	 */
 	public boolean edit_entry(String id, Literatur updatedEntry) throws IOException {
 		Objects.requireNonNull(id, "id");
 		Objects.requireNonNull(updatedEntry, "updatedEntry");
-
-		ObjectNode root = loadData();
+		ObjectNode root = files.read();
 		JsonNode idTarget = mapper.valueToTree(id);
 
-		ArrayNode originalEntries = null;
-		int originalIndex = -1;
-
-		// looks for the entry
 		for (JsonNode category : root.values()) {
 			if (!(category instanceof ArrayNode entries)) {
 				continue;
 			}
-
 			int index = findIndex(entries, idTarget);
-			if (index >= 0) {
-				originalEntries = entries;
-				originalIndex = index;
-				break;
+			if (index < 0) {
+				continue;
+			}
+
+			ObjectNode replacement = sourceJson.toJson(updatedEntry, id);
+			ArrayNode targetEntries = root.withArrayProperty(updatedEntry.getClass().getSimpleName());
+			if (entries == targetEntries) {
+				entries.set(index, replacement);
+			} else {
+				entries.remove(index);
+				targetEntries.add(replacement);
+			}
+
+			files.write(root);
+			idsBySource.entrySet().removeIf(entry -> id.equals(entry.getValue()));
+			idsBySource.put(updatedEntry, id);
+			return true;
+		}
+		return false;
+	}
+
+	// -------------------------------------------------------------------------------------
+	// Entry reads and ID lookup
+
+	/**
+	 * Reads the entire working copy as formatted JSON.
+	 *
+	 * @return the formatted bibliography
+	 * @throws IOException if the working copy cannot be read or has an invalid root
+	 */
+	public String read_data() throws IOException {
+		return prettyJson(files.read());
+	}
+
+	/**
+	 * Reads the entries of one source type as formatted JSON.
+	 *
+	 * @param datatype source category name
+	 * @return the formatted category array, or an empty array if the category is absent
+	 * @throws IOException if the working copy cannot be read or its structure is invalid
+	 */
+	public String read_data(String datatype) throws IOException {
+		JsonNode entries = files.read().get(datatype);
+		if (entries == null) {
+			return prettyJson(mapper.createArrayNode());
+		}
+		if (entries instanceof ArrayNode) {
+			return prettyJson(entries);
+		}
+		throw new IOException("The cathegory " + datatype + " must have a list");
+	}
+
+	/**
+	 * Finds the first source with the given ID across all categories.
+	 *
+	 * @param id persistent source ID
+	 * @return the matching entry as formatted JSON
+	 * @throws IOException if the working copy cannot be read or has an invalid root
+	 * @throws NoSuchElementException if no source has the requested ID
+	 */
+	public String read_data_by_id(String id) throws IOException {
+		Objects.requireNonNull(id, "id");
+		ObjectNode root = files.read();
+		JsonNode idTarget = mapper.valueToTree(id);
+
+		for (JsonNode category : root.values()) {
+			if (category instanceof ArrayNode entries) {
+				int index = findIndex(entries, idTarget);
+				if (index >= 0) {
+					return prettyJson(entries.get(index));
+				}
 			}
 		}
-
-		if (originalEntries == null) {
-			return false;
-		}
-
-		// Converts the new data into the entry, but preserves the id
-		ObjectNode replacement = mapper.valueToTree(updatedEntry);
-		replacement.put("id", id);
-
-		String type = updatedEntry.getClass().getSimpleName();
-		ArrayNode targetEntries = root.withArrayProperty(type);
-
-		if (originalEntries == targetEntries) {
-			originalEntries.set(originalIndex, replacement);
-		} else {
-			originalEntries.remove(originalIndex);
-			targetEntries.add(replacement);
-		}
-
-		mapper.writerWithDefaultPrettyPrinter()
-				.writeValue(workingQuellenFile.toFile(), root);
-		idsBySource.entrySet().removeIf(entry -> id.equals(entry.getValue()));
-		idsBySource.put(updatedEntry, id);
-
-		return true;
+		throw new NoSuchElementException("No entries with ID" + id);
 	}
 
-	// ---------------------------------------------------------------------------------------
-	// Loads the JSON data, or returns an empty object if the file is missing or
-	// empty.
 	/**
-	 * Loads the active JSON object, using an empty object for a missing or empty file.
+	 * Reconstructs the stored sources and registers their IDs for the new instances.
 	 *
-	 * @return the bibliography root object
-	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 * @return the reconstructed sources in document order
+	 * @throws IOException if the working copy cannot be read or a source is invalid
 	 */
-	private ObjectNode loadData() throws IOException {
-		ensureWorkingFile();
-		if (Files.size(workingQuellenFile) == 0)
-			return mapper.createObjectNode();
+	public List<Literatur> readAllSources() throws IOException {
+		ObjectNode root = files.read();
+		List<Literatur> sources = new ArrayList<>();
+		idsBySource.clear();
 
-		JsonNode data = mapper.readTree(workingQuellenFile.toFile());
+		for (var category : root.properties()) {
+			String type = category.getKey();
+			if (!(category.getValue() instanceof ArrayNode entries)) {
+				throw new IOException("Die Kategorie " + type + " muss eine Liste enthalten.");
+			}
 
-		if (data instanceof ObjectNode root)
-			return root;
-		throw new IOException("the JSON file has to contain a root object" + workingQuellenFile);
+			for (JsonNode entry : entries) {
+				if (!(entry instanceof ObjectNode object)) {
+					throw new IOException("Ein Eintrag in " + type + " ist ungültig.");
+				}
+				try {
+					Literatur source = sourceJson.fromJson(type, object);
+					String id = sourceJson.readId(object);
+					if (id.isBlank()) {
+						throw new IOException("Ein Eintrag in " + type + " hat keine ID.");
+					}
+					idsBySource.put(source, id);
+					sources.add(source);
+				} catch (RuntimeException e) {
+					throw new IOException(
+							"Fehler beim Lesen eines Eintrags vom Typ " + type + ": " + e.getMessage(), e);
+				}
+			}
+		}
+		return sources;
 	}
 
 	/**
-	 * Locates the first entry whose identifier matches the target.
+	 * Looks up the persistent ID registered for the given source instance.
 	 *
-	 * @param entries category entries
-	 * @param idTarget identifier to locate
-	 * @return the matching index, or -1 when absent
+	 * @param source source instance
+	 * @return its ID, or {@code null} if the instance is not registered
+	 */
+	public String getId(Literatur source) {
+		return idsBySource.get(source);
+	}
+
+	/**
+	 * Finds the first entry with the requested ID.
+	 *
+	 * @param entries entries in the category to search
+	 * @param idTarget ID represented as a JSON value
+	 * @return the matching index, or {@code -1} if the ID is absent
 	 */
 	private int findIndex(ArrayNode entries, JsonNode idTarget) {
 		for (int i = 0; i < entries.size(); i++) {
@@ -261,417 +249,107 @@ public class DataManager {
 				return i;
 			}
 		}
-
 		return -1;
 	}
 
-	// ---------------------------------------------------------------------------------------
-	// import
-	
 	/**
-	 * Validates a nonempty JSON object file and makes it the active bibliography.
+	 * Formats a JSON value with indentation.
 	 *
-	 * @param path file path
-	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 * @param data JSON value to format
+	 * @return the formatted JSON text
+	 * @throws tools.jackson.core.JacksonException if the value cannot be serialized
+	 */
+	private String prettyJson(JsonNode data) {
+		return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
+	}
+
+	// -------------------------------------------------------------------------------------
+	// Document lifecycle
+
+	/**
+	 * Returns the sibling path used as the working copy for a bibliography.
+	 *
+	 * @param path path to the original bibliography
+	 * @return the working copy path, with {@code .swp} appended to the file name
+	 */
+	public static Path workingPathFor(Path path) {
+		return BibliographyFiles.workingPathFor(path);
+	}
+
+	/**
+	 * Opens an existing bibliography and creates its working copy.
+	 *
+	 * @param path path to the original bibliography
+	 * @throws IOException if the original is invalid or the working copy cannot be created
 	 */
 	public void importJson(Path path) throws IOException {
-        validateJson(path);
-        activateFile(path);
-    }
-
-    public static Path workingPathFor(Path path) {
-        return path.resolveSibling(path.getFileName() + ".swp");
-    }
-
-    public void recoverJson(Path path) throws IOException {
-        Path workingPath = workingPathFor(path);
-        validateJson(workingPath);
-        selectFiles(path, workingPath);
-    }
-
-    public void discardRecoveryAndImport(Path path) throws IOException {
-        validateJson(path);
-        Path workingPath = workingPathFor(path);
-        Files.copy(path, workingPath, StandardCopyOption.REPLACE_EXISTING);
-        selectFiles(path, workingPath);
-    }
-
-    private void validateJson(Path path) throws IOException {
-    Objects.requireNonNull(path, "path");
-    if (!Files.isRegularFile(path) || !Files.isReadable(path)) {throw new IOException("Die ausgewählte Datei kann nicht gelesen werden.");
-    }
-    if (Files.size(path) == 0) {throw new IOException("Die JSON-Datei ist leer.");
-    }
-    JsonNode data = mapper.readTree(path.toFile());
-    if (!(data instanceof ObjectNode)) {throw new IOException("Die JSON-Datei muss ein JSON-Objekt enthalten.");
-    }
-
-
-}
+		files.open(path);
+		idsBySource.clear();
+	}
 
 	/**
-	 * Creates an empty JSON object file without overwriting an existing file and activates it.
+	 * Opens a bibliography using its existing working copy.
 	 *
-	 * @param path file path
-	 * @return true if created; false if the path already exists
-	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 * @param path path to the original bibliography
+	 * @throws IOException if the working copy is missing, unreadable or invalid
+	 */
+	public void recoverJson(Path path) throws IOException {
+		files.recover(path);
+		idsBySource.clear();
+	}
+
+	/**
+	 * Replaces an existing working copy with the saved bibliography and opens it.
+	 *
+	 * @param path path to the original bibliography
+	 * @throws IOException if the original is invalid or the working copy cannot be replaced
+	 */
+	public void discardRecoveryAndImport(Path path) throws IOException {
+		files.discardAndOpen(path);
+		idsBySource.clear();
+	}
+
+	/**
+	 * Creates an empty bibliography and opens it for editing.
+	 *
+	 * @param path path to the new bibliography
+	 * @return whether the bibliography was created, or {@code false} if the path already exists
+	 * @throws IOException if the original or working copy cannot be created
 	 */
 	public boolean createJson(Path path) throws IOException {
-		Objects.requireNonNull(path, "path");
-
-		Path parent = path.getParent();
-		if (parent != null) {
-			Files.createDirectories(parent);
-		}
-
-		try {
-			Files.writeString(
-					path,
-					"{}",
-					java.nio.file.StandardOpenOption.CREATE_NEW);
-		} catch (java.nio.file.FileAlreadyExistsException e) {
+		if (!files.create(path)) {
 			return false;
 		}
-
-		activateFile(path);
+		idsBySource.clear();
 		return true;
 	}
-	
-	//------------------------------------------------------------------------------------------
-	
+
 	/**
-	 * Copies the active JSON file to the destination, replacing an existing file.
+	 * Exports the working copy to the given destination, replacing an existing file.
 	 *
-	 * @param path file path
-	 * @throws IOException if the file cannot be read or written, or its structure is invalid
+	 * @param path destination path
+	 * @throws IOException if the working copy cannot be read or copied to the destination
 	 */
 	public void exportJson(Path path) throws IOException {
-		Objects.requireNonNull(path, "path");
-		
-		ensureWorkingFile();
-		
-		Path parent = path.getParent();
-		if (parent != null) {
-			Files.createDirectories(parent);
-		}
-		
-		Files.copy(this.workingQuellenFile, path, StandardCopyOption.REPLACE_EXISTING);
+		files.exportTo(path);
 	}
-	
 
-/**
- * Reconstructs all stored sources and rebuilds their identity-to-ID mapping.
- *
- * @return the reconstructed source list
- * @throws IOException if the file cannot be read or written, or its structure is invalid
- */
-public List<Literatur> readAllSources() throws IOException { //Reads JSON and returns is as a object
-    ObjectNode root = loadData();
-    List<Literatur> sources = new ArrayList<>();
-	idsBySource.clear();
-    for (var category : root.properties()) {
-        String type = category.getKey();
-        JsonNode entries = category.getValue();
-
-        if (!(entries instanceof ArrayNode array)) {
-            throw new IOException("Die Kategorie " + type + " muss eine Liste enthalten.");
-        }
-
-        for (JsonNode entry : array) {
-            if (!(entry instanceof ObjectNode object)) {
-                throw new IOException("Ein Eintrag in " + type + " ist ungültig.");
-            }
-
-            try {
-                Literatur source = convertEntry(type, object);
-				String id = readString(object.get("id"));
-
-                if (id.isBlank()) {
-                    throw new IOException("Ein Eintrag in " + type + " hat keine ID.");
-                }
-				idsBySource.put(source, id);
-				sources.add(source);
-            } catch (RuntimeException e) {
-                throw new IOException(
-                    "Fehler beim Lesen eines Eintrags vom Typ " + type + ": " + e.getMessage(), e
-                );
-            }
-        }
-    }
-
-    return sources;
-}
-
-/**
- * Reconstructs the concrete source type from its stored JSON fields.
- *
- * @param type source type name
- * @param entry source entry
- * @return the reconstructed source
- */
-private Literatur convertEntry(String type, ObjectNode entry) { //Reads the JSON for name category and decides which class to create
-List<String> authors = readStringList(entry.get("autor"));
-Optional<LocalDate> published = readDate(entry.get("veroeffentlichungsdatum"));
-Optional<LocalDate> retrieved = readDate(entry.get("abrufdatum"));
-Optional<String> title = readText(entry.get("titel"));
-return switch (type) {
-case "Buchbeleg" -> {
-		JsonNode pages = entry.get("seitenangabe");
-		Optional<Integer> firstPage = readInteger(pages == null ? null : pages.get("anfang"));
-		Optional<Integer> lastPage = readInteger(pages == null ? null : pages.get("ende"));
-		if (pages != null && pages.isString() && pages.asText().contains("-")) {
-			String[] range = pages.asText().split("-", 2);
-			firstPage = Optional.of(Integer.parseInt(range[0].trim()));
-			lastPage = Optional.of(Integer.parseInt(range[1].trim()));
-		} else if (pages != null && !pages.isObject()) {
-			firstPage = readInteger(pages);
-		}
-		yield new Buchbeleg(authors, published, title, readText(entry.get("buchverlag")),
-				readInteger(entry.get("auflage")), readText(entry.get("erscheinungsort")), firstPage, lastPage);
+	/**
+	 * Saves the working copy to the original bibliography through a temporary file.
+	 *
+	 * @throws IOException if the working copy cannot be read or the original cannot be replaced
+	 */
+	public void save() throws IOException {
+		files.save();
 	}
-                case "Website" -> new Website(authors,readString(entry.get("websitename")),title,readString(entry.get("url")),retrieved.orElse(null),published.orElse(null),readString(entry.get("textart")));
 
-                case "Zeitungsartikel" -> new Zeitungsartikel(published.orElse(null),title.orElse(""),readString(entry.get("zeitung")),readString(entry.get("seitenzahl")),readString(entry.get("url")),authors);
-
-                case "BildQuelle" -> {
-                BildQuelle image = new BildQuelle();
-                image.setUrheber1(authorAt(authors, 0));
-                image.setUrheber2(authorAt(authors, 1));
-                image.setUrheber3(authorAt(authors, 2));
-                image.setUrheber4(authorAt(authors, 3));
-                image.setMehrUrheber(readBoolean(entry.get("MehrUrheber")));
-                image.setTitel(title);
-                image.setMedienart(readText(entry.get("Medienart")));
-                image.setVeroeffentlichungsdatum(published);
-                image.setAbrufdatum(retrieved);
-                image.setHerausgeber(readText(entry.get("Herausgeber")));
-                image.setAnbieter(readText(entry.get("Anbieter")));
-                yield image;
-                }
-
-                case "FIlmsVideos" -> {
-                FIlmsVideos film = new FIlmsVideos();
-                fillAudiovisual(film, authors, title, published, retrieved, entry);
-                film.setProduktionsfirma(readText(entry.get("produktionsfirma")));
-                yield film;
-                }
-
-                case "Youtube" -> {
-                Youtube youtube = new Youtube();
-                fillAudiovisual(youtube, authors, title, published, retrieved, entry);
-                yield youtube;
-                }
-
-                case "PodcastGesamtwerk" -> {
-                PodcastGesamtwerk podcast = new PodcastGesamtwerk();
-                fillAudiovisual(podcast, authors, title, published, retrieved, entry);
-                podcast.setHerausgebendeOrganisation(
-                    readText(entry.get("herausgebendeOrganisation"))
-                );
-                yield podcast;
-                }
-
-                case "Podcastfolgen" -> {
-                Podcastfolgen episode = new Podcastfolgen();
-                fillAudiovisual(episode, authors, title, published, retrieved, entry);
-                episode.setHerausgebendeOrganisation(readText(entry.get("herausgebendeOrganisation"))
-                );
-                episode.setPodcastFolge(readInteger(entry.get("podcastFolge")));
-                episode.setPodcastFolgenName(readText(entry.get("podcastFolgenName")));
-                yield episode;
-                }
-
-                case "SocialMediaBeitraege" -> {
-                SocialMediaBeitraege post = new SocialMediaBeitraege();
-                fillAudiovisual(post, authors, title, published, retrieved, entry);
-                post.setText(readText(entry.get("text")));
-                post.setBeschreibung(readText(entry.get("beschreibung")));
-                yield post;
-                }
-
-                default -> throw new IllegalArgumentException("Unbekannter Quellentyp: " + type);
-            };
-    }
-
-/**
- * Restores common audiovisual metadata from a JSON entry.
- *
- * @param source bibliographic source
- * @param authors author list
- * @param title source title
- * @param published publication date
- * @param retrieved retrieval date
- * @param entry source entry
- */
-private void fillAudiovisual(Audiovisuell source,List<String> authors,Optional<String> title,Optional<LocalDate> published,Optional<LocalDate> retrieved,ObjectNode entry) {
-    source.setAutor(authors);
-    source.setTitel(title);
-    source.setVeroeffentlichungsdatum(published);
-    source.setAbrufdatum(retrieved);
-    source.setBeitragsArt(readText(entry.get("beitragsArt")));
-    source.setMedium(readText(entry.get("medium")));
-    source.setUrl(readText(entry.get("url")));
-}
-
-/**
- * Reads non-null array values as strings, ignoring non-array input.
- *
- * @param node JSON value to read
- * @return the collected strings
- */
-private List<String> readStringList(JsonNode node) {
-    List<String> values = new ArrayList<>();
-
-    if (node instanceof ArrayNode array) {
-        for (JsonNode value : array) {
-            if (!value.isNull()) {
-                values.add(value.asText());
-            }
-        }
-    }
-
-    return values;
-}
-
-/**
- * Reads an author by index with an empty fallback beyond the list.
- *
- * @param authors author list
- * @param index zero-based index
- * @return the author or an empty string
- */
-private String authorAt(List<String> authors, int index) {
-    return index < authors.size() ? authors.get(index) : "";
-}
-
-/**
- * Converts a JSON value to text, treating missing and null values as empty.
- *
- * @param node JSON value to read
- * @return the text value
- */
-private String readString(JsonNode node) {
-return node == null || node.isNull() ? "" : node.asText();
-}
-
-/**
- * Trims a JSON text value and treats empty text as absent.
- *
- * @param node JSON value to read
- * @return the optional text
- */
-private Optional<String> readText(JsonNode node) {
-String value = readString(node).trim();
-return value.isEmpty() ? Optional.empty() : Optional.of(value);
-}
-
-/**
- * Reads an integer or a legacy numeric string, allowing missing, null or blank values.
- *
- * @param node JSON value to read
- * @return the optional integer
- */
-private Optional<Integer> readInteger(JsonNode node) {
-    if (node == null || node.isNull()) {
-        return Optional.empty();
-    }
-
-    if (node.isString()) {
-        return readText(node).map(Integer::parseInt);
-    }
-
-    if (!node.isIntegralNumber() || !node.canConvertToInt()) {
-        throw new IllegalArgumentException("Eine ganze Zahl wurde erwartet.");
-    }
-
-    return Optional.of(node.intValue());
-}
-
-/**
- * Parses a JSON date as ISO local-date text, allowing missing or blank values.
- *
- * @param node JSON value to read
- * @return the optional date
- */
-private Optional<LocalDate> readDate(JsonNode node) {
-    if (node == null || node.isNull() || node.asText().isBlank()) {
-    return Optional.empty();
-    }
-
-    return Optional.of(LocalDate.parse(node.asText()));
-}
-
-/**
- * Reads a JSON boolean with false as the fallback.
- *
- * @param node JSON value to read
- * @return the boolean value
- */
-private boolean readBoolean(JsonNode node) {
-    return node != null && !node.isNull() && node.asBoolean(false);
-}
-/**
- * Looks up the identifier recorded for this exact source object.
- *
- * @param source bibliographic source
- * @return the identifier, or null if the object is not tracked
- */
-public String getId(Literatur source) {
-    return idsBySource.get(source);
-}
-
-/** Creates the working copy before the default bibliography is first used. */
-private void ensureWorkingFile() throws IOException {
-    if (workingFileInitialized) {
-        return;
-    }
-    Path parent = workingQuellenFile.getParent();
-    if (parent != null) {
-        Files.createDirectories(parent);
-    }
-    if (Files.exists(workingQuellenFile)) {
-        recoverJson(originalQuellenFile);
-        return;
-    }
-    if (Files.exists(originalQuellenFile)) {
-        Files.copy(originalQuellenFile, workingQuellenFile);
-    } else {
-        Files.writeString(workingQuellenFile, "{}", StandardOpenOption.CREATE_NEW);
-    }
-    workingFileInitialized = true;
-}
-
-/** Activates a bibliography only after its working copy is ready. */
-private void activateFile(Path path) throws IOException {
-    Path workingPath = workingPathFor(path);
-    Files.copy(path, workingPath);
-    selectFiles(path, workingPath);
-}
-
-private void selectFiles(Path path, Path workingPath) {
-    originalQuellenFile = path;
-    workingQuellenFile = workingPath;
-    workingFileInitialized = true;
-    idsBySource.clear();
-}
-
-/** Discards the working copy without changing the original bibliography. */
-public void deleteWorkingFile() throws IOException {
-    Files.deleteIfExists(workingQuellenFile);
-    workingFileInitialized = false;
-    idsBySource.clear();
-}
-
-/** Commits the working copy to the original bibliography. */
-public void save() throws IOException{
-    ensureWorkingFile();
-	Path temp = Path.of(workingQuellenFile.toString() + ".tmp");
-	Files.copy(workingQuellenFile, temp, StandardCopyOption.REPLACE_EXISTING);
-	try {
-        Files.move(temp, originalQuellenFile, StandardCopyOption.ATOMIC_MOVE,
-                StandardCopyOption.REPLACE_EXISTING);
-    } catch (AtomicMoveNotSupportedException e) {
-        Files.move(temp, originalQuellenFile, StandardCopyOption.REPLACE_EXISTING);
-    }
-}
+	/**
+	 * Discards the active working copy and forgets its source instances.
+	 *
+	 * @throws IOException if the working copy cannot be deleted
+	 */
+	public void deleteWorkingFile() throws IOException {
+		files.deleteWorkingCopy();
+		idsBySource.clear();
+	}
 }

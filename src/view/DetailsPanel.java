@@ -7,6 +7,7 @@ import java.net.URI;
 import java.util.function.Consumer;
 import java.util.*;
 import java.util.List;
+import java.util.function.Predicate;
 import java.time.LocalDate;
 import model.*;
 import model.Audiovisuell.*;
@@ -27,7 +28,7 @@ final class DetailsPanel extends JPanel {
 	private final JComboBox<String> citationType = new JComboBox<>(new String[] { "Kurzbeleg", "Langbeleg" });
 	private final JButton copyCitationButton = new JButton("Kopieren");
 
-	private final Consumer<Literatur> saveChanges;
+	private final Predicate<Literatur> saveChanges;
 	private final Consumer<Literatur> addSource;
 	private final JPanel sourceTypePanel = new JPanel(new BorderLayout());
 	private final JComboBox<String> creationTypeComboBox = new JComboBox<>(new String[] {
@@ -55,7 +56,7 @@ final class DetailsPanel extends JPanel {
 	 * @param addSource      callback receiving a new source
 	 * @param editingChanged callback notified when editing mode changes
 	 */
-	DetailsPanel(Consumer<Literatur> saveChanges, Consumer<Literatur> addSource,
+	DetailsPanel(Predicate<Literatur> saveChanges, Consumer<Literatur> addSource,
 			Consumer<Boolean> editingChanged, Consumer<Literatur> deleteSource) {
 		super(new BorderLayout(0, 16));
 		this.saveChanges = saveChanges;
@@ -445,13 +446,14 @@ final class DetailsPanel extends JPanel {
 			return;
 		}
 		boolean newSource = creating;
+		if (!newSource && !saveChanges.test(replacement)) {
+			return;
+		}
 		creating = false;
 		creationDraft.clear();
 		setEditing(false);
 		if (newSource) {
 			addSource.accept(replacement);
-		} else {
-			saveChanges.accept(replacement);
 		}
 		showSource(replacement);
 	}

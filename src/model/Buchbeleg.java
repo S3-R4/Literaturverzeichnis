@@ -1,6 +1,8 @@
 
 package model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +13,10 @@ import java.util.Optional;
  */
 public class Buchbeleg extends Literatur {
 private Optional<String> buchverlag = Optional.empty();
+@JsonProperty
 private Optional<Integer> auflage = Optional.empty();
 private Optional<String> erscheinungsort = Optional.empty();
+@JsonProperty
 private Seitenangabe seitenangabe;
 
 /**
@@ -189,6 +193,7 @@ return getVeroeffentlichungsdatum().map(datum -> Integer.toString(datum.getYear(
  *
  * @return the edition number
  */
+@JsonIgnore
 public String getAuflage() {
 return this.auflage.isPresent() ? this.auflage.get().toString() : "";
 }
@@ -216,6 +221,7 @@ return this.erscheinungsort.orElse("o.O.");
  *
  * @return the formatted page range
  */
+@JsonIgnore
 public String getSeitenangabe() {
 return this.seitenangabe.getSeitenangabe();
 }

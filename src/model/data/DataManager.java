@@ -42,6 +42,7 @@ public class DataManager {
 	 */
 	private final Map<Literatur, String> idsBySource = new IdentityHashMap<>();
 
+	private final StateManager history = new StateManager();
 	// -------------------------------------------------------------------------------------
 	// Entry changes
 
@@ -55,12 +56,14 @@ public class DataManager {
 	public String add_data(Literatur entry) throws IOException {
 		Objects.requireNonNull(entry, "entry");
 		ObjectNode root = files.read();
+		ObjectNode before = root.deepCopy();
 
 		String id = UUID.randomUUID().toString();
 		ObjectNode newEntry = sourceJson.toJson(entry, id);
 		root.withArrayProperty(entry.getClass().getSimpleName()).add(newEntry);
 
 		files.write(root);
+		history.recordChange(before);
 		idsBySource.put(entry, id);
 		return id;
 	}

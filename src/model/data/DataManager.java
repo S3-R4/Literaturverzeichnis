@@ -417,7 +417,17 @@ Optional<String> title = readText(entry.get("titel"));
 return switch (type) {
 case "Buchbeleg" -> {
 		JsonNode pages = entry.get("seitenangabe");
-		yield new Buchbeleg(authors,published,title,readText(entry.get("buchverlag")),readInteger(entry.get("auflage")),readText(entry.get("erscheinungsort")),readInteger(pages == null ? null : pages.get("anfang")),readInteger(pages == null ? null : pages.get("ende")));
+		Optional<Integer> firstPage = readInteger(pages == null ? null : pages.get("anfang"));
+		Optional<Integer> lastPage = readInteger(pages == null ? null : pages.get("ende"));
+		if (pages != null && pages.isString() && pages.asText().contains("-")) {
+			String[] range = pages.asText().split("-", 2);
+			firstPage = Optional.of(Integer.parseInt(range[0].trim()));
+			lastPage = Optional.of(Integer.parseInt(range[1].trim()));
+		} else if (pages != null && !pages.isObject()) {
+			firstPage = readInteger(pages);
+		}
+		yield new Buchbeleg(authors, published, title, readText(entry.get("buchverlag")),
+				readInteger(entry.get("auflage")), readText(entry.get("erscheinungsort")), firstPage, lastPage);
 	}
                 case "Website" -> new Website(authors,readString(entry.get("websitename")),title,readString(entry.get("url")),retrieved.orElse(null),published.orElse(null),readString(entry.get("textart")));
 
@@ -556,18 +566,22 @@ return value.isEmpty() ? Optional.empty() : Optional.of(value);
 }
 
 /**
- * Reads a numeric JSON value as an integer, allowing missing or null values.
+ * Reads an integer or a legacy numeric string, allowing missing, null or blank values.
  *
  * @param node JSON value to read
  * @return the optional integer
  */
 private Optional<Integer> readInteger(JsonNode node) {
     if (node == null || node.isNull()) {
-    return Optional.empty();
+        return Optional.empty();
     }
 
-    if (!node.isNumber()) {
-        throw new IllegalArgumentException("Eine Zahl wurde erwartet.");
+    if (node.isString()) {
+        return readText(node).map(Integer::parseInt);
+    }
+
+    if (!node.isIntegralNumber() || !node.canConvertToInt()) {
+        throw new IllegalArgumentException("Eine ganze Zahl wurde erwartet.");
     }
 
     return Optional.of(node.intValue());

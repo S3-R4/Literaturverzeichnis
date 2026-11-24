@@ -11,9 +11,10 @@ import java.time.LocalDate;
 import model.*;
 import model.Audiovisuell.*;
 import javax.swing.*;
-import java.util.Objects;
+
 import controller.Controller;
 import java.util.regex.Pattern;
+
 
 /**
  * Displays source details and manages creation and editing through callbacks.
@@ -48,7 +49,7 @@ final class DetailsPanel extends JPanel {
 	private boolean editing;
 	private Controller controller = new Controller();
 	private JLabel activeToast;
-	private Timer activeToastTimer;
+	private javax.swing.Timer activeToastTimer;
 
 	/**
 	 * Creates the DetailsPanel view and its controls.
@@ -740,7 +741,7 @@ final class DetailsPanel extends JPanel {
 		activeToast = toast;
 
 		// Fade-Timer (16 ms = ~60 fps, 32 steps)
-		Timer fadeTimer = new Timer(16, null);
+		javax.swing.Timer fadeTimer = new javax.swing.Timer(16, null);
 		fadeTimer.setInitialDelay(800);
 		fadeTimer.addActionListener(e -> {
 			int alpha = toast.getBackground().getAlpha() - 8;

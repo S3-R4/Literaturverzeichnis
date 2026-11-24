@@ -4,23 +4,16 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URI;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.LinkedHashMap;
+import java.util.*;
+import java.util.List;
 import java.time.LocalDate;
-import model.Literatur;
-import model.Buchbeleg;
-import model.Website;
-import model.BildQuelle;
-import model.Zeitungsartikel;
+import model.*;
 import model.Audiovisuell.*;
 import javax.swing.*;
 import java.util.Objects;
-import java.net.URI;
 import controller.Controller;
+import java.util.regex.Pattern;
 
 /**
  * Displays source details and manages creation and editing through callbacks.
@@ -564,8 +557,23 @@ final class DetailsPanel extends JPanel {
 	 */
 	private Optional<LocalDate> readDate(String name) {
 		String text = inputText(name);
+        text = normalizeDate(text);
 		return text.isEmpty() ? Optional.empty() : Optional.of(LocalDate.parse(text));
 	}
+
+    private static final Pattern DAY_FIRST_DATE =
+        Pattern.compile("(\\d{1,2})([./])(\\d{1,2})\\2(\\d{4})");
+
+    private static String normalizeDate(String text) {
+        var match = DAY_FIRST_DATE.matcher(text);
+        if (!match.matches()) {
+            return text;
+        }
+
+        int day = Integer.parseInt(match.group(1));
+        int month = Integer.parseInt(match.group(3));
+        return String.format(Locale.ROOT, "%s-%02d-%02d", match.group(4), month, day);
+    }
 
 	/**
 	 * Parses optional integer input and reports invalid numeric text.

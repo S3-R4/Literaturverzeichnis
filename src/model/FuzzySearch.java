@@ -57,12 +57,37 @@ public class FuzzySearch {
      * @return whether the title or authors match the query
      */
     public boolean suitsSearch(Literatur source, String search) {
+        String fields = "";
+
+        for (Class<?> type = source.getClass(); type != Object.class; type = type.getSuperclass()) {
+            for (var field : type.getDeclaredFields()) {
+                if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) || field.isSynthetic()) {
+                    continue;
+                }
+
+                field.setAccessible(true);
+                try {
+                    Object value = field.get(source);
+                    if (value instanceof java.util.Optional<?> optional) {
+                        value = optional.orElse(null);
+                    }
+                    if (value instanceof Seitenangabe pages) {
+                        value = pages.getSeitenangabe();
+                    }
+                    if (value != null) {
+                        fields += " " + value;
+                    }
+                } catch (IllegalAccessException e) {
+                    throw new IllegalStateException("Cannot read " + field.getName(), e);
+                }
+            }
+        }
+        fields += " " + source.getClass().getTypeName();
+
         String term = search.strip().toLowerCase(java.util.Locale.ROOT);
         if (term.isEmpty()) return true;
 
-        String text = (source.getTitel().orElse("") + " "
-                + String.join(" ", source.getAutor()))
-                .toLowerCase(java.util.Locale.ROOT);
+        String text = (fields.toLowerCase(java.util.Locale.ROOT));
 
         if (text.contains(term)) return true;
 

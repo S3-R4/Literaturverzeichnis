@@ -159,6 +159,7 @@ public class DataManager {
 				entries.remove(index);
 				mapper.writerWithDefaultPrettyPrinter()
 						.writeValue(workingQuellenFile.toFile(), root);
+				idsBySource.entrySet().removeIf(entry -> id.equals(entry.getValue()));
 				return true;
 			}
 		}
@@ -220,6 +221,8 @@ public class DataManager {
 
 		mapper.writerWithDefaultPrettyPrinter()
 				.writeValue(workingQuellenFile.toFile(), root);
+		idsBySource.entrySet().removeIf(entry -> id.equals(entry.getValue()));
+		idsBySource.put(updatedEntry, id);
 
 		return true;
 	}
@@ -606,6 +609,13 @@ private void activateFile(Path path) throws IOException {
     originalQuellenFile = path;
     workingQuellenFile = workingPath;
     workingFileInitialized = true;
+    idsBySource.clear();
+}
+
+/** Discards the working copy without changing the original bibliography. */
+public void deleteWorkingFile() throws IOException {
+    Files.deleteIfExists(workingQuellenFile);
+    workingFileInitialized = false;
     idsBySource.clear();
 }
 

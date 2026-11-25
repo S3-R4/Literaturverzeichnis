@@ -113,7 +113,17 @@ public String getTextart() {
 return textart;
 }
 
-/**
+/**		ArrayList<String> autor = new ArrayList<String>(List.of("Mole, B."));
+		String websitename = "Ars Technica";
+		String titel = "mRNA vaccines are in RFK Jr’s crosshairs; funding in question";
+		String url = "https://arstechnica.com/health/2025/03/federal-funding-formrna-vaccine-research-in-jeopardy-under-rfk-jr/";
+		LocalDate aufrufdatum = LocalDate.of(2025, 3, 19);
+		LocalDate veroeffentlichungsdatum = LocalDate.of(2025, 3, 17);
+		String textart = "Report";
+		Website w = new Website(autor, websitename, Optional.ofNullable(titel), url, aufrufdatum,
+				veroeffentlichungsdatum, textart);
+
+		assertEquals("Mole, B. (2025, 17. März)", w.generiereKurzbeleg());
  * Formats a full bibliographic citation for this source.
  *
  * @return the full citation

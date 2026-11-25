@@ -93,3 +93,5 @@ application-local.yaml
 private/
 internal-instructions/
 ai-instructions-private.md
+
+.txt

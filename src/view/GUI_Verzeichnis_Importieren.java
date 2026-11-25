@@ -6,11 +6,8 @@ import java.io.IOException;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.util.List;
 import java.nio.file.Path;
 
-import model.data.DataManager;
-import model.Literatur;
 
 /**
  * Selects an existing bibliography JSON file and opens its management window.
@@ -98,35 +95,16 @@ public class GUI_Verzeichnis_Importieren extends JFrame {
 	 * Processes the selected file and reports validation or file-operation errors.
 	 */
 	private void confirmSelection() {
-    if (chosenFile == null) {JOptionPane.showMessageDialog(this, "Bitte zuerst eine JSON-Datei auswählen.");
-        return;
-    }
+		if (chosenFile == null) {
+			JOptionPane.showMessageDialog(this, "Bitte zuerst eine JSON-Datei auswählen.");
+			return;
+		}
 
-    try {
-    	DataManager manager = new DataManager();
-        if (java.nio.file.Files.exists(DataManager.workingPathFor(chosenFile))) {
-            String[] options = { "Wiederherstellen", "Änderungen verwerfen", "Abbrechen" };
-            int choice = JOptionPane.showOptionDialog(this,
-                    "Für " + chosenFile.getFileName() + " wurde eine Arbeitskopie gefunden.\n"
-                    + "Das Programm wurde möglicherweise unerwartet beendet.\n"
-                    + "Möchten Sie die Änderungen wiederherstellen?",
-                    "Arbeitskopie gefunden", JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-            if (choice == 0) {
-                manager.recoverJson(chosenFile);
-            } else if (choice == 1) {
-                manager.discardRecoveryAndImport(chosenFile);
-            } else {
-                return;
-            }
-        } else {
-            manager.importJson(chosenFile);
-        }
-        List<Literatur> sources = manager.readAllSources();
-        GUI_Literaturverwaltung window = new GUI_Literaturverwaltung(manager);
-        window.addTableRows(sources.toArray(Literatur[]::new));
-        dispose();
-    } catch (IOException | RuntimeException e) { JOptionPane.showMessageDialog(this,"Die JSON-Datei konnte nicht importiert werden:\n" + e.getMessage(),"Import fehlgeschlagen",JOptionPane.ERROR_MESSAGE);
-    }
-}
+		try {
+			BibliographySession.openExisting(this, chosenFile);
+		} catch (IOException | RuntimeException e) {
+			JOptionPane.showMessageDialog(this, "Die JSON-Datei konnte nicht importiert werden:\n" + e.getMessage(),
+					"Import fehlgeschlagen", JOptionPane.ERROR_MESSAGE);
+		}
+	}
 }

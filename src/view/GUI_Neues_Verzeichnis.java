@@ -117,8 +117,7 @@ public class GUI_Neues_Verzeichnis extends JFrame {
 				JOptionPane.showMessageDialog(this, "Die Datei existiert bereits. Bitte einen anderen Namen wählen.");
 				return;
 			}
-			new GUI_Literaturverwaltung(manager);
-			dispose();
+			BibliographySession.showEditor(this, manager, chosenFile);
 		} catch (IOException | IllegalArgumentException e) {
 			JOptionPane.showMessageDialog(this, "Die JSON-Datei konnte nicht erstellt werden:\n" + e.getMessage(),
 					"Erstellen fehlgeschlagen", JOptionPane.ERROR_MESSAGE);

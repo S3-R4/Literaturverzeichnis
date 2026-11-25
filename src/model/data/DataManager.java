@@ -96,10 +96,11 @@ public class DataManager {
 	}
 
 	/**
-	 * Replaces a source in the working copy, preserving its ID. If its type changes,
+	 * Replaces a source in the working copy, preserving its ID. If its type
+	 * changes,
 	 * the entry moves to the end of its new category.
 	 *
-	 * @param id persistent source ID
+	 * @param id           persistent source ID
 	 * @param updatedEntry replacement source
 	 * @return whether a source was found and replaced
 	 * @throws IOException if the working copy cannot be read or written
@@ -153,8 +154,10 @@ public class DataManager {
 	 * Reads the entries of one source type as formatted JSON.
 	 *
 	 * @param datatype source category name
-	 * @return the formatted category array, or an empty array if the category is absent
-	 * @throws IOException if the working copy cannot be read or its structure is invalid
+	 * @return the formatted category array, or an empty array if the category is
+	 *         absent
+	 * @throws IOException if the working copy cannot be read or its structure is
+	 *                     invalid
 	 */
 	public String read_data(String datatype) throws IOException {
 		JsonNode entries = files.read().get(datatype);
@@ -172,7 +175,8 @@ public class DataManager {
 	 *
 	 * @param id persistent source ID
 	 * @return the matching entry as formatted JSON
-	 * @throws IOException if the working copy cannot be read or has an invalid root
+	 * @throws IOException            if the working copy cannot be read or has an
+	 *                                invalid root
 	 * @throws NoSuchElementException if no source has the requested ID
 	 */
 	public String read_data_by_id(String id) throws IOException {
@@ -192,7 +196,8 @@ public class DataManager {
 	}
 
 	/**
-	 * Reconstructs the stored sources and registers their IDs for the new instances.
+	 * Reconstructs the stored sources and registers their IDs for the new
+	 * instances.
 	 *
 	 * @return the reconstructed sources in document order
 	 * @throws IOException if the working copy cannot be read or a source is invalid
@@ -204,6 +209,9 @@ public class DataManager {
 
 		for (var category : root.properties()) {
 			String type = category.getKey();
+			if ("theme".equals(type)) {
+				continue;
+			}
 			if (!(category.getValue() instanceof ArrayNode entries)) {
 				throw new IOException("Die Kategorie " + type + " muss eine Liste enthalten.");
 			}
@@ -242,7 +250,7 @@ public class DataManager {
 	/**
 	 * Finds the first entry with the requested ID.
 	 *
-	 * @param entries entries in the category to search
+	 * @param entries  entries in the category to search
 	 * @param idTarget ID represented as a JSON value
 	 * @return the matching index, or {@code -1} if the ID is absent
 	 */
@@ -283,11 +291,23 @@ public class DataManager {
 	 * Opens an existing bibliography and creates its working copy.
 	 *
 	 * @param path path to the original bibliography
-	 * @throws IOException if the original is invalid or the working copy cannot be created
+	 * @throws IOException if the original is invalid or the working copy cannot be
+	 *                     created
 	 */
 	public void importJson(Path path) throws IOException {
 		files.open(path);
 		idsBySource.clear();
+	}
+
+	public String readTheme() throws IOException {
+		JsonNode theme = files.read().get("theme");
+		if (theme == null || theme.isNull()) {
+			return "Hell";
+		}
+		String savedTheme = theme.asText();
+		if ("Dunkel".equals(savedTheme)) {
+			return "Dunkel";
+		}
 	}
 
 	/**
@@ -305,7 +325,8 @@ public class DataManager {
 	 * Replaces an existing working copy with the saved bibliography and opens it.
 	 *
 	 * @param path path to the original bibliography
-	 * @throws IOException if the original is invalid or the working copy cannot be replaced
+	 * @throws IOException if the original is invalid or the working copy cannot be
+	 *                     replaced
 	 */
 	public void discardRecoveryAndImport(Path path) throws IOException {
 		files.discardAndOpen(path);
@@ -316,7 +337,8 @@ public class DataManager {
 	 * Creates an empty bibliography and opens it for editing.
 	 *
 	 * @param path path to the new bibliography
-	 * @return whether the bibliography was created, or {@code false} if the path already exists
+	 * @return whether the bibliography was created, or {@code false} if the path
+	 *         already exists
 	 * @throws IOException if the original or working copy cannot be created
 	 */
 	public boolean createJson(Path path) throws IOException {
@@ -328,19 +350,23 @@ public class DataManager {
 	}
 
 	/**
-	 * Exports the working copy to the given destination, replacing an existing file.
+	 * Exports the bibliography together with its current theme.
 	 *
-	 * @param path destination path
-	 * @throws IOException if the working copy cannot be read or copied to the destination
+	 * @param path       destination path
+	 * @param savedTheme theme to store in the exported file
+	 * @throws IOException if the export fails
 	 */
-	public void exportJson(Path path) throws IOException {
-		files.exportTo(path);
+	public void exportJson(Path path, String savedTheme) throws IOException {
+		ObjectNode root = files.read();
+		root.put("theme", savedTheme);
+		mapper.writerWithDefaultPrettyPrinter().writeValue(path.toFile(), root);
 	}
 
 	/**
 	 * Saves the working copy to the original bibliography through a temporary file.
 	 *
-	 * @throws IOException if the working copy cannot be read or the original cannot be replaced
+	 * @throws IOException if the working copy cannot be read or the original cannot
+	 *                     be replaced
 	 */
 	public void save() throws IOException {
 		files.save();

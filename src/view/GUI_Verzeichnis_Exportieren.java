@@ -23,24 +23,27 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import model.data.DataManager;
 
 /**
- * Saves a "snapshot" / copy of the current Verzeichnis on a new filepath, new changes will continue on the original filepath.
+ * Saves a "snapshot" / copy of the current Verzeichnis on a new filepath, new
+ * changes will continue on the original filepath.
  */
-public class GUI_Verzeichnis_Exportieren extends JDialog{
-	
-	final String titel = "Verzeichnis exportieren"; 
+public class GUI_Verzeichnis_Exportieren extends JDialog {
+
+	final String titel = "Verzeichnis exportieren";
 	private Path chosenFile;
 	private final JTextField tfdDateipfad = new JTextField("<Dateipfad>");
 	private final DataManager manager;
-	
+	private final String savedTheme;
+
 	/**
 	 * Creates the GUI_Verzeichnis_Exportieren view and its controls.
 	 *
-	 * @param parent owner window
+	 * @param parent  owner window
 	 * @param manager data manager for the active bibliography
 	 */
-	public GUI_Verzeichnis_Exportieren(JFrame parent, DataManager manager) {
+	public GUI_Verzeichnis_Exportieren(JFrame parent, DataManager manager, String savedTheme) {
 		super(parent, "Verzeichnis exportieren", true);
 		this.manager = Objects.requireNonNull(manager, "manager");
+		this.savedTheme = savedTheme;
 
 		GridBagLayout layout = new GridBagLayout();
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -49,10 +52,15 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 		setLayout(layout);
 
 		// --- Zeile 1: Speicherort ---
-		gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0; gbc.fill = GridBagConstraints.NONE;
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.weightx = 0;
+		gbc.fill = GridBagConstraints.NONE;
 		add(new JLabel("Speicherort:"), gbc);
 
-		gbc.gridx = 1; gbc.weightx = 1.0; gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.gridx = 1;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		JPanel pathPanel = new JPanel(new BorderLayout(5, 0));
 		tfdDateipfad.setEditable(false);
 		pathPanel.add(tfdDateipfad, BorderLayout.CENTER);
@@ -63,7 +71,11 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 		add(pathPanel, gbc);
 
 		// --- Zeile 2: Buttons ---
-		gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2; gbc.weightx = 0; gbc.fill = GridBagConstraints.NONE;
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.gridwidth = 2;
+		gbc.weightx = 0;
+		gbc.fill = GridBagConstraints.NONE;
 		gbc.anchor = GridBagConstraints.EAST;
 		JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
 
@@ -76,20 +88,20 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 		btnPanel.add(btnBestaetigen);
 
 		add(btnPanel, gbc);
-		
+
 		// Fenstergröße und Position anpassen
-        setSize(400, 140);
-        setResizable(false); // Optional: Verhindert Verziehen des Fensters
-        setLocationRelativeTo(parent); // Zentriert über dem Hauptfenster
+		setSize(400, 140);
+		setResizable(false); // Optional: Verhindert Verziehen des Fensters
+		setLocationRelativeTo(parent); // Zentriert über dem Hauptfenster
 	}
-	
+
 	/**
 	 * Closes the export dialog.
 	 */
 	private void close() {
 		dispose();
 	}
-	
+
 	/**
 	 * Processes the selected file and reports validation or file-operation errors.
 	 */
@@ -104,18 +116,17 @@ public class GUI_Verzeichnis_Exportieren extends JDialog{
 			return;
 		}
 		try {
-			this.manager.exportJson(chosenFile);
+			this.manager.exportJson(chosenFile, savedTheme);
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this,
 					"Fehler beim Erstellen der Kopie:\n" + e.getMessage(),
 					"Export fehlgeschlagen", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		
-		
+
 		close();
 	}
-	
+
 	/**
 	 * Opens a JSON file chooser and displays the selected path.
 	 */

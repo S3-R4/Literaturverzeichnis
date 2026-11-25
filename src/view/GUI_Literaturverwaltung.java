@@ -111,7 +111,7 @@ public class GUI_Literaturverwaltung extends JFrame {
 		JMenu dateiMenu = new JMenu("Datei");
 		JMenuItem export = new JMenuItem("Export");
 		export.addActionListener(e -> {
-			GUI_Verzeichnis_Exportieren dialog = new GUI_Verzeichnis_Exportieren(this, manager);
+			GUI_Verzeichnis_Exportieren dialog = new GUI_Verzeichnis_Exportieren(this, manager, currentTheme);
 			dialog.setVisible(true);
 		});
 
@@ -137,7 +137,7 @@ public class GUI_Literaturverwaltung extends JFrame {
 		settingsMenu.add(theme);
 
 		menuBar.add(settingsMenu);
-		
+
 		// create help menu with menu item and action
 		JMenu helMenue = new JMenu("Hilfe");
 		JMenuItem help = new JMenuItem("Zitierrichtlinien");
@@ -151,7 +151,7 @@ public class GUI_Literaturverwaltung extends JFrame {
 		helMenue.add(help);
 
 		menuBar.add(helMenue);
-		
+
 		return menuBar;
 	}
 

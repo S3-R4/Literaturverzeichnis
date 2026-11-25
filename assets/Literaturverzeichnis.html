@@ -114,8 +114,29 @@ body{
     flex-direction:column;
 }
 
+table {
+    border-collapse: collapse; /* Macht aus Kästen durchgehende Linien */
+  }
+th, td {
+    border: 1px solid #000000; /* Linienfarbe (schwarz) */
+    padding: 8px;              /* Etwas Platz zum Rand */
+    font-weight: normal;       /* Verhindert fette Schrift in th-Zellen */
+    text-align: left;          /* Linksbündig statt zentriert */
+}
 
 }
+.gitter {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: sans-serif;
+}
+.gitter th, .gitter td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+    font-weight: normal; /* Verhindert Fettschrift in der gesamten Tabelle */
+}
+
 </style>
 </head>
 
@@ -128,12 +149,15 @@ body{
 
 
 <a href="#start">🏠 Startseite</a>
-<a href="#kurzbeleg">📖 Zitieren im Text (Kurzbeleg)</a>
+<a href="#kurzbeleg"> Zitieren im Text (Kurzbeleg)</a>
 <a href="#langbeleg"> Angaben im Literaturverzeichnis (Langbeleg)</a>
 <a href="#sammelband"> Beiträge in einem Herausgeberwerk oder Sammelband</a>
 <a href="#zeitschrift"> Artikel aus einer (Fach-)Zeitschrift</a>
-<a href="#internet"> Beiträge aus dem Internet und reine Internetquellen</a>
+<a href="#internet"> Beiträge aus dem Internet (Webseite)</a>
 <a href="#audiovisuel"> Audiovisuelle Medien</a>
+<a href="buch"> Buchquelle</a>
+<a href="bild"> Bildquelle</a>
+<a href="ki"> KI Quelle</a>
 </div>
 
 
@@ -145,13 +169,20 @@ body{
 
 
 <p>
-Diese HTML-Version basiert auf dem Dokument
+Dieses HTML-Dokument basiert auf dem Dokument
 „Richtlinien zur Zitation und zum Literaturverzeichnis“ der APOLLON Hochschule der Gesundheitswissenschaften
-(Stand April 2026). Die folgenden Inhalte sind entweder Zitiert oder nur grob bearbeitet.
+(Stand April 2026). Die Inhalte sind entweder Zitiert oder grob bearbeitet. 
+</p>
+<p>
+	<strong> 
+		Dieses Dokument dient <u>nicht</u> der Veröffentlichung, da die Rechte an dem diesem Dokument zugrundeliegendem Dokument nicht erworben wurden.
+	</strong>
 </p>
 
 
-<br> </br>
+<br> 
+<br>
+<br>
 
 
 <p style="margin-bottom: 10px;">
@@ -193,11 +224,11 @@ Diese HTML-Version basiert auf dem Dokument
 </ul>
 
 
-<br> </br>
+<br> 
 
 
 <p>
-<Strong> Quellenangaben
+<Strong> Quellenangaben </strong>
 </p>
 
 
@@ -209,29 +240,120 @@ Die Quelle wird stehts als Kurzbeleg im Text und als Langbeleg im Literaturverze
 <section id="kurzbeleg" class="page">
 <h2>1. Belegpflicht und Einheitlichkeit</h2>
 
-
-<div class="example">
-Kurzbeleg: (vgl. Simon, 2009, S. 16)
-</div>
-
-
+<table class="gitter">
+    <!-- Zeile 1: Tabellenkopf (4 Spalten) -->
+    <thead>
+      <tr>
+        <th><strong> Zitatform </strong></th>
+        <th><strong> Besonderheit </strong></th>
+        <th><strong> Beispiel direktes Zitat </strong></th>
+        <th><strong> Beispiel indirektes Zitat </strong></th>
+      </tr>
+    </thead>
+    
+    <!-- Zeilen 2 bis 9: Tabelleninhalt (8 Datenzeilen x 4 Spalten) -->
+    <tbody>
+      <tr>
+        <td>ein/-e Autor/-in</td>
+        <td>
+        	<ul style="margin-left: 30px;">
+   			 	<li style="margin-bottom: 10px;">
+       				direktes Zitat: (Autor/-in, Jahr, Seite)
+   				</li>
+   				<li style="margin-bottom: 10px;">
+       				indirektes Zitat: (vgl. Autor/-in, Jahr, Seite)
+   				</li>
+   			</ul>
+   		</td>
+        <td>(Müller, 2023, S. 67)</td>
+        <td>(vgl. Müller, 2023, S. 67)</td>
+      </tr>
+      <tr>
+        <td>zwei Autorinnern/Autoren</td>
+        <td>Die Namen werden durch das Zeichen "&" voneinander getrennt.</td>
+        <td>(Nöske & Meyer, 2023, S. 14)</td>
+        <td>(vgl. Nöske & Meyer, 2023, S. 14)</td>
+      </tr>
+      <tr>
+        <td>mehr als zwei Autorinnern/Autoren</td>
+        <td>
+        	Ab dem dritten Autor bzw. der dritten Autorin wird nur der/die Erstautor/-in mit dem Kürzel "et al." 
+        	(lat. et altera = und andere) angegeben.
+        </td>
+        <td>(Nöske & Meyer, 2023, S. 14)</td>
+        <td>(vgl. Nöske & Meyer, 2023, S. 14)</td>
+      </tr>
+      <tr>
+        <td>gleiche/-r Autor/-in, gleiches Jahr</td>
+        <td>
+        	Wenn Quellen desselben Autors oder derselben Autorin aus dem gleichen Jahr zitiert werden, 
+        	wird dies mittels Buchstaben gekennzeichnet.
+        </td>
+        <td>
+        	<p>
+        		(Müller, 2022a, S. 15)
+        	</p>
+        	<p>
+        		(Müller, 2022b, S. 47)
+        	</p>
+        </td>
+        <td>
+        	<p>
+        		(vgl. Müller, 2022a, S. 15)
+        	</p>
+        	<p>
+        		(vgl. Müller, 2022b, S. 47)
+        	</p>
+        </td>
+      </tr>
+      <tr>
+        <td>mehrere Quellen für dieselbe Aussage</td>
+        <td>
+        	Wird auf Arbeiten unterschiedlicher Autoren/Autorinnen verwiesen, 
+        	werden diese mit einem Semikolon voneinander abgegrenzt. 
+        	Die Reihenfolge der Quellen erfolgt alphabetisch nach Nachnamen sortiert.
+        </td>
+        <td></td>
+        <td>(vgl. Evans et al., 2011, S. 3.; Oberender, 2000, S. 53)</td>
+      </tr>
+      <tr>
+        <td>Quellen ohne Seitenangabe</td>
+        <td>
+        	Es gibt Quellen, zum Beispiel Internetseiten, die keine Seitenzahlen aufweisen.
+        	Nutzen Sie in diesem Fall die Abkürzung "o. S." für "ohne Seite".
+        </td>
+        <td>(Meyer, 2024, o. S.)</td>
+        <td>(vgl. Meyer, 2024, 0. S.)</td>
+      </tr>
+      <tr>
+        <td>Quellen ohne Jahresangabe</td>
+        <td>Manche Quellen haben keine Jahresangabe. Nutzen Sie dann die Abkürzung "o. J." für "ohne Jahr".</td>
+        <td>(Meyer, o. J., S. 4)</td>
+        <td>(vgl. Meyer, o. J., S. 4)</td>
+      </tr>
+      <tr>
+        <td>Institutionen/Abkürzungen</td>
+        <td>Wenn Sie im Kurzbeleg eine Abkürzung einführen, ist diese in eckige Klammern setzen</td>
+        <td>(American Psychological Association [APA], 2020, S. 3)</td>
+        <td>(vgl. American Psychological Association [APA], 2020, S. 3)</td>
+      </tr>
+    </tbody>
+  </table>
 </section>
 
 
 <section id="langbeleg" class="page">
 <h2>2. Angaben im Literaturverzeichnis (Langbeleg)</h2>
-
-
-
-
+	<p>
+		In das Literaturverzeichnis sind <u>alle</u> Quellen aufzuführen, die Sie im Text verwendet und als Kurzbeleg angegeben haben. 
+		Achten Sie darauf, dass keine Quellen angegeben werden, die im Text nicht zitiert wurden. 
+		Das Literaturverzeichnis wird in alphabetischer Reihenfolge sortiert.
+	</p>
 </section>
 
 
 <section id="sammelband" class="page">
 <h2>3. Beiträge in einem Herausgeberwerk oder Sammelband</h2>
-
-
-
 
 </section>
 
@@ -239,17 +361,11 @@ Kurzbeleg: (vgl. Simon, 2009, S. 16)
 <section id="zeitschrift" class="page">
 <h2>4. Artikel aus einer (Fach-)Zeitschrift</h2>
 
-
-
-
 </section>
 
 
 <section id="internet" class="page">
-<h2>5. Beiträge aus dem Internet und reine Internetquellen</h2>
-
-
-
+<h2>5. Beiträge aus dem Internet (Webseite)</h2>
 
 </section>
 
@@ -257,11 +373,23 @@ Kurzbeleg: (vgl. Simon, 2009, S. 16)
 <section id ="audiovisuel" class="page">
 <h2>4. Audiovisuelle Medien</h2>
 
+</section>
 
 
+<section id ="buch" class="page">
+<h2>5. Buchquelle</h2>
 
 </section>
 
+<section id ="bild" class="page">
+<h2>6. Bildquelle</h2>
+
+</section>
+
+<section id ="ki" class="page">
+<h2>7. KI Quelle</h2>
+
+</section>
 
 
 

@@ -16,6 +16,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
+import java.nio.file.Files;
 
 /**
  * Manages entries in the active bibliography and tracks their persistent IDs
@@ -298,18 +299,36 @@ public class DataManager {
 		files.open(path);
 		idsBySource.clear();
 	}
-
+	/**
+	 * Reads the theme saved in the imported bibliography JSON file.
+	 *
+	 * @return "Dunkel" if the saved theme is dark, otherwise "Hell"
+	 * @throws IOException if the JSON file cannot be read
+	 */
 	public String readTheme() throws IOException {
-		JsonNode theme = files.read().get("theme");
-		if (theme == null || theme.isNull()) {
-			return "Hell";
-		}
-		String savedTheme = theme.asText();
-		if ("Dunkel".equals(savedTheme)) {
-			return "Dunkel";
-		}
+	JsonNode theme = files.read().get("theme");
+	if (theme == null || theme.isNull()) {
+	return "Hell";
+	}
+	String savedTheme = theme.asText();
+	if ("Dunkel".equals(savedTheme)) {
+	return "Dunkel";
+	}
+	return "Hell";
 	}
 
+	/**
+	 * Updates the theme stored in the active working copy.
+	 *
+	 * @param theme selected theme ("Hell" or "Dunkel")
+	 * @throws IOException if the working copy cannot be updated
+	 */
+	public void updateTheme(String theme) throws IOException {
+		ObjectNode root = files.read();
+		root.put("theme", theme);
+		files.write(root);
+	}
+	
 	/**
 	 * Opens a bibliography using its existing working copy.
 	 *
@@ -357,6 +376,10 @@ public class DataManager {
 	 * @throws IOException if the export fails
 	 */
 	public void exportJson(Path path, String savedTheme) throws IOException {
+		Path parent = path.getParent();
+		if (parent != null) {
+   		Files.createDirectories(parent);
+		}
 		ObjectNode root = files.read();
 		root.put("theme", savedTheme);
 		mapper.writerWithDefaultPrettyPrinter().writeValue(path.toFile(), root);

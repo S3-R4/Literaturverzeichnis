@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
 import model.Website;
 import model.Zeitungsartikel;
 import model.data.DataManager;
@@ -37,7 +36,7 @@ public class DataTest {
 
 		// System.out.println(manager.read_data()); // all of them
 		// System.out.println(manager.read_data("Website")); // all the websites
-
+		/* 
 		Website edited_website = new Website(
 		List.of("Rafa"),
 		"Edited damn website muhehehe",
@@ -51,5 +50,6 @@ public class DataTest {
 		System.out.println(manager.read_data_by_id(id)); // only one entry
 		manager.edit_entry(id, edited_website);
 		System.out.println(manager.read_data_by_id(id)); // read the second entry
+		*/
 	}
-}
+} 

@@ -5,6 +5,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
@@ -58,7 +59,7 @@ public class GUI_Literaturverwaltung extends JFrame {
 	 * Creates the GUI_Literaturverwaltung view and its controls.
 	 */
 	public GUI_Literaturverwaltung() {
-		this(new DataManager());
+		this(new DataManager(), "Hell");
 	}
 
 	/**
@@ -66,7 +67,7 @@ public class GUI_Literaturverwaltung extends JFrame {
 	 *
 	 * @param manager data manager for the active bibliography
 	 */
-	public GUI_Literaturverwaltung(DataManager manager) {
+	public GUI_Literaturverwaltung(DataManager manager, String savedTheme) {
 		this.manager = Objects.requireNonNull(manager, "manager");
 		setTitle("Literaturverwaltung - Literaturverzeichnis");
 		setSize(1200, 750);
@@ -94,7 +95,7 @@ public class GUI_Literaturverwaltung extends JFrame {
 			}
 
 		});
-
+		changeTheme(savedTheme);
 		setVisible(true);
 		SwingUtilities.invokeLater(() -> contentSplitPane.setDividerLocation(0.65));
 	}
@@ -726,6 +727,11 @@ public class GUI_Literaturverwaltung extends JFrame {
 	 */
 	private void changeTheme(String theme) {
 		currentTheme = theme;
+		try {
+		manager.updateTheme(theme);
+	} catch (IOException e) {
+		JOptionPane.showMessageDialog(this,"Das Theme konnte nicht gespeichert werden:\n" + e.getMessage(),"Fehler", JOptionPane.ERROR_MESSAGE);
+	}
 		boolean dark = "Dunkel".equals(theme);
 		Color background = dark ? new Color(0x2B2B2B) : Color.WHITE;
 		Color foreground = dark ? new Color(0xF0F0F0) : Color.BLACK;

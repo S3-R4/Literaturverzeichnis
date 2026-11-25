@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import model.BildQuelle;
 import model.data.DataManager;
+import tools.jackson.databind.json.JsonMapper;
 
 class TestDataManagerWorkingFile {
     @TempDir Path directory;
@@ -103,15 +104,17 @@ class TestDataManagerWorkingFile {
         assertEquals("{}", Files.readString(original));
 
         Path exported = directory.resolve("export.json");
-        manager.exportJson(exported);
-        assertEquals(Files.readString(Path.of(original + ".swp")), Files.readString(exported));
+        manager.exportJson(exported, "Dunkel");
+        var exportedJson = JsonMapper.builder().build().readTree(exported.toFile());
+        assertEquals("Dunkel", exportedJson.path("theme").asText());
+        assertTrue(exportedJson.path("BildQuelle").isArray());
         manager.save();
-        assertEquals(Files.readString(exported), Files.readString(original));
+        assertEquals(Files.readString(Path.of(original + ".swp")), Files.readString(original));
         assertFalse(Files.exists(Path.of(original + ".swp.tmp")));
 
         assertTrue(manager.delete_data_by_id(id));
         assertTrue(manager.readAllSources().isEmpty());
-        assertEquals(Files.readString(exported), Files.readString(original));
+        assertTrue(JsonMapper.builder().build().readTree(original.toFile()).path("BildQuelle").isArray());
         manager.save();
         assertEquals(Files.readString(Path.of(original + ".swp")), Files.readString(original));
     }

@@ -37,7 +37,8 @@ final class BibliographySession {
 
     static void showEditor(JFrame parent, DataManager manager, Path file) throws IOException {
         var sources = manager.readAllSources();
-        GUI_Literaturverwaltung editor = new GUI_Literaturverwaltung(manager);
+        String savedTheme = manager.readTheme();
+        GUI_Literaturverwaltung editor = new GUI_Literaturverwaltung(manager, savedTheme);
         editor.addTableRows(sources.toArray(Literatur[]::new));
         parent.dispose();
         try {

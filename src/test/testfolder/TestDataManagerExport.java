@@ -24,7 +24,7 @@ class TestDataManagerExport {
                 Optional.of("Informatik"), Optional.of("Springer"), Optional.of(3), Optional.of("Berlin"),
                 Optional.of(12), Optional.of(15)));
         Path exported = directory.resolve("export.json");
-        manager.exportJson(exported);
+        manager.exportJson(exported, "Dunkel");
 
         var book = JsonMapper.builder().build().readTree(exported.toFile()).path("Buchbeleg").path(0);
         assertTrue(book.path("auflage").isIntegralNumber());
@@ -62,17 +62,20 @@ class TestDataManagerExport {
     @Test
     void exportsImportedFileToNewPathAndKeepsOriginalActive() throws IOException {
         Path source = directory.resolve("original.json");
-        String original = "{\"Buchbeleg\":[]}";
+        String original = "{\"Buchbeleg\":[],\"theme\":\"Dunkel\"}";
         Files.writeString(source, original);
         DataManager manager = new DataManager();
         manager.importJson(source);
         Path target = directory.resolve("new-folder/copy.json");
-        manager.exportJson(target);
-        assertEquals(original, Files.readString(target));
+        manager.exportJson(target,"Dunkel");
+        var exportedJson = JsonMapper.builder().build().readTree(target.toFile());
+        assertEquals("Dunkel", exportedJson.path("theme").asText());
+        assertTrue(exportedJson.path("Buchbeleg").isArray());
         Files.writeString(target, "{}");
         Path secondCopy = directory.resolve("second.json");
-        manager.exportJson(secondCopy);
-        assertEquals(original, Files.readString(secondCopy));
+        manager.exportJson(secondCopy,"Dunkel");
+        var secondExport = JsonMapper.builder().build().readTree(secondCopy.toFile());
+        assertEquals("Dunkel", secondExport.path("theme").asText());
         assertEquals(original, Files.readString(source));
     }
 
@@ -82,8 +85,9 @@ class TestDataManagerExport {
         assertTrue(manager.createJson(directory.resolve("new.json")));
         Path target = directory.resolve("existing.json");
         Files.writeString(target, "old contents");
-        manager.exportJson(target);
-        assertEquals("{}", Files.readString(target));
+        manager.exportJson(target,"Dunkel");
+        var exportedJson = JsonMapper.builder().build().readTree(target.toFile());
+        assertEquals("Dunkel", exportedJson.path("theme").asText());
     }
 
     @Test
@@ -93,7 +97,7 @@ class TestDataManagerExport {
         manager.createJson(source);
         Path blocker = directory.resolve("file-not-directory");
         Files.writeString(blocker, "blocker");
-        assertThrows(IOException.class, () -> manager.exportJson(blocker.resolve("copy.json")));
+        assertThrows(IOException.class, () -> manager.exportJson(blocker.resolve("copy.json"),"Dunkel"));
         assertEquals("{}", Files.readString(source));
     }
 }

@@ -50,7 +50,7 @@ public class LiteraturRichtlinien {
 	 * open the html
 	 * @throws Exception
 	 */
-	private static void openDoc() throws Exception {
+	public static void openDoc() throws Exception {
 		Desktop.getDesktop().browse(html.toURI());
 	}
 	

@@ -15,6 +15,9 @@ import java.util.Objects;
 import model.data.DataManager;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+
+import controller.LiteraturRichtlinien;
+
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import model.FuzzySearch;
@@ -134,6 +137,21 @@ public class GUI_Literaturverwaltung extends JFrame {
 		settingsMenu.add(theme);
 
 		menuBar.add(settingsMenu);
+		
+		// create help menu with menu item and action
+		JMenu helMenue = new JMenu("Hilfe");
+		JMenuItem help = new JMenuItem("Zitierrichtlinien");
+		help.addActionListener(e -> {
+			try {
+				LiteraturRichtlinien.openDoc();
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(null, "Dokument wurde nicht gefunden!");
+			}
+		});
+		helMenue.add(help);
+
+		menuBar.add(helMenue);
+		
 		return menuBar;
 	}
 

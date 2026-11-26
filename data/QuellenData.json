@@ -13,5 +13,26 @@
     "veroeffentlichungsdatum" : "2025-12-03",
     "id" : "ac0af37a-88b6-45dc-80c2-56e98dc1cf34"
   } ],
-  "Website" : [ ]
+  "Website" : [ ],
+  "theme" : "Hell",
+  "Buchbeleg" : [ {
+    "abrufdatum" : null,
+    "anzahlAusgefuellterAttribute" : 1,
+    "anzahlRelevanterAttribute" : 5,
+    "auflage" : null,
+    "autor" : [ "test" ],
+    "autoren" : "test",
+    "buchverlag" : "o.V.",
+    "erfassungsstand" : "1/5 Attribute eingetragen",
+    "erscheinungsjahr" : "o.J.",
+    "erscheinungsort" : "o.O.",
+    "seitenangabe" : {
+      "anfang" : null,
+      "ende" : null,
+      "seitenangabe" : ""
+    },
+    "titel" : null,
+    "veroeffentlichungsdatum" : null,
+    "id" : "4ef1bbc7-334b-4660-95b2-43778a2b89b0"
+  } ]
 }

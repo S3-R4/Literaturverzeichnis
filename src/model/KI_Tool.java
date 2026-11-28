@@ -106,7 +106,7 @@ public class KI_Tool extends Literatur {
             anzahl++;
         }
 
-        if (!url.equals("")) {
+        if (url != null && !url.isBlank()) {
             anzahl++;
         }
         return anzahl;

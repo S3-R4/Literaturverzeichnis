@@ -106,6 +106,9 @@ public class KI_Tool extends Literatur {
             anzahl++;
         }
 
+        if (!url.equals("")) {
+            anzahl++;
+        }
         return anzahl;
     }
 
@@ -138,4 +141,41 @@ public class KI_Tool extends Literatur {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
         return datum.map(d -> d.format(formatter)).orElse("");
     }
+
+        /**
+     * Returns the AI model name.
+     *
+     * @return the model name
+     */
+    public String getModellName() {
+        return modellName;
+    }
+
+    /**
+     * Returns the AI model version.
+     *
+     * @return the model version
+     */
+    public String getModellversion() {
+        return modellversion;
+    }
+
+    /**
+     * Returns the AI tool category.
+     *
+     * @return the tool category
+     */
+    public String getToolArt() {
+        return toolArt;
+    }
+
+    /**
+     * Returns the URL.
+     *
+     * @return the URL
+     */
+    public String getUrl() {
+        return url;
+    }
+
 }

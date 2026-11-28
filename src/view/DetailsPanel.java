@@ -16,7 +16,6 @@ import javax.swing.*;
 import controller.Controller;
 import java.util.regex.Pattern;
 
-
 /**
  * Displays source details and manages creation and editing through callbacks.
  */
@@ -35,7 +34,7 @@ final class DetailsPanel extends JPanel {
 	private final JComboBox<String> creationTypeComboBox = new JComboBox<>(new String[] {
 			"Quellentyp wählen…", "Buchbeleg", "Website", "BildQuelle", "Zeitungsartikel",
 			"FIlmsVideos", "Youtube", "PodcastGesamtwerk", "Podcastfolgen",
-			"SocialMediaBeitraege", "Sammelbandbeleg"
+			"SocialMediaBeitraege", "Sammelbandbeleg", "KI_Tool"
 	});
 	private final LinkedHashMap<String, String> creationDraft = new LinkedHashMap<>();
 	private boolean creating;
@@ -158,7 +157,7 @@ final class DetailsPanel extends JPanel {
 		currentSource = source;
 		deleteButton.setEnabled(source != null);
 		editButton.setEnabled(source instanceof Buchbeleg || source instanceof Website
-				|| source instanceof BildQuelle || source instanceof Zeitungsartikel || source instanceof Audiovisuell);
+				|| source instanceof BildQuelle || source instanceof Zeitungsartikel || source instanceof Audiovisuell || source instanceof KI_Tool);
 		if (source == null) {
 			showDetails("", "", Map.of());
 			return;
@@ -233,6 +232,15 @@ final class DetailsPanel extends JPanel {
 				attributes.put("Text", post.getText().orElse(""));
 				attributes.put("Beschreibung", post.getBeschreibung().orElse(""));
 			}
+
+		} else if (source instanceof KI_Tool ki) {
+			attributes.put("Autor / Herausgeber", authors);
+			attributes.put("Veröffentlichungsdatum", formatDate(ki.getVeroeffentlichungsdatum()));
+			attributes.put("Modellname", ki.getModellName());
+			attributes.put("Modellversion", ki.getModellversion());
+			attributes.put("Toolart", ki.getToolArt());
+			attributes.put("URL", ki.getUrl());
+			attributes.put("Abrufdatum", formatDate(ki.getAbrufdatum()));
 		}
 		return attributes;
 	}
@@ -408,6 +416,8 @@ final class DetailsPanel extends JPanel {
 			case "PodcastGesamtwerk" -> new PodcastGesamtwerk();
 			case "Podcastfolgen" -> new Podcastfolgen();
 			case "SocialMediaBeitraege" -> new SocialMediaBeitraege();
+			case "KI_Tool" -> new KI_Tool(List.of(), null, "", "", "", "", null);
+
 			default -> throw new IllegalArgumentException("Unbekannter Quellentyp: " + type);
 		};
 	}
@@ -484,6 +494,13 @@ final class DetailsPanel extends JPanel {
 		if (type.equals(Website.class.getSimpleName())) {
 			return new Website(authors, inputText("Websitename"), readText("Titel"),
 					inputText("URL"), retrieved.orElse(null), published.orElse(null), inputText("Textart"));
+		} else if (type.equals(KI_Tool.class.getSimpleName())) {
+			String modellname = inputText("Modellname");
+			String modellversion = inputText("Modellversion");
+			String toolart = inputText("Toolart");
+			String url = inputText("URL");
+			return new KI_Tool(authors, published.orElse(null), modellname, modellversion, toolart, url,
+					retrieved.orElse(null));
 		}
 		if (!type.equals("Buchbeleg")) {
 			Literatur source = createBlankSource(type);
@@ -567,23 +584,22 @@ final class DetailsPanel extends JPanel {
 	 */
 	private Optional<LocalDate> readDate(String name) {
 		String text = inputText(name);
-        text = normalizeDate(text);
+		text = normalizeDate(text);
 		return text.isEmpty() ? Optional.empty() : Optional.of(LocalDate.parse(text));
 	}
 
-    private static final Pattern DAY_FIRST_DATE =
-        Pattern.compile("(\\d{1,2})([./])(\\d{1,2})\\2(\\d{4})");
+	private static final Pattern DAY_FIRST_DATE = Pattern.compile("(\\d{1,2})([./])(\\d{1,2})\\2(\\d{4})");
 
-    private static String normalizeDate(String text) {
-        var match = DAY_FIRST_DATE.matcher(text);
-        if (!match.matches()) {
-            return text;
-        }
+	private static String normalizeDate(String text) {
+		var match = DAY_FIRST_DATE.matcher(text);
+		if (!match.matches()) {
+			return text;
+		}
 
-        int day = Integer.parseInt(match.group(1));
-        int month = Integer.parseInt(match.group(3));
-        return String.format(Locale.ROOT, "%s-%02d-%02d", match.group(4), month, day);
-    }
+		int day = Integer.parseInt(match.group(1));
+		int month = Integer.parseInt(match.group(3));
+		return String.format(Locale.ROOT, "%s-%02d-%02d", match.group(4), month, day);
+	}
 
 	/**
 	 * Parses optional integer input and reports invalid numeric text.

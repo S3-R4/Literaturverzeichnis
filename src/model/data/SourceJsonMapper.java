@@ -12,6 +12,7 @@ import model.Audiovisuell.SocialMediaBeitraege;
 import model.Audiovisuell.Youtube;
 import model.BildQuelle;
 import model.Buchbeleg;
+import model.KI_Tool;
 import model.Literatur;
 import model.Website;
 import model.Zeitungsartikel;
@@ -150,6 +151,14 @@ final class SourceJsonMapper {
 				post.setBeschreibung(readText(entry.get("beschreibung")));
 				yield post;
 			}
+			case "KI_Tool" -> new KI_Tool(authors,
+					published.orElse(null),
+					readString(entry.get("modellName")),
+					readString(entry.get("modellversion")),
+					readString(entry.get("toolArt")),
+					readString(entry.get("url")),
+					retrieved.orElse(null));
+			
 			default -> throw new IllegalArgumentException("Unbekannter Quellentyp: " + type);
 		};
 	}
